@@ -66,7 +66,7 @@ Modern self-development tools are fragmented: one app for tasks, another for hab
 
 - **Backend:** .NET Web API  
 - **Database:** PostgreSQL  
-- **Frontend:** Vanilla JS + Alpine.js + Tailwind CSS  
+- **Frontend:** Vue.js 
 - **AI Layer:** API-based LLM integration (later models can be swapped)  
 - **Deployment:** Docker + VPS + GitHub Actions  
 

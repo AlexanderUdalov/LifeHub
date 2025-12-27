@@ -5,7 +5,7 @@ import { ref, watch } from 'vue'
 import type { TaskItem } from '@/models/TaskItem'
 
 const props = defineProps<{ task: TaskItem }>()
-const localCompleted = ref(props.task.isCompleted)
+const localCompleted = ref<boolean>(!!props.task.completeDate)
 
 watch(localCompleted, value => {
   console.log('Task completed changed:', value)

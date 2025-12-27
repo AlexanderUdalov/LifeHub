@@ -1,0 +1,3 @@
+<template>
+Journal placeholder
+</template>

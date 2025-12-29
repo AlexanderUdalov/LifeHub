@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { AddictionItem } from '@/models/AddictionItem';
 import Card from 'primevue/card';
 import ProgressBar from 'primevue/progressbar'
+import { Button } from 'primevue';
 
 const STAGES_HOURS = [
     24,
@@ -14,6 +15,11 @@ const STAGES_HOURS = [
 ]
 
 const props = defineProps<{ addiction: AddictionItem }>()
+const emit = defineEmits<{
+    (e: 'trigger', addiction: AddictionItem): void,
+    (e: 'reset', addiction: AddictionItem): void
+}>()
+
 const lastResetDate = computed(() => new Date(props.addiction.lastReset))
 
 const elapsedMs = computed(() => Date.now() - lastResetDate.value.getTime())
@@ -32,36 +38,36 @@ const elapsedText = computed(() => {
 })
 
 const currentStage = computed(() => {
-  return STAGES_HOURS.find(stage => elapsedHours.value < stage)
+    return STAGES_HOURS.find(stage => elapsedHours.value < stage)
 })
 
 const previousStage = computed(() => {
-  const index = STAGES_HOURS.indexOf(currentStage.value ?? STAGES_HOURS[STAGES_HOURS.length - 1])
-  return index > 0 ? STAGES_HOURS[index - 1] : 0
+    const index = STAGES_HOURS.indexOf(currentStage.value ?? STAGES_HOURS[STAGES_HOURS.length - 1])
+    return index > 0 ? STAGES_HOURS[index - 1] : 0
 })
 
 const progressPercent = computed(() => {
-  if (!currentStage.value) return 100
+    if (!currentStage.value) return 100
 
-  const stageRange = currentStage.value - previousStage.value
-  const progressInStage = elapsedHours.value - previousStage.value
+    const stageRange = currentStage.value - previousStage.value
+    const progressInStage = elapsedHours.value - previousStage.value
 
-  return Math.min(100, Math.floor((progressInStage / stageRange) * 100))
+    return Math.min(100, Math.floor((progressInStage / stageRange) * 100))
 })
 
 const nextStageText = computed(() => {
-  if (!currentStage.value) {
-    return 'Maximum stage reached'
-  }
+    if (!currentStage.value) {
+        return 'Maximum stage reached'
+    }
 
-  const remainingHours = currentStage.value - elapsedHours.value
+    const remainingHours = currentStage.value - elapsedHours.value
 
-  if (remainingHours >= 24) {
-    const days = Math.ceil(remainingHours / 24)
-    return `Next stage in ${days} day${days > 1 ? 's' : ''}`
-  }
+    if (remainingHours >= 24) {
+        const days = Math.ceil(remainingHours / 24)
+        return `Next stage in ${days} day${days > 1 ? 's' : ''}`
+    }
 
-  return `Next stage in ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
+    return `Next stage in ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
 })
 
 
@@ -81,6 +87,10 @@ const nextStageText = computed(() => {
                     <div class="elapsed">
                         {{ elapsedText }}
                     </div>
+                </div>
+                <div class="control-wrapper">
+                    <Button label="Trigger" icon="pi pi-bolt" severity="danger" @click="emit('trigger', addiction)" />
+                    <Button label="Reset" icon="pi pi-undo" @click="emit('reset', addiction)" />
                 </div>
             </div>
 

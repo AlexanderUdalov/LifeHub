@@ -18,6 +18,11 @@ const items = [
         route: '/habbits',
     },
     {
+        label: 'Addiсtions',
+        icon: 'pi pi-ban',
+        route: '/addiсtions',
+    },
+    {
         label: 'Goals',
         icon: 'pi pi-flag',
         route: '/goals',

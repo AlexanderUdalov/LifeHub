@@ -20,10 +20,7 @@ watch(localCompleted, value => {
         <Checkbox v-model="localCompleted" binary />
 
         <div class="task-text">
-          <div
-            class="task-title"
-            :class="{ completed: localCompleted }"
-          >
+          <div class="task-title" :class="{ completed: localCompleted }">
             {{ task.title }}
           </div>
 

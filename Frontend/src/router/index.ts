@@ -6,6 +6,7 @@ import HabbitsView from '@/views/HabbitsView.vue'
 import GoalsView from '@/views/GoalsView.vue'
 import JournalView from '@/views/JournalView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import AddiсtionsView from '@/views/AddiсtionsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,6 +18,7 @@ const router = createRouter({
         { path: '', redirect: '/tasks' },
         { path: 'tasks', component: TasksView },
         { path: 'habbits', component: HabbitsView },
+        { path: 'addiсtions', component: AddiсtionsView },
         { path: 'goals', component: GoalsView },
         { path: 'journal', component: JournalView },
         { path: 'profile', component: ProfileView },

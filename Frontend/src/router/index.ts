@@ -1,27 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import MainLayout from '@/layouts/MainLayout.vue'
-
-import TasksView from '@/views/TasksView.vue'
-import HabbitsView from '@/views/HabbitsView.vue'
-import GoalsView from '@/views/GoalsView.vue'
-import JournalView from '@/views/JournalView.vue'
-import ProfileView from '@/views/ProfileView.vue'
-import AddiсtionsView from '@/views/AddiсtionsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      component: MainLayout,
+      component: () => import('@/layouts/MainLayout.vue'),
       children: [
         { path: '', redirect: '/tasks' },
-        { path: 'tasks', component: TasksView },
-        { path: 'habbits', component: HabbitsView },
-        { path: 'addiсtions', component: AddiсtionsView },
-        { path: 'goals', component: GoalsView },
-        { path: 'journal', component: JournalView },
-        { path: 'profile', component: ProfileView },
+        { path: 'tasks', component: () => import('@/views/TasksView.vue') },
+        { path: 'habbits', component: () => import('@/views/HabbitsView.vue') },
+        { path: 'addiсtions', component: () => import('@/views/AddiсtionsView.vue') },
+        { path: 'goals', component: () => import('@/views/GoalsView.vue') },
+        { path: 'journal', component: () => import('@/views/JournalView.vue') },
+        { path: 'profile', component: () => import('@/views/ProfileView.vue') },
+        {
+          path: '/addictions/:id',
+          name: 'addiction-details',
+          component: () => import('@/views/AddictionDetailsView.vue')
+        }
       ],
     },
   ],

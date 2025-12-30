@@ -1,18 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { AddictionItem } from '@/models/AddictionItem';
 import Card from 'primevue/card';
 import ProgressBar from 'primevue/progressbar'
-import { Button } from 'primevue';
-
-const STAGES_HOURS = [
-    24,
-    48,
-    72,
-    168,
-    240,
-    720
-]
+import Button from 'primevue/button';
+import { useAddictionProgress } from '@/composables/useAddictionProgress'
+import { toRef } from 'vue';
+import { useRouter } from 'vue-router';
+import SwipeableCard from './SwipeableCard.vue';
 
 const props = defineProps<{ addiction: AddictionItem }>()
 const emit = defineEmits<{
@@ -20,85 +14,75 @@ const emit = defineEmits<{
     (e: 'reset', addiction: AddictionItem): void
 }>()
 
-const lastResetDate = computed(() => new Date(props.addiction.lastReset))
+const {
+    elapsedHours,
+    elapsedText,
+    progressPercent,
+    currentStage,
+    nextStageText
+} = useAddictionProgress(toRef(props.addiction))
 
-const elapsedMs = computed(() => Date.now() - lastResetDate.value.getTime())
-const elapsedHours = computed(() => Math.floor(elapsedMs.value / 1000 / 60 / 60))
-const elapsedText = computed(() => {
-    const hours = elapsedHours.value
+const router = useRouter()
 
-    const days = Math.floor(hours / 24)
-    const remainingHours = hours % 24
+const open = () => {
+    router.push({
+        name: 'addiction-details',
+        params: { id: props.addiction.id }
+    })
+}
 
-    if (days > 0) {
-        return `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''} clean`
-    }
-
-    return `${hours} hour${hours !== 1 ? 's' : ''} clean`
-})
-
-const currentStage = computed(() => {
-    return STAGES_HOURS.find(stage => elapsedHours.value < stage)
-})
-
-const previousStage = computed(() => {
-    const index = STAGES_HOURS.indexOf(currentStage.value ?? STAGES_HOURS[STAGES_HOURS.length - 1])
-    return index > 0 ? STAGES_HOURS[index - 1] : 0
-})
-
-const progressPercent = computed(() => {
-    if (!currentStage.value) return 100
-
-    const stageRange = currentStage.value - previousStage.value
-    const progressInStage = elapsedHours.value - previousStage.value
-
-    return Math.min(100, Math.floor((progressInStage / stageRange) * 100))
-})
-
-const nextStageText = computed(() => {
-    if (!currentStage.value) {
-        return 'Maximum stage reached'
-    }
-
-    const remainingHours = currentStage.value - elapsedHours.value
-
-    if (remainingHours >= 24) {
-        const days = Math.ceil(remainingHours / 24)
-        return `Next stage in ${days} day${days > 1 ? 's' : ''}`
-    }
-
-    return `Next stage in ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
-})
-
+const edit = () => { }
+const remove = () => { }
+const archive = () => { }
 
 </script>
 
 <template>
-    <Card class="addiction-card">
-        <template #content>
-            <div class="card-header">
-                <div class="icon-wrapper">
-                    <i class="pi icon" :class="addiction.icon" />
-                </div>
-                <div class="text-wrapper">
-                    <div class="title">
-                        {{ addiction.title }}
+    <SwipeableCard :left-actions="[
+        {
+            icon: 'pi pi-pencil',
+            bg: 'var(--blue-500)',
+            onClick: () => edit()
+        }
+    ]" :right-actions="[
+        {
+            icon: 'pi pi-trash',
+            bg: 'var(--red-500)',
+            onClick: () => remove()
+        },
+        {
+            icon: 'pi pi-flag',
+            bg: 'var(--orange-500)',
+            onClick: () => archive()
+        }
+    ]" @open="open()">
+        <Card class="addiction-card">
+            <template #content>
+                <div class="card-header">
+                    <div class="icon-wrapper">
+                        <i class="pi icon" :class="addiction.icon" />
                     </div>
-                    <div class="elapsed">
-                        {{ elapsedText }}
+                    <div class="text-wrapper">
+                        <div class="title">
+                            {{ addiction.title }}
+                        </div>
+                        <div class="elapsed">
+                            {{ elapsedText }}
+                        </div>
+                    </div>
+                    <div class="control-wrapper">
+                        <Button label="Trigger" icon="pi pi-bolt" severity="danger"
+                            @click="emit('trigger', addiction)" />
+                        <Button label="Reset" icon="pi pi-undo" @click="emit('reset', addiction)" />
                     </div>
                 </div>
-                <div class="control-wrapper">
-                    <Button label="Trigger" icon="pi pi-bolt" severity="danger" @click="emit('trigger', addiction)" />
-                    <Button label="Reset" icon="pi pi-undo" @click="emit('reset', addiction)" />
-                </div>
-            </div>
 
-            <div class="progress-wrapper">
-                <ProgressBar :value="progressPercent">{{ nextStageText }}</ProgressBar>
-            </div>
-        </template>
-    </Card>
+                <div class="progress-wrapper">
+                    <ProgressBar :value="progressPercent">{{ nextStageText }}</ProgressBar>
+                </div>
+            </template>
+        </Card>
+    </SwipeableCard>
 </template>
 
 

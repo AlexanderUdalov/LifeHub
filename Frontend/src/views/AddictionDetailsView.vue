@@ -4,4 +4,5 @@
 
 <template>
     Addiction details placeholder
+    // todo cards with Knob
 </template>

@@ -70,5 +70,7 @@ const activeIndex = computed(() =>
 .bottom-nav {
     position: sticky;
     bottom: 0;
+    width: auto;
+    background-color: blue;
 }
 </style>

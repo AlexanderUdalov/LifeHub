@@ -1,3 +1,0 @@
-<template>
-Habbits placeholder
-</template>

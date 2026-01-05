@@ -9,7 +9,7 @@ const router = createRouter({
       children: [
         { path: '', redirect: '/tasks' },
         { path: 'tasks', component: () => import('@/views/TasksView.vue') },
-        { path: 'habbits', component: () => import('@/views/HabbitsView.vue') },
+        { path: 'habbits', component: () => import('@/views/HabitsView.vue') },
         { path: 'addiсtions', component: () => import('@/views/AddiсtionsView.vue') },
         { path: 'goals', component: () => import('@/views/GoalsView.vue') },
         { path: 'journal', component: () => import('@/views/JournalView.vue') },

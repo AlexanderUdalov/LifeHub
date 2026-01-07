@@ -5,4 +5,5 @@ export interface TaskItem
     description?: string;
     dueDate?: Date;
     completeDate?: Date;
+    goalId?: number;
 }

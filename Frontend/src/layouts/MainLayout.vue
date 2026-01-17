@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import SpeedDial from 'primevue/speeddial'
-import TabMenu from 'primevue/tabmenu'
+import Tabs from 'primevue/tabs'
+import Tab from 'primevue/tab'
+import TabList from 'primevue/tablist'
 
 import TaskEditDialog from '@/components/TaskEditDialog.vue'
 import HabitEditDialog from '@/components/HabitEditDialog.vue'
 import AddictionEditDialog from '@/components/AddictionEditDialog.vue'
 import GoalEditDialog from '@/components/GoalEditDialog.vue'
+import { goalsApi } from '@/api/GoalsAPI'
+import type { GoalItem } from '@/models/GoalItem'
 
 type CreateType = 'task' | 'habit' | 'addiction' | 'goal' | null
 
@@ -49,10 +53,6 @@ const tabMenuItems = [
     },
 ]
 
-const activeIndex = computed(() =>
-    tabMenuItems.findIndex(i => i.route === route.path)
-)
-
 const fabItems = [
     {
         label: 'Task',
@@ -75,6 +75,11 @@ const fabItems = [
         command: () => (createType.value = 'goal')
     }
 ]
+
+const goals = ref<GoalItem[]>([])
+onMounted(async () => {
+    goals.value = await goalsApi.getGoals()
+})
 </script>
 
 <template>
@@ -83,16 +88,23 @@ const fabItems = [
             <RouterView />
         </main>
 
-        <SpeedDial :model="fabItems" direction="up" style="position: absolute; right: calc(50% - 200px); bottom: 60px"
+        <SpeedDial :model="fabItems" direction="up" style="position: fixed; right: calc(50% - 190px); bottom: 110px"
             :buttonProps="{ rounded: true }" />
 
-        <TaskEditDialog v-if="createType === 'task'" :task="null" @close="createType = null" />
-        <HabitEditDialog v-if="createType === 'habit'" :habit="null" @close="createType = null" />
-        <AddictionEditDialog v-if="createType === 'addiction'" :addiction="null" @close="createType = null" />
-        <GoalEditDialog v-if="createType === 'goal'" :goal="null" @close="createType = null" />
+        <TaskEditDialog v-if="createType === 'task'" :task="null" :goals="goals" @close="createType = null" />
+        <HabitEditDialog v-if="createType === 'habit'" :habit="null" :goals="goals" @close="createType = null" />
+        <AddictionEditDialog v-if="createType === 'addiction'" :addiction="null" :goals="goals"
+            @close="createType = null" />
+        <GoalEditDialog v-if="createType === 'goal'" :goal="null" :goals="goals" @close="createType = null" />
 
-        <TabMenu :model="tabMenuItems" :activeIndex="activeIndex" class="bottom-nav"
-            @tab-change="e => tabMenuItems[e.index]?.route && router.push(tabMenuItems[e.index]!.route)" />
+        <Tabs :value="route.path" @update:value="(v) => router.push(v as string)">
+            <TabList>
+                <Tab v-for="tab in tabMenuItems" :key="tab.route" :value="tab.route" class="tab">
+                    <i :class="tab.icon" />
+                    <span>{{ tab.label }}</span>
+                </Tab>
+            </TabList>
+        </Tabs>
     </div>
 </template>
 
@@ -108,10 +120,53 @@ const fabItems = [
     overflow-y: auto;
 }
 
-.bottom-nav {
-    position: sticky;
-    bottom: 0;
-    width: auto;
-    background-color: blue;
+.tab {
+    flex: 1;
+    min-height: 4px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    font-size: 0.6rem;
+    color: var(--text-color-secondary);
+
+    border-radius: 12px;
+}
+
+.tab:hover {
+    background: rgba(0, 0, 0, 0.06);
+    transition: background 0.2s ease;
+}
+
+:deep(.p-tabs) {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: calc(100% - 24px);
+    max-width: 420px;
+
+    background: var(--surface-card);
+    border-radius: 16px;
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.12);
+
+    padding: 6px 0;
+}
+
+:deep(.p-tablist) {
+     border-radius: 10px;
+    display: flex;
+    justify-content: space-around;
+}
+
+:deep(.p-tab) {
+    padding: 16px;
 }
 </style>

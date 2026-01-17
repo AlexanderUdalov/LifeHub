@@ -4,4 +4,5 @@ export interface AddictionItem
     title: string;
     icon: string;
     lastReset: Date;
+    goalId?: number
 }

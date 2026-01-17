@@ -19,11 +19,11 @@ const emit = defineEmits<{
 }>()
 
 const localTask = ref<TaskItem>({
-    id: props.task?.id ?? Date.now(),
+    id: props.task?.id ?? 0,
     title: props.task?.title ?? '',
     description: props.task?.description ?? '',
-    dueDate: props.task?.dueDate ? new Date(props.task.dueDate) : undefined,
-    completeDate: props.task?.completeDate ? new Date(props.task.completeDate) : undefined,
+    dueDate: props.task?.dueDate ? props.task.dueDate : undefined,
+    completeDate: props.task?.completeDate ? props.task.completeDate : undefined,
 })
 
 const isEdit = computed(() => !!props.task)

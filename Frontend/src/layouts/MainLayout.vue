@@ -12,10 +12,17 @@ import AddictionEditDialog from '@/components/AddictionEditDialog.vue'
 import GoalEditDialog from '@/components/GoalEditDialog.vue'
 import { goalsApi } from '@/api/GoalsAPI'
 import type { GoalItem } from '@/models/GoalItem'
+import type { TaskItem } from '@/models/TaskItem'
+import type { HabitItem } from '@/models/HabitItem'
+import type { AddictionItem } from '@/models/AddictionItem'
 
-type CreateType = 'task' | 'habit' | 'addiction' | 'goal' | null
+type ItemType = 'task' | 'habit' | 'addiction' | 'goal'
+type EditContext =
+    | { type: ItemType; item: null }
+    | { type: ItemType; item: any }
+    | null
 
-const createType = ref<CreateType>(null)
+const editContext = ref<EditContext>(null)
 
 const router = useRouter()
 const route = useRoute()
@@ -57,22 +64,22 @@ const fabItems = [
     {
         label: 'Task',
         icon: 'pi pi-check-square',
-        command: () => (createType.value = 'task')
+        command: () => (editContext.value = { type: 'task', item: null })
     },
     {
         label: 'Habit',
         icon: 'pi pi-calendar',
-        command: () => (createType.value = 'habit')
+        command: () => (editContext.value = { type: 'habit', item: null })
     },
     {
         label: 'Addiction',
         icon: 'pi pi-ban',
-        command: () => (createType.value = 'addiction')
+        command: () => (editContext.value = { type: 'addiction', item: null })
     },
     {
         label: 'Goal',
         icon: 'pi pi-flag',
-        command: () => (createType.value = 'goal')
+        command: () => (editContext.value = { type: 'goal', item: null })
     }
 ]
 
@@ -80,22 +87,31 @@ const goals = ref<GoalItem[]>([])
 onMounted(async () => {
     goals.value = await goalsApi.getGoals()
 })
+
 </script>
 
 <template>
     <div class="layout">
         <main class="content">
-            <RouterView />
+            <RouterView v-slot="{ Component }">
+                <component :is="Component" @edit-task="(task: TaskItem) => editContext = { type: 'task', item: task }"
+                    @edit-habit="(habit: HabitItem) => editContext = { type: 'habit', item: habit }"
+                    @edit-addiction="(addiction: AddictionItem) => editContext = { type: 'addiction', item: addiction }"
+                    @edit-goal="(goal: GoalItem) => editContext = { type: 'goal', item: goal }" />
+            </RouterView>
         </main>
 
         <SpeedDial :model="fabItems" direction="up" style="position: fixed; right: calc(50% - 190px); bottom: 110px"
             :buttonProps="{ rounded: true }" />
 
-        <TaskEditDialog v-if="createType === 'task'" :task="null" :goals="goals" @close="createType = null" />
-        <HabitEditDialog v-if="createType === 'habit'" :habit="null" :goals="goals" @close="createType = null" />
-        <AddictionEditDialog v-if="createType === 'addiction'" :addiction="null" :goals="goals"
-            @close="createType = null" />
-        <GoalEditDialog v-if="createType === 'goal'" :goal="null" :goals="goals" @close="createType = null" />
+        <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
+            @close="editContext = null" />
+        <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" :goals="goals"
+            @close="editContext = null" />
+        <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"
+            :goals="goals" @close="editContext = null" />
+        <GoalEditDialog v-if="editContext && editContext.type === 'goal'" :goal="editContext.item" :goals="goals"
+            @close="editContext = null" />
 
         <Tabs :value="route.path" @update:value="(v) => router.push(v as string)">
             <TabList>
@@ -161,12 +177,16 @@ onMounted(async () => {
 }
 
 :deep(.p-tablist) {
-     border-radius: 10px;
+    border-radius: 10px;
     display: flex;
     justify-content: space-around;
 }
 
 :deep(.p-tab) {
     padding: 16px;
+}
+
+:deep(.p-tab.p-tab-active) {
+    color: var(--p-primary-color);
 }
 </style>

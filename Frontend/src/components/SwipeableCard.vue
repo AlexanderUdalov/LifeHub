@@ -93,6 +93,7 @@ const onActionClick = (action: SwipeAction) => {
 .swipe-card {
     will-change: transform;
     transition: transform 0.25s ease;
+    padding: 5px;
 }
 
 .swipe-actions {

@@ -2,11 +2,13 @@
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
-import Textarea from 'primevue/textarea'
+import Editor from 'primevue/editor'
 import DatePicker from 'primevue/datepicker'
+import Checkbox from 'primevue/checkbox'
 import { computed, ref } from 'vue'
 import type { TaskItem } from '@/models/TaskItem'
-import type { GoalItem } from '@/models/GoalItem';
+import type { GoalItem } from '@/models/GoalItem'
+import { format, differenceInDays, isToday, isPast } from 'date-fns'
 
 const props = defineProps<{
     task: TaskItem | null
@@ -29,6 +31,32 @@ const localTask = ref<TaskItem>({
 const isEdit = computed(() => !!props.task)
 const canSave = computed(() => localTask.value.title.trim().length > 0)
 
+const dueDateText = computed(() => {
+    if (!localTask.value.dueDate) {
+        return 'дата и повтор'
+    }
+
+    const date = new Date(localTask.value.dueDate)
+    const base = format(date, 'dd.MM.yyyy')
+
+    if (isToday(date)) {
+        return `${base}, сегодня`
+    }
+
+    const diff = differenceInDays(date, new Date())
+
+    if (diff < 0) {
+        return `${base}, просрочено ${Math.abs(diff)} дн.`
+    }
+
+    return `${base}, через ${diff} дн.`
+})
+
+const dueDateClass = computed(() => ({
+    'due-overdue': localTask.value.dueDate && isPast(new Date(localTask.value.dueDate)),
+    'due-empty': !localTask.value.dueDate
+}))
+
 function save() {
     if (!canSave.value) return
     emit('save', localTask.value)
@@ -37,21 +65,45 @@ function save() {
 </script>
 
 <template>
-    <Dialog modal :visible="true" :closable="false" :header="isEdit ? 'Edit Task' : 'New Task'"
-        style="width: 90vw; max-width: 400px" @hide="emit('close')">
+    <Dialog modal :visible="true" :closable="false" style="width: 90vw; max-width: 400px" class="task-dialog"
+        @hide="emit('close')">
+        <template #header>
+            <div class="form-field">
+                <Checkbox />
+                <InputText id="title" v-model="localTask.title" placeholder="New task" size="large" fluid />
+            </div>
+
+        </template>
+
         <div class="form-field">
-            <label for="title">Title</label>
-            <InputText id="title" v-model="localTask.title" />
+            <!-- <div class="due-date-row" :class="dueDateClass" @click="duePanel?.toggle($event)"> -->
+            <div class="due-date-row" :class="dueDateClass">
+                <i class="pi pi-calendar" />
+                <span>{{ dueDateText }}</span>
+            </div>
+            <!-- 
+            <OverlayPanel ref="duePanel">
+                <DatePicker v-model="localTask.dueDate" inline dateFormat="dd.mm.yy" />
+                <Divider />
+                <Dropdown v-model="localTask.repeat" :options="repeatOptions" placeholder="Повтор" />
+            </OverlayPanel> -->
         </div>
 
         <div class="form-field">
-            <label for="description">Description</label>
-            <Textarea id="description" v-model="localTask.description" rows="3" />
-        </div>
-
-        <div class="form-field">
-            <label for="dueDate">Due Date</label>
-            <DatePicker id="dueDate" v-model="localTask.dueDate" showIcon dateFormat="yy-mm-dd" />
+            <Editor id="description" v-model="localTask.description" placeholder="Description"
+                editorStyle="height: 200px">
+                <template v-slot:toolbar>
+                    <span class="ql-formats">
+                        <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>
+                        <button v-tooltip.bottom="'Italic'" class="ql-italic"></button>
+                        <button v-tooltip.bottom="'Underline'" class="ql-underline"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                    </span>
+                </template>
+            </Editor>
         </div>
 
         <div v-if="props.goals?.length" class="form-field">
@@ -70,10 +122,8 @@ function save() {
 </template>
 
 <style scoped>
-.form-field {
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+:deep(.p-inputtext) {
+    border: none;
+    box-shadow: none;
 }
 </style>

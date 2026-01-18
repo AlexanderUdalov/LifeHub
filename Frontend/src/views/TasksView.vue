@@ -3,11 +3,16 @@ import { onMounted, ref, computed } from 'vue'
 import { tasksApi } from '@/api/TasksAPI'
 import type { TaskItem } from '@/models/TaskItem'
 
-import Accordion from 'primevue/accordion';
-import AccordionPanel from 'primevue/accordionpanel';
-import AccordionHeader from 'primevue/accordionheader';
-import AccordionContent from 'primevue/accordioncontent';
+import Accordion from 'primevue/accordion'
+import AccordionPanel from 'primevue/accordionpanel'
+import AccordionHeader from 'primevue/accordionheader'
+import AccordionContent from 'primevue/accordioncontent'
+import Badge from 'primevue/badge'
 import TaskCard from '@/components/TaskCard.vue'
+
+const emit = defineEmits<{
+  (e: 'edit-task', task: TaskItem): void
+}>()
 
 const tasks = ref<TaskItem[]>([])
 
@@ -44,35 +49,45 @@ const weekTasks = computed(() =>
 const completedTasks = computed(() =>
   tasks.value.filter(t => t.completeDate && isToday(new Date(t.completeDate)))
 )
+
+function onEditTask(task: TaskItem) {
+  emit('edit-task', task)
+}
+
 </script>
 
 <template>
   <Accordion value="0">
     <AccordionPanel value="0" class="tasks-list" v-if="overdueTasks.length">
-      <AccordionHeader>Просрочено</AccordionHeader>
+      <AccordionHeader>
+        <div class="tasks-list-header">
+          <span>Просрочено</span>
+          <Badge>{{ overdueTasks.length }} </Badge>
+        </div>
+      </AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in overdueTasks" :key="task.id" :task="task" />
+        <TaskCard v-for="task in overdueTasks" :key="task.id" :task="task" @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
 
     <AccordionPanel value="1" class="tasks-list" v-if="todayTasks.length">
       <AccordionHeader>Сегодня</AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in todayTasks" :key="task.id" :task="task" />
+        <TaskCard v-for="task in todayTasks" :key="task.id" :task="task" @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
 
     <AccordionPanel value="2" class="tasks-list" v-if="weekTasks.length">
       <AccordionHeader>На этой неделе</AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in weekTasks" :key="task.id" :task="task" />
+        <TaskCard v-for="task in weekTasks" :key="task.id" :task="task" @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
 
     <AccordionPanel value="3" class="tasks-list" v-if="completedTasks.length">
       <AccordionHeader>Выполнено</AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" />
+        <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
   </Accordion>
@@ -81,5 +96,13 @@ const completedTasks = computed(() =>
 <style scoped>
 .tasks-list {
   margin: 12px;
+}
+
+.tasks-list-header {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-right: 10px;
+  width: 100%;
 }
 </style>

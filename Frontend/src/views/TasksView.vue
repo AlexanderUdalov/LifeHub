@@ -105,4 +105,9 @@ function onEditTask(task: TaskItem) {
   margin-right: 10px;
   width: 100%;
 }
+
+:deep(.p-accordioncontent-wrapper) {
+  max-width: 100%;
+  overflow-x: hidden;
+}
 </style>

@@ -32,4 +32,29 @@ export const tasksApi = {
             setTimeout(() => resolve(mockTasks), 300)
         })
     },
+
+    async saveTask(task: TaskItem): Promise<TaskItem> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                if (task.id != null) {
+                    const index = mockTasks.findIndex(t => t.id === task.id);
+                    if (index !== -1) {
+                        mockTasks[index] = { ...mockTasks[index], ...task };
+                        resolve(mockTasks[index]);
+                        return;
+                    }
+                }
+
+                const newTask: TaskItem = {
+                    ...task,
+                    id: mockTasks.length
+                        ? Math.max(...mockTasks.map(t => t.id)) + 1
+                        : 1,
+                };
+
+                mockTasks.push(newTask);
+                resolve(newTask);
+            }, 300);
+        });
+    }
 }

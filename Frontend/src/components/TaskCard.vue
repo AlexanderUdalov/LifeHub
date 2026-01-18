@@ -28,6 +28,15 @@ const deadlineText = computed(() => {
   return new Date(props.task.dueDate).toLocaleDateString()
 })
 
+const descriptionPreview = computed(() => {
+  if (!props.task.description) return ''
+
+  const div = document.createElement('div')
+  div.innerHTML = props.task.description
+
+  return div.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+})
+
 onMounted(async () => {
   goal.value = { id: 1, title: 'GoalName', color: '#ff0000' };
 })
@@ -42,17 +51,17 @@ const archive = () => { }
 
 <template>
   <SwipeableCard :right-actions="[
-      {
-        icon: 'pi pi-trash',
-        bg: 'var(--red-500)',
-        onClick: () => remove()
-      },
-      {
-        icon: 'pi pi-flag',
-        bg: 'var(--orange-500)',
-        onClick: () => archive()
-      }
-    ]" @open="$emit('edit', task)">
+    {
+      icon: 'pi pi-trash',
+      bg: 'var(--red-500)',
+      onClick: () => remove()
+    },
+    {
+      icon: 'pi pi-flag',
+      bg: 'var(--orange-500)',
+      onClick: () => archive()
+    }
+  ]" @open="$emit('edit', task)">
     <Card class="task-card" :style="{ '--goal-color': goal?.color ?? 'transparent' }">
       <template #content>
         <div class="task-content">
@@ -62,8 +71,8 @@ const archive = () => { }
               {{ task.title }}
             </div>
 
-            <div v-if="task.description" class="task-description">
-              {{ task.description }}
+            <div v-if="descriptionPreview" class="task-description">
+              {{ descriptionPreview }}
             </div>
 
             <div class="task-meta">
@@ -90,13 +99,13 @@ const archive = () => { }
 <style scoped>
 .task-card {
   border-left: 4px solid var(--goal-color);
-  box-shadow: 0px 0px 5px 1px rgba(0,0,0,0.1);
+  box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.1);
 }
 
 .task-content {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
 }
 
 :deep(.p-card-body) {

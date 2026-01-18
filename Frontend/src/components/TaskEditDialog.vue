@@ -5,7 +5,7 @@ import InputText from 'primevue/inputtext'
 import Editor from 'primevue/editor'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { TaskItem } from '@/models/TaskItem'
 import type { GoalItem } from '@/models/GoalItem'
 import { format, differenceInDays, isToday, isPast } from 'date-fns'
@@ -30,6 +30,11 @@ const localTask = ref<TaskItem>({
 
 const isEdit = computed(() => !!props.task)
 const canSave = computed(() => localTask.value.title.trim().length > 0)
+
+const isCompleted = ref(false);
+watch(isCompleted, (val) => {
+    localTask.value.completeDate = val ? new Date() : undefined;
+});
 
 const dueDateText = computed(() => {
     if (!localTask.value.dueDate) {
@@ -69,7 +74,7 @@ function save() {
         @hide="emit('close')">
         <template #header>
             <div class="form-field">
-                <Checkbox />
+                <Checkbox v-if="isEdit" v-model="isCompleted"/>
                 <InputText id="title" v-model="localTask.title" placeholder="New task" size="large" fluid />
             </div>
 

@@ -15,6 +15,7 @@ import type { GoalItem } from '@/models/GoalItem'
 import type { TaskItem } from '@/models/TaskItem'
 import type { HabitItem } from '@/models/HabitItem'
 import type { AddictionItem } from '@/models/AddictionItem'
+import { tasksApi } from '@/api/TasksAPI'
 
 type ItemType = 'task' | 'habit' | 'addiction' | 'goal'
 type EditContext =
@@ -105,7 +106,7 @@ onMounted(async () => {
             :buttonProps="{ rounded: true }" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
-            @close="editContext = null" />
+            @close="editContext = null" @save="task => tasksApi.saveTask(task)" />
         <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" :goals="goals"
             @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"

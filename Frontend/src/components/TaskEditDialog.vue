@@ -6,26 +6,28 @@ import Editor from 'primevue/editor'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import { computed, ref, watch } from 'vue'
-import type { TaskItem } from '@/models/TaskItem'
 import type { GoalItem } from '@/models/GoalItem'
 import { format, differenceInDays, isToday, isPast } from 'date-fns'
+import type { CreateTaskRequest, TaskDTO, UpdateTaskRequest } from '@/api/TasksAPI'
 
 const props = defineProps<{
-    task: TaskItem | null
+    task: TaskDTO | null
     goals?: GoalItem[]
 }>()
 
 const emit = defineEmits<{
     (e: 'close'): void
-    (e: 'save', task: TaskItem): void
+    (e: 'create', task: CreateTaskRequest): void
+    (e: 'update', task: UpdateTaskRequest, id: string): void
 }>()
 
-const localTask = ref<TaskItem>({
-    id: props.task?.id ?? 0,
+const localTask = ref<TaskDTO>({
+    id: props.task?.id ?? '',
     title: props.task?.title ?? '',
     description: props.task?.description ?? '',
-    dueDate: props.task?.dueDate ? props.task.dueDate : undefined,
-    completeDate: props.task?.completeDate ? props.task.completeDate : undefined,
+    dueDate: props.task?.dueDate ? props.task.dueDate : '',
+    completionDate: props.task?.completionDate ? props.task.completionDate : '',
+    goalId: props.task?.goalId ? props.task.goalId : ''
 })
 
 const isEdit = computed(() => !!props.task)
@@ -33,7 +35,7 @@ const canSave = computed(() => localTask.value.title.trim().length > 0)
 
 const isCompleted = ref(false);
 watch(isCompleted, (val) => {
-    localTask.value.completeDate = val ? new Date() : undefined;
+    localTask.value.completionDate = val ? new Date().toDateString() : '';
 });
 
 const dueDateText = computed(() => {
@@ -62,9 +64,37 @@ const dueDateClass = computed(() => ({
     'due-empty': !localTask.value.dueDate
 }))
 
+const descriptionModel = computed({
+    get() {
+        return localTask.value.description ?? "";
+    },
+    set(value) {
+        localTask.value.description = value || null;
+    }
+})
+
 function save() {
     if (!canSave.value) return
-    emit('save', localTask.value)
+    if (isEdit.value) {
+        const request: UpdateTaskRequest = {
+            title: localTask.value.title,
+            description: localTask.value.description,
+            dueDate: localTask.value.dueDate,
+            completionDate: localTask.value.completionDate,
+            goalId: localTask.value.goalId,
+        }
+
+        emit('update', request, localTask.value.id)
+    } else {
+        const request: CreateTaskRequest = {
+            title: localTask.value.title,
+            description: localTask.value.description,
+            dueDate: localTask.value.dueDate,
+            goalId: localTask.value.goalId,
+        }
+
+        emit('create', request)
+    }
     emit('close')
 }
 </script>
@@ -74,7 +104,7 @@ function save() {
         @hide="emit('close')">
         <template #header>
             <div class="form-field">
-                <Checkbox v-if="isEdit" v-model="isCompleted"/>
+                <Checkbox v-if="isEdit" v-model="isCompleted" />
                 <InputText id="title" v-model="localTask.title" placeholder="New task" size="large" fluid />
             </div>
 
@@ -95,8 +125,7 @@ function save() {
         </div>
 
         <div class="form-field">
-            <Editor id="description" v-model="localTask.description" placeholder="Description"
-                editorStyle="height: 200px">
+            <Editor id="description" v-model="descriptionModel" placeholder="Description" editorStyle="height: 200px">
                 <template v-slot:toolbar>
                     <span class="ql-formats">
                         <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>

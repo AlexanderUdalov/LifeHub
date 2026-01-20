@@ -9,7 +9,7 @@ public class TaskItem
     public string? Description { get; set; }
 
     public DateTime? DueDate { get; set; }
-    public bool IsCompleted { get; set; }
+    public DateTime? CompletionDate { get; set; }
 
     public Guid? GoalId { get; set; }
     public Goal? Goal { get; set; }

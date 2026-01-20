@@ -12,10 +12,9 @@ import AddictionEditDialog from '@/components/AddictionEditDialog.vue'
 import GoalEditDialog from '@/components/GoalEditDialog.vue'
 import { goalsApi } from '@/api/GoalsAPI'
 import type { GoalItem } from '@/models/GoalItem'
-import type { TaskItem } from '@/models/TaskItem'
 import type { HabitItem } from '@/models/HabitItem'
 import type { AddictionItem } from '@/models/AddictionItem'
-import { tasksApi } from '@/api/TasksAPI'
+import { createTask, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 
 type ItemType = 'task' | 'habit' | 'addiction' | 'goal'
 type EditContext =
@@ -95,7 +94,7 @@ onMounted(async () => {
     <div class="layout">
         <main class="content">
             <RouterView v-slot="{ Component }">
-                <component :is="Component" @edit-task="(task: TaskItem) => editContext = { type: 'task', item: task }"
+                <component :is="Component" @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
                     @edit-habit="(habit: HabitItem) => editContext = { type: 'habit', item: habit }"
                     @edit-addiction="(addiction: AddictionItem) => editContext = { type: 'addiction', item: addiction }"
                     @edit-goal="(goal: GoalItem) => editContext = { type: 'goal', item: goal }" />
@@ -106,7 +105,8 @@ onMounted(async () => {
             :buttonProps="{ rounded: true }" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
-            @close="editContext = null" @save="task => tasksApi.saveTask(task)" />
+            @close="editContext = null" @update="(request: UpdateTaskRequest, id: string) => updateTask(id, request)"
+            @create="(request: CreateTaskRequest) => createTask(request)" />
         <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" :goals="goals"
             @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"

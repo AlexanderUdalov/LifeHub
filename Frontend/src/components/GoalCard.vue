@@ -7,13 +7,13 @@ import Button from 'primevue/button'
 import TaskCard from './TaskCard.vue'
 import HabitCard from './HabitCard.vue'
 import AddictionCard from './AddictionCard.vue'
-import type { TaskItem } from '@/models/TaskItem'
 import type { HabitWithHistory } from '@/models/HabitItem'
 import type { AddictionItem } from '@/models/AddictionItem'
+import type { TaskDTO } from '@/api/TasksAPI'
 
 const props = defineProps<{
     goal: GoalItem
-    tasksMap: Record<number, TaskItem>
+    tasksMap: Record<number, TaskDTO>
     habitsMap: Record<number, HabitWithHistory>
     addictionsMap: Record<number, AddictionItem>
 }>()

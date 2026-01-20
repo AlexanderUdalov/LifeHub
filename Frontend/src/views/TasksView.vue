@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { tasksApi } from '@/api/TasksAPI'
-import type { TaskItem } from '@/models/TaskItem'
 
 import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
@@ -9,15 +7,16 @@ import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
 import TaskCard from '@/components/TaskCard.vue'
+import { getTasks, type TaskDTO } from '@/api/TasksAPI'
 
 const emit = defineEmits<{
-  (e: 'edit-task', task: TaskItem): void
+  (e: 'edit-task', task: TaskDTO): void
 }>()
 
-const tasks = ref<TaskItem[]>([])
+const tasks = ref<TaskDTO[]>([])
 
 onMounted(async () => {
-  tasks.value = await tasksApi.getTasks()
+  tasks.value = await getTasks()
 })
 
 function isToday(date: Date) {
@@ -35,22 +34,22 @@ function isThisWeek(date: Date) {
 }
 
 const overdueTasks = computed(() =>
-  tasks.value.filter(t => !t.completeDate && t.dueDate && new Date(t.dueDate) < new Date())
+  tasks.value.filter(t => !t.completionDate && t.dueDate && new Date(t.dueDate) < new Date())
 )
 
 const todayTasks = computed(() =>
-  tasks.value.filter(t => !t.completeDate && t.dueDate && isToday(new Date(t.dueDate)))
+  tasks.value.filter(t => !t.completionDate && t.dueDate && isToday(new Date(t.dueDate)))
 )
 
 const weekTasks = computed(() =>
-  tasks.value.filter(t => !t.completeDate && t.dueDate && isThisWeek(new Date(t.dueDate)))
+  tasks.value.filter(t => !t.completionDate && t.dueDate && isThisWeek(new Date(t.dueDate)))
 )
 
 const completedTasks = computed(() =>
-  tasks.value.filter(t => t.completeDate && isToday(new Date(t.completeDate)))
+  tasks.value.filter(t => t.completionDate && isToday(new Date(t.completionDate)))
 )
 
-function onEditTask(task: TaskItem) {
+function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
 }
 

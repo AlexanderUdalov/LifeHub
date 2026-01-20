@@ -1,60 +1,31 @@
-import type { TaskItem } from "@/models/TaskItem";
+import type { paths, components } from "./schema";
+import axios from "axios";
 
-const mockTasks: TaskItem[] = [
-    {
-        id: 1,
-        title: 'Buy gym membership',
-        dueDate: new Date("December 25, 2025 13:30:00")
-    },
-    {
-        id: 2,
-        title: 'Install calorie tracker',
-        description: 'Find a good app for daily calorie tracking',
-        completeDate: new Date("December 28, 2025")
-    },
-    {
-        id: 3,
-        title: 'Test3',
-        description: 'Find a good app for daily calorie tracking',
-        dueDate: new Date("December 30, 2025 13:30:00")
-    },
-    {
-        id: 4,
-        title: 'Test4',
-        completeDate: new Date("December 28, 2025"),
-        dueDate: new Date("December 25, 2025")
-    }
-];
+const api = axios.create({
+    baseURL: "/api",
+    withCredentials: true
+});
 
-export const tasksApi = {
-    async getTasks(): Promise<TaskItem[]> {
-        return new Promise(resolve => {
-            setTimeout(() => resolve(mockTasks), 300)
-        })
-    },
+export type TaskDTO = components["schemas"]["TaskDTO"];
 
-    async saveTask(task: TaskItem): Promise<TaskItem> {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                if (task.id != null) {
-                    const index = mockTasks.findIndex(t => t.id === task.id);
-                    if (index !== -1) {
-                        mockTasks[index] = { ...mockTasks[index], ...task };
-                        resolve(mockTasks[index]);
-                        return;
-                    }
-                }
+export type CreateTaskRequest = components["schemas"]["CreateTaskRequest"];
+export type UpdateTaskRequest = components["schemas"]["UpdateTaskRequest"];
 
-                const newTask: TaskItem = {
-                    ...task,
-                    id: mockTasks.length
-                        ? Math.max(...mockTasks.map(t => t.id)) + 1
-                        : 1,
-                };
+export async function getTasks(): Promise<TaskDTO[]> {
+    const { data } = await api.get<TaskDTO[]>("/tasks");
+    return data;
+}
 
-                mockTasks.push(newTask);
-                resolve(newTask);
-            }, 300);
-        });
-    }
+export async function createTask(request: CreateTaskRequest): Promise<TaskDTO> {
+    const { data } = await api.post<TaskDTO>("/tasks", request);
+    return data;
+}
+
+export async function updateTask(id: string, request: UpdateTaskRequest): Promise<TaskDTO> {
+    const { data } = await api.put<TaskDTO>(`/tasks/${id}`, request);
+    return data;
+}
+
+export async function deleteTask(id: string): Promise<void> {
+    await api.delete(`/tasks/${id}`);
 }

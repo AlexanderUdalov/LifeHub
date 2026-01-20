@@ -2,22 +2,21 @@
 import { onMounted, ref } from 'vue'
 import GoalCard from '@/components/GoalCard.vue'
 import { goalsApi } from '@/api/GoalsAPI'
-import { tasksApi } from '@/api/TasksAPI'
 import { habitsApi } from '@/api/HabitsAPI'
 import { addictionsApi } from '@/api/AddictionAPI'
 import type { GoalItem } from '@/models/GoalItem'
-import type { TaskItem } from '@/models/TaskItem'
 import type { HabitWithHistory } from '@/models/HabitItem'
 import type { AddictionItem } from '@/models/AddictionItem'
+import { getTasks, type TaskDTO } from '@/api/TasksAPI'
 
 const goals = ref<GoalItem[]>([])
-const tasksMap = ref<Record<number, TaskItem>>({})
+const tasksMap = ref<Record<number, TaskDTO>>({})
 const habitsMap = ref<Record<number, HabitWithHistory>>({})
 const addictionsMap = ref<Record<number, AddictionItem>>({})
 
 onMounted(async () => {
     goals.value = await goalsApi.getGoals()
-    const tasks = await tasksApi.getTasks()
+    const tasks = await getTasks()
 
     tasksMap.value = Object.fromEntries(
         tasks.map(task => [task.id, task])

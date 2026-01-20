@@ -2,16 +2,16 @@
 import Card from 'primevue/card'
 import Checkbox from 'primevue/checkbox'
 import { computed, onMounted, ref, watch } from 'vue'
-import type { TaskItem } from '@/models/TaskItem'
 import type { ColoredTagEntity } from '@/models/ColoredTagEntity';
 import SwipeableCard from './SwipeableCard.vue';
+import type { TaskDTO } from '@/api/TasksAPI';
 
-const props = defineProps<{ task: TaskItem }>()
+const props = defineProps<{ task: TaskDTO }>()
 defineEmits<{
-  (e: 'edit', task: TaskItem): void
+  (e: 'edit', task: TaskDTO): void
 }>()
 
-const localCompleted = ref<boolean>(!!props.task.completeDate)
+const localCompleted = ref<boolean>(!!props.task.completionDate)
 const goal = ref<ColoredTagEntity | null>(null)
 
 watch(localCompleted, value => {

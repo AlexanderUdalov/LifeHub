@@ -12,13 +12,15 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "api:gen": "openapi-typescript http://localhost:5091/openapi/v1.json -o src/api/schema.ts"
   },
   "dependencies": {
     "@primeuix/themes": "^2.0.2",
     "@vueuse/gesture": "^2.0.0",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
+    "pinia": "^3.0.4",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "quill": "^2.0.3",

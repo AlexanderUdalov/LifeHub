@@ -33,26 +33,26 @@ const tabMenuItems = [
         icon: 'pi pi-check-square',
         route: '/tasks',
     },
-    {
-        label: 'Habbits',
-        icon: 'pi pi-sync',
-        route: '/habbits',
-    },
-    {
-        label: 'Addiсtions',
-        icon: 'pi pi-ban',
-        route: '/addiсtions',
-    },
-    {
-        label: 'Goals',
-        icon: 'pi pi-flag',
-        route: '/goals',
-    },
-    {
-        label: 'Journal',
-        icon: 'pi pi-book',
-        route: '/journal',
-    },
+    // {
+    //     label: 'Habbits',
+    //     icon: 'pi pi-sync',
+    //     route: '/habbits',
+    // },
+    // {
+    //     label: 'Addiсtions',
+    //     icon: 'pi pi-ban',
+    //     route: '/addiсtions',
+    // },
+    // {
+    //     label: 'Goals',
+    //     icon: 'pi pi-flag',
+    //     route: '/goals',
+    // },
+    // {
+    //     label: 'Journal',
+    //     icon: 'pi pi-book',
+    //     route: '/journal',
+    // },
     {
         label: 'Profile',
         icon: 'pi pi-user',
@@ -66,21 +66,21 @@ const fabItems = [
         icon: 'pi pi-check-square',
         command: () => (editContext.value = { type: 'task', item: null })
     },
-    {
-        label: 'Habit',
-        icon: 'pi pi-calendar',
-        command: () => (editContext.value = { type: 'habit', item: null })
-    },
-    {
-        label: 'Addiction',
-        icon: 'pi pi-ban',
-        command: () => (editContext.value = { type: 'addiction', item: null })
-    },
-    {
-        label: 'Goal',
-        icon: 'pi pi-flag',
-        command: () => (editContext.value = { type: 'goal', item: null })
-    }
+    // {
+    //     label: 'Habit',
+    //     icon: 'pi pi-calendar',
+    //     command: () => (editContext.value = { type: 'habit', item: null })
+    // },
+    // {
+    //     label: 'Addiction',
+    //     icon: 'pi pi-ban',
+    //     command: () => (editContext.value = { type: 'addiction', item: null })
+    // },
+    // {
+    //     label: 'Goal',
+    //     icon: 'pi pi-flag',
+    //     command: () => (editContext.value = { type: 'goal', item: null })
+    // }
 ]
 
 const goals = ref<GoalItem[]>([])

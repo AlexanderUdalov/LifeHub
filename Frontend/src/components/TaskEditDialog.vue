@@ -140,14 +140,14 @@ function save() {
             </Editor>
         </div>
 
-        <div v-if="props.goals?.length" class="form-field">
+        <!-- <div v-if="props.goals?.length" class="form-field">
             <label for="goal">Assign to Goal</label>
             <select id="goal" v-model.number="localTask.goalId">
                 <option v-for="goal in props.goals" :key="goal.id" :value="goal.id">
                     {{ goal.title }}
                 </option>
             </select>
-        </div>
+        </div> -->
         <template #footer>
             <Button label="Cancel" text @click="emit('close')" />
             <Button :label="isEdit ? 'Save' : 'Create'" :disabled="!canSave" @click="save" />

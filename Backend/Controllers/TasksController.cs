@@ -1,28 +1,40 @@
 using LifeHub.DTOs;
 using LifeHub.Models;
+using LifeHub.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LifeHub.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/tasks")]
-public class TasksController : ControllerBase
+public class TasksController(ApplicationContext context) : ControllerBase
 {
-    private static readonly List<TaskItem> _tasks = [];
-
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<TaskDTO>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<TaskDTO>> GetAll()
+    public async Task<ActionResult<IEnumerable<TaskDTO>>> GetAll()
     {
-        return _tasks.Select(t => t.ToDTO()).ToList();
+        var userId = User.GetUserId();
+        var tasks = await context.Tasks
+            .AsNoTracking()
+            .Where(t => t.UserId == userId)
+            .Select(t => t.ToDTO())
+            .ToListAsync();
+
+        return tasks;
     }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(TaskDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<TaskDTO> Get(Guid id)
+    public async Task<ActionResult<TaskDTO>> Get(Guid id)
     {
-        var task = _tasks.FirstOrDefault(x => x.Id == id);
+        var task = await context.Tasks
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
         if (task is null)
             return NotFound();
 
@@ -31,19 +43,21 @@ public class TasksController : ControllerBase
 
     [HttpPost]
     [ProducesResponseType(typeof(TaskDTO), StatusCodes.Status201Created)]
-    public ActionResult<TaskDTO> Create(CreateTaskRequest request)
+    public async Task<ActionResult<TaskDTO>> Create(CreateTaskRequest request)
     {
+        var userId = User.GetUserId();
         var task = new TaskItem
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(), // позже из auth
+            UserId = userId,
             Title = request.Title,
             Description = request.Description,
             DueDate = request.DueDate,
             GoalId = request.GoalId
         };
 
-        _tasks.Add(task);
+        context.Tasks.Add(task);
+        await context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(Get), new { id = task.Id }, task.ToDTO());
     }
@@ -51,30 +65,36 @@ public class TasksController : ControllerBase
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(TaskDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<TaskDTO> Update(Guid id, UpdateTaskRequest request)
+    public async Task<ActionResult<TaskDTO>> Update(Guid id, UpdateTaskRequest request)
     {
-        var task = _tasks.FirstOrDefault(x => x.Id == id);
+        var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == id);
+
         if (task is null)
             return NotFound();
 
-        task.Title = request.Title;
-        task.Description = request.Description;
-        task.DueDate = request.DueDate;
-        task.CompletionDate = request.CompletionDate;
-        task.GoalId = request.GoalId;
+        task.Title = request.Title ?? task.Title;
+        task.Description = request.Description ?? task.Description;
+        task.DueDate = request.DueDate ?? task.DueDate;
+        task.CompletionDate = request.CompletionDate ?? task.CompletionDate;
+        task.GoalId = request.GoalId ?? task.GoalId;
+
+        await context.SaveChangesAsync();
 
         return task.ToDTO();
     }
 
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var task = _tasks.FirstOrDefault(x => x.Id == id);
+        var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == id);
+
         if (task is null)
             return NotFound();
 
-        _tasks.Remove(task);
+        context.Tasks.Remove(task);
+        await context.SaveChangesAsync();
+
         return NoContent();
     }
 }

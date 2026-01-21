@@ -24,10 +24,10 @@ const emit = defineEmits<{
 const localTask = ref<TaskDTO>({
     id: props.task?.id ?? '',
     title: props.task?.title ?? '',
-    description: props.task?.description ?? '',
-    dueDate: props.task?.dueDate ? props.task.dueDate : '',
-    completionDate: props.task?.completionDate ? props.task.completionDate : '',
-    goalId: props.task?.goalId ? props.task.goalId : ''
+    description: props.task?.description ?? null,
+    dueDate: props.task?.dueDate ? props.task.dueDate : null,
+    completionDate: props.task?.completionDate ? props.task.completionDate : null,
+    goalId: props.task?.goalId ? props.task.goalId : null
 })
 
 const isEdit = computed(() => !!props.task)

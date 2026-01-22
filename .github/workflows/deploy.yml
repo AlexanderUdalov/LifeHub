@@ -38,14 +38,26 @@ jobs:
         cp -r dist/* ../../publish/frontend
 
     # -------- DEPLOY --------
-    - name: Upload to VPS
+    - name: Upload artifacts
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_KEY }}
-        source: "publish/*"
-        target: ${{ secrets.VPS_PATH }}
+        source: "publish"
+        target: "/home/${{ secrets.VPS_USER }}"
+
+    - name: Deploy via rsync
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_KEY }}
+        script: |
+          mkdir -p /var/www/lifehub/backend /var/www/lifehub/frontend
+
+          rsync -av --delete ~/publish/backend/ /var/www/lifehub/backend/
+          rsync -av --delete ~/publish/frontend/ /var/www/lifehub/frontend/
 
     - name: Restart backend
       uses: appleboy/ssh-action@v1.0.3

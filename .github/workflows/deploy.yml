@@ -31,11 +31,26 @@ jobs:
 
     - name: Build Frontend
       run: |
-        cd Frontend
-        npm ci
-        npm run build
-        mkdir -p ../../publish/frontend
-        cp -r dist/* ../../publish/frontend
+        npm ci --prefix Frontend
+        npm run build --prefix Frontend
+
+        mkdir -p publish/frontend
+        cp -r Frontend/dist/* publish/frontend/
+
+    - name: Debug frontend artifacts
+      run: |
+        echo "=== repo root ==="
+        pwd
+        ls -la
+
+        echo "=== publish ==="
+        ls -la publish || true
+
+        echo "=== publish/frontend ==="
+        ls -la publish/frontend || true
+
+        echo "=== Frontend/dist ==="
+        ls -la Frontend/dist || true
 
     # -------- DEPLOY --------
     - name: Upload artifacts

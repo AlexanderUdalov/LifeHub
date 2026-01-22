@@ -35,7 +35,7 @@ jobs:
         npm ci
         npm run build
         mkdir -p ../../publish/frontend
-        cp -r dist ../../publish/frontend
+        cp -r dist/* ../../publish/frontend
 
     # -------- DEPLOY --------
     - name: Upload to VPS

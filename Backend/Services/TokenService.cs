@@ -1,5 +1,3 @@
-
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace LifeHub.Services;
@@ -7,7 +5,8 @@ public static class ClaimsPrincipalExtensions
 {
     public static Guid GetUserId(this ClaimsPrincipal user)
     {
-        var id = user.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        // todo: why JwtRegisteredClaimNames.Sub not working?
+        var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.Parse(id!);
     }
 }

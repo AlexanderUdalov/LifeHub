@@ -49,6 +49,10 @@ const completedTasks = computed(() =>
   tasks.value.filter(t => t.completionDate && isToday(new Date(t.completionDate)))
 )
 
+const inboxTasks = computed(() =>
+  tasks.value.filter(t => !overdueTasks.value.includes(t) && !todayTasks.value.includes(t) && !weekTasks.value.includes(t) && !completedTasks.value.includes(t))
+)
+
 function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
 }
@@ -87,6 +91,13 @@ function onEditTask(task: TaskDTO) {
       <AccordionHeader>Выполнено</AccordionHeader>
       <AccordionContent>
         <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" @edit="onEditTask" />
+      </AccordionContent>
+    </AccordionPanel>
+
+    <AccordionPanel value="4" class="tasks-list" v-if="inboxTasks.length">
+      <AccordionHeader>Входящие</AccordionHeader>
+      <AccordionContent>
+        <TaskCard v-for="task in inboxTasks" :key="task.id" :task="task" @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
   </Accordion>

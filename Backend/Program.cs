@@ -6,10 +6,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var folder = Environment.SpecialFolder.LocalApplicationData;
-var path = Environment.GetFolderPath(folder);
-var dbPath = Path.Join(path, "lifehub.db");
-
+var dbPath = Path.Combine(AppContext.BaseDirectory, "lifehub.db");
 builder.Services.AddDbContext<ApplicationContext>(options =>
 {
     options.UseSqlite($"Data Source={dbPath}");

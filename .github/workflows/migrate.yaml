@@ -21,13 +21,14 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Restore dotnet tools
-      working-directory: Backend
-      run: dotnet tool restore
+    - name: Install dotnet-ef
+      run: |
+        dotnet tool install --global dotnet-ef --version 10.0.2
+        echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
     - name: Build migration bundle
       run: |
-        dotnet tool run ef migrations bundle \
+        dotnet ef migrations bundle \
           --project Backend/LifeHub-Backend.csproj \
           --startup-project Backend/LifeHub-Backend.csproj \
           --runtime linux-x64 \

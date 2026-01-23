@@ -26,6 +26,9 @@ jobs:
         dotnet tool install --global dotnet-ef --version 10.0.2
         echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
+    - name: Restore NuGet packages
+      run: dotnet restore Backend/LifeHub-Backend.csproj
+
     - name: Build migration bundle
       run: |
         dotnet ef migrations bundle \

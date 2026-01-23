@@ -27,7 +27,7 @@ jobs:
 
     - name: Build migration bundle
       run: |
-        dotnet ef migrations bundle \
+        dotnet tool run dotnet-ef migrations bundle \
           --project Backend/LifeHub-Backend.csproj \
           --startup-project Backend/LifeHub-Backend.csproj \
           --runtime linux-x64 \

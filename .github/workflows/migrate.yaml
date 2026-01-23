@@ -1,0 +1,50 @@
+name: Migrate database
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type YES to apply migrations"
+        required: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'YES'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Build migration bundle
+      run: |
+        dotnet ef migrations bundle \
+          --project Backend/LifeHub-Backend.csproj \
+          --startup-project Backend/LifeHub-Backend.csproj \
+          --runtime linux-x64 \
+          --configuration Release \
+          --output publish/migrate
+
+    - name: Upload bundle
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_KEY }}
+        source: "publish/migrate"
+        target: "/home/${{ secrets.VPS_USER }}"
+
+    - name: Run migrations
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_KEY }}
+        script: |
+          chmod +x ~/publish/migrate
+          ~/publish/migrate

@@ -27,7 +27,7 @@ jobs:
         echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
     - name: Restore NuGet packages
-      run: dotnet restore Backend/LifeHub-Backend.csproj
+      run: dotnet restore Backend/LifeHub-Backend.csproj -r linux-x64
 
     - name: Build migration bundle
       run: |

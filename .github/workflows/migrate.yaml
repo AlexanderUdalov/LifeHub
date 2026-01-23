@@ -29,6 +29,9 @@ jobs:
     - name: Restore NuGet packages
       run: dotnet restore Backend/LifeHub-Backend.csproj -r linux-x64
 
+    - name: Build
+      run: dotnet build Backend/LifeHub-Backend.csproj -c Release -r linux-x64
+
     - name: Build migration bundle
       run: |
         dotnet ef migrations bundle \

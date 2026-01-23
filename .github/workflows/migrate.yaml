@@ -58,5 +58,6 @@ jobs:
         key: ${{ secrets.VPS_KEY }}
         script: |
           export Jwt__Key="${{ secrets.JWT_KEY }}"
-          chmod +x ~/publish/migrate
-          ~/publish/migrate
+          rsync -av --delete ~/publish/migrate /var/www/lifehub/backend/migrate
+          chmod +x /var/www/lifehub/backend/migrate
+          /var/www/lifehub/backend/migrate

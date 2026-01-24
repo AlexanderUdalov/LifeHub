@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "login": "Логин",
+    "registration": "Регистрация",
+    "processing": "Загрузка",
+    "registerToLogin": "Уже есть аккаунт? Войти",
+    "loginToRegister": "Нет аккаунта? Зарегистрироваться"
+  },
+  "errors": {
+    "unknown": "Неизвестная ошибка"
+  }
+}

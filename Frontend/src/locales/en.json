@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "login": "Login",
+    "registration": "Register",
+    "processing": "Processing",
+    "registerToLogin": "Already have an account? Sign In",
+    "loginToRegister": "Need an account? Register"
+  },
+  "errors": {
+    "unknown": "Unknown error"
+  }
+}

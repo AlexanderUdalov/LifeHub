@@ -11,5 +11,6 @@ export async function login(request: LoginRequest) {
 }
 
 export async function register(request: RegisterRequest) {
-    await api.post("/auth/register", request);
+    const { data } = await api.post<AuthResponse>("/auth/register", request);
+    return data.token as string;
 }

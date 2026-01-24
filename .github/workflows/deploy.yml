@@ -37,21 +37,6 @@ jobs:
         mkdir -p publish/frontend
         cp -r Frontend/dist/* publish/frontend/
 
-    - name: Debug frontend artifacts
-      run: |
-        echo "=== repo root ==="
-        pwd
-        ls -la
-
-        echo "=== publish ==="
-        ls -la publish || true
-
-        echo "=== publish/frontend ==="
-        ls -la publish/frontend || true
-
-        echo "=== Frontend/dist ==="
-        ls -la Frontend/dist || true
-
     # -------- DEPLOY --------
     - name: Upload artifacts
       uses: appleboy/scp-action@v0.1.7
@@ -73,6 +58,15 @@ jobs:
 
           rsync -av --delete ~/publish/backend/ /var/www/lifehub/backend/
           rsync -av --delete ~/publish/frontend/ /var/www/lifehub/frontend/
+
+    - name: Update .env file on VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_KEY }}
+        script: |
+          echo "Jwt__Key=${{ secrets.JWT_KEY }}" > /var/www/lifehub/backend/.env
 
     - name: Restart backend
       uses: appleboy/ssh-action@v1.0.3

@@ -27,7 +27,8 @@
     "quill": "^2.0.3",
     "vue": "^3.5.26",
     "vue-i18n": "^11.2.8",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.3",

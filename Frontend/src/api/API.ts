@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 import router from "@/router";
-import { ApiError } from "./Errors";
 
 export const api = axios.create({
   baseURL: "/api"
@@ -22,14 +21,6 @@ api.interceptors.response.use(
       router.push("/login");
       return Promise.reject(error);
     }
-
-    const code =
-      error.response?.data?.code ??
-      error.response?.data?.error ??
-      'UNKNOWN';
-
-    return Promise.reject(
-      new ApiError(code, error.response?.status)
-    );
+    return Promise.reject(error);
   }
 );

@@ -4,9 +4,15 @@
     "registration": "Register",
     "processing": "Processing",
     "registerToLogin": "Already have an account? Sign In",
-    "loginToRegister": "Need an account? Register"
+    "loginToRegister": "Need an account? Register",
+    "nickname": "Nickname",
+    "email": "Email",
+    "password": "Password",
+    "requiredField": "Required field"
   },
   "errors": {
-    "unknown": "Unknown error"
+    "unknown": "Unknown error",
+    "invalidCredentials": "Incorrect email or password",
+    "serverError": "Server error"
   }
 }

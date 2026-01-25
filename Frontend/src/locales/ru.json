@@ -4,9 +4,15 @@
     "registration": "Регистрация",
     "processing": "Загрузка",
     "registerToLogin": "Уже есть аккаунт? Войти",
-    "loginToRegister": "Нет аккаунта? Зарегистрироваться"
+    "loginToRegister": "Нет аккаунта? Зарегистрироваться",
+    "nickname": "Никнейм",
+    "password": "Пароль",
+    "email": "Email",
+    "requiredField": "Обязательное поле"
   },
   "errors": {
-    "unknown": "Неизвестная ошибка"
+    "unknown": "Неизвестная ошибка",
+    "invalidCredentials": "Неправильный логин или пароль",
+    "serverError": "Ошибка сервера"
   }
 }

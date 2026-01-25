@@ -9,7 +9,7 @@ export function useApiError() {
     };
 
     const apiErrorMap: ErrorMapping = {
-        "400": t("errors.invalidCredentials"),
+        "401": t("errors.invalidCredentials"),
         "500": t("errors.serverError"),
         // "400:EMAIL_EXISTS": "errors.emailAlreadyExists",
         // "401:INVALID_TOKEN": "errors.invalidToken"

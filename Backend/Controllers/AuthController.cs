@@ -37,7 +37,7 @@ public class AuthController(ApplicationContext context, IConfiguration config) :
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        return Ok();
+        return Ok(new AuthResponse(new JwtSecurityTokenHandler().WriteToken(CreateJwtToken(user))));
     }
 
     [HttpPost("login")]
@@ -58,8 +58,13 @@ public class AuthController(ApplicationContext context, IConfiguration config) :
         if (result == PasswordVerificationResult.Failed)
             return Unauthorized();
 
+        return Ok(new AuthResponse(new JwtSecurityTokenHandler().WriteToken(CreateJwtToken(user))));
+    }
+
+    private JwtSecurityToken CreateJwtToken(User user)
+    {
         var claims = new[]
-        {
+                {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(ClaimTypes.Name, user.Name)
@@ -77,7 +82,6 @@ public class AuthController(ApplicationContext context, IConfiguration config) :
                 SecurityAlgorithms.HmacSha256
             )
         );
-
-        return Ok(new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token)));
+        return token;
     }
 }

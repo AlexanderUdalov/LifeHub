@@ -6,8 +6,7 @@ import LoginView from '@/views/LoginView.vue'
 <template>
   <div class="app-shell">
     <div class="phone-frame">
-      <!-- <RouterView /> -->
-      <LoginView></LoginView>
+      <RouterView />
     </div>
   </div>
 </template>

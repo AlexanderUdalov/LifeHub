@@ -1,172 +1,149 @@
 <script setup lang="ts">
 import Card from 'primevue/card'
 import Checkbox from 'primevue/checkbox'
-import { computed, onMounted, ref, watch } from 'vue'
-import type { ColoredTagEntity } from '@/models/ColoredTagEntity';
-import SwipeableCard from './SwipeableCard.vue';
+import { computed, ref, watch } from 'vue'
 import type { TaskDTO } from '@/api/TasksAPI';
 
 const props = defineProps<{ task: TaskDTO }>()
-defineEmits<{
+const emit = defineEmits<{
   (e: 'edit', task: TaskDTO): void
 }>()
 
 const localCompleted = ref<boolean>(!!props.task.completionDate)
-const goal = ref<ColoredTagEntity | null>(null)
 
 watch(localCompleted, value => {
-  console.log('Task completed changed:', value)
+  props.task.completionDate = value ? new Date().toISOString() : null
 })
 
 const isOverdue = computed(() => {
   if (!props.task.dueDate || localCompleted.value) return false
-  return new Date(props.task.dueDate) < new Date()
+
+  const today = startOfDay(new Date())
+  const due = startOfDay(new Date(props.task.dueDate))
+
+  return due < today;
 })
+
+function startOfDay(date: Date) {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function diffInDays(from: Date, to: Date) {
+  const msPerDay = 24 * 60 * 60 * 1000
+  return Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / msPerDay)
+}
+
+function getDaysDiffString(target: Date): string {
+  const now = new Date()
+  const due = new Date(target)
+
+  const daysDiff = diffInDays(now, due)
+  if (daysDiff === 0) return 'Сегодня'
+  if (daysDiff === 1) return 'Завтра'
+  if (daysDiff === -1) return 'Вчера'
+
+  if (daysDiff > 1 && daysDiff <= 7) {
+    return `Через ${daysDiff} дн`
+  }
+
+  if (daysDiff < -1 && daysDiff >= -7) {
+    return `${Math.abs(daysDiff)} дн назад`
+  }
+
+  // Если дальше недели — можно день недели
+  if (daysDiff > 0 && daysDiff <= 14) {
+    return `В следующий ${due.toLocaleDateString('ru-RU', { weekday: 'long' })}`
+  }
+
+  // Фолбэк — обычная дата
+  return due.toLocaleString('ru-RU')
+}
+
+function getTimeString(date: Date) {
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+
+  // Если время ровно 00:00 — считаем, что его нет
+  if (hours === 0 && minutes === 0) return null
+
+  return date.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 const deadlineText = computed(() => {
   if (!props.task.dueDate) return null
-  return new Date(props.task.dueDate).toLocaleDateString()
+
+  const due = new Date(props.task.dueDate)
+  const dayText = getDaysDiffString(due)
+  const timeText = getTimeString(due)
+
+  return timeText ? `${dayText}, ${timeText}` : dayText;
 })
-
-const descriptionPreview = computed(() => {
-  if (!props.task.description) return ''
-
-  const div = document.createElement('div')
-  div.innerHTML = props.task.description
-
-  return div.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-})
-
-onMounted(async () => {
-  goal.value = { id: 1, title: 'GoalName', color: '#ff0000' };
-})
-
-// временно
-const isRecurring = true
-
-const remove = () => { }
-const archive = () => { }
 </script>
 
 
 <template>
-  <SwipeableCard :right-actions="[
-    {
-      icon: 'pi pi-trash',
-      bg: 'var(--red-500)',
-      onClick: () => remove()
-    },
-    {
-      icon: 'pi pi-flag',
-      bg: 'var(--orange-500)',
-      onClick: () => archive()
-    }
-  ]" @open="$emit('edit', task)">
-    <Card class="task-card" :style="{ '--goal-color': goal?.color ?? 'transparent' }">
-      <template #content>
-        <div class="task-content">
-          <Checkbox v-model="localCompleted" binary @click.stop />
-          <div class="task-body">
-            <div class="task-title" :class="{ completed: localCompleted }">
-              {{ task.title }}
-            </div>
+  <Card class="task-card">
+    <template #title>
+      <Checkbox v-model="localCompleted" name="completed" binary />
+      <label for="completed" class="title" :class="{ completed: localCompleted }"> {{ task.title }} </label>
+    </template>
+    <template #content>
+      <p v-if="props.task.description" class="description" :class="{ completed: localCompleted }">
+        {{ props.task.description }}
+      </p>
 
-            <div v-if="descriptionPreview" class="task-description">
-              {{ descriptionPreview }}
-            </div>
-
-            <div class="task-meta">
-              <span v-if="deadlineText" class="deadline" :class="{
-                overdue: isOverdue,
-                completed: localCompleted
-              }">
-                {{ deadlineText }}
-              </span>
-
-              <i v-if="isRecurring" class="pi pi-refresh recurring" />
-
-              <span v-if="goal" class="goal-title">
-                {{ goal.title }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </template>
-    </Card>
-  </SwipeableCard>
+      <p v-if="deadlineText" class="deadline" :class="{ overdue: isOverdue, completed: localCompleted }">
+        {{ deadlineText }}
+      </p>
+    </template>
+  </Card>
 </template>
 
 <style scoped>
-.task-card {
-  border-left: 4px solid var(--goal-color);
-  box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.1);
-}
-
-.task-content {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
 :deep(.p-card-body) {
-  padding: 0.6rem;
+  padding: 1rem;
 }
 
-.task-body {
-  flex: 1;
-  min-width: 0;
+.title {
+  vertical-align: middle;
+  padding-left: 1rem;
 }
 
-/* TITLE */
-.task-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.task-title.completed {
+.title.completed {
   text-decoration: line-through;
-  opacity: 0.6;
+  color: var(--p-gray-400);
 }
 
-/* DESCRIPTION */
-.task-description {
-  font-size: 13px;
-  color: var(--p-text-muted-color);
-  margin-bottom: 4px;
-
-  white-space: nowrap;
+.description {
+  color: var(--p-gray-400);
+  font-size: medium;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-/* META */
-.task-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--p-text-muted-color);
+.description.completed {
+  color: var(--p-gray-500);
 }
 
 .deadline {
-  color: var(--p-text-muted-color);
+  font-size: small;
+  color: var(--p-orange-400);
+  margin: 0;
 }
 
 .deadline.overdue {
-  color: #d32f2f;
+  color: var(--p-red-600);
 }
 
 .deadline.completed {
-  color: var(--p-text-muted-color);
-}
-
-.recurring {
-  font-size: 12px;
-}
-
-.goal-title {
-  margin-left: auto;
-  color: var(--p-text-muted-color);
+  color: var(--p-gray-400);
 }
 </style>

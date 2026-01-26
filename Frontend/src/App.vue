@@ -1,33 +1,53 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import LoginView from '@/views/LoginView.vue'
+
+// temporary
+import TaskCard from './components/TaskCard.vue';
+import type { TaskDTO } from './api/TasksAPI';
+const task: TaskDTO = {
+  id: "string",
+  title: "Test task name",
+  description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  dueDate: new Date(2026, 0, 26, 17, 30).toISOString(),
+  completionDate: null,
+  goalId: null
+}
+const task1: TaskDTO = {
+  id: "string",
+  title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+  description: null,
+  dueDate: new Date(2026, 0, 25, 17, 0).toISOString(),
+  completionDate: null,
+  goalId: null
+}
+const task2: TaskDTO = {
+  id: "string",
+  title: "Test task name",
+  description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  dueDate: null,
+  completionDate: null,
+  goalId: null
+}
 </script>
 
 <template>
   <div class="app-shell">
-    <div class="phone-frame">
-      <RouterView />
-    </div>
+      <!-- <RouterView /> -->
+      <TaskCard :task="task"></TaskCard>
+      <TaskCard :task="task1"></TaskCard>
+      <TaskCard :task="task2"></TaskCard>
   </div>
 </template>
 
 <style>
 .app-shell {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
   background: var(--surface-100);
 }
 
 .phone-frame {
   width: 100%;
   max-width: 430px;
-  min-height: 100vh;
   background: var(--surface-0);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   overflow: hidden;

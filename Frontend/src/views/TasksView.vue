@@ -7,7 +7,7 @@ import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
 import TaskCard from '@/components/TaskCard.vue'
-import { getTasks, type TaskDTO } from '@/api/TasksAPI'
+import { getTasks, updateTask, type TaskDTO } from '@/api/TasksAPI'
 
 const emit = defineEmits<{
   (e: 'edit-task', task: TaskDTO): void
@@ -57,6 +57,35 @@ function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
 }
 
+function onTaskCompletionChange(taskId: string, completed: boolean) {
+  const task = tasks.value.find(t => t.id === taskId)
+  if (!task) return
+
+  task.completionDate = completed ? new Date().toISOString() : null
+  handleCompletionSideEffects(task, completed)
+}
+
+async function handleCompletionSideEffects(task: TaskDTO, completed: boolean) {
+  const previousCompletionDate = task.completionDate
+  await delay(400)
+
+  try {
+    await updateTask(task.id, {
+      title: task.title,
+      description: task.description,
+      dueDate: task.dueDate,
+      completionDate: completed ? new Date().toISOString() : null,
+      goalId: task.goalId
+    })
+  } catch (e) {
+    task.completionDate = previousCompletionDate ? null : previousCompletionDate
+  }
+}
+
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 </script>
 
 <template>
@@ -69,35 +98,40 @@ function onEditTask(task: TaskDTO) {
         </div>
       </AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in overdueTasks" :key="task.id" :task="task" @edit="onEditTask" />
+        <TaskCard v-for="task in overdueTasks" :key="task.id" :task="task" @completion-change="onTaskCompletionChange"
+          @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
 
     <AccordionPanel value="1" class="tasks-list" v-if="todayTasks.length">
       <AccordionHeader>Сегодня</AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in todayTasks" :key="task.id" :task="task" @edit="onEditTask" />
+        <TaskCard v-for="task in todayTasks" :key="task.id" :task="task" @completion-change="onTaskCompletionChange"
+          @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
 
     <AccordionPanel value="2" class="tasks-list" v-if="weekTasks.length">
       <AccordionHeader>На этой неделе</AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in weekTasks" :key="task.id" :task="task" @edit="onEditTask" />
+        <TaskCard v-for="task in weekTasks" :key="task.id" :task="task" @completion-change="onTaskCompletionChange"
+          @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
 
     <AccordionPanel value="3" class="tasks-list" v-if="completedTasks.length">
       <AccordionHeader>Выполнено</AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" @edit="onEditTask" />
+        <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" @completion-change="onTaskCompletionChange"
+          @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
 
     <AccordionPanel value="4" class="tasks-list" v-if="inboxTasks.length">
       <AccordionHeader>Входящие</AccordionHeader>
       <AccordionContent>
-        <TaskCard v-for="task in inboxTasks" :key="task.id" :task="task" @edit="onEditTask" />
+        <TaskCard v-for="task in inboxTasks" :key="task.id" :task="task" @completion-change="onTaskCompletionChange"
+          @edit="onEditTask" />
       </AccordionContent>
     </AccordionPanel>
   </Accordion>

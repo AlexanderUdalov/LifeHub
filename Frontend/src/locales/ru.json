@@ -14,5 +14,15 @@
     "unknown": "Неизвестная ошибка",
     "invalidCredentials": "Неправильный логин или пароль",
     "serverError": "Ошибка сервера"
+  },
+  "tasks": {
+    "dates": {
+      "today": "Сегодня",
+      "tomorrow": "Завтра",
+      "yesterday": "Вчера",
+      "inDays": "Через {count} день | Через {count} дня | Через {count} дней",
+      "daysAgo": "{count} день назад | {count} дня назад | {count} дней назад",
+      "nextWeekday": "В следующий {weekday}"
+    }
   }
 }

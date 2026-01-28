@@ -72,11 +72,14 @@ public class TasksController(ApplicationContext context) : ControllerBase
         if (task is null)
             return NotFound();
 
-        task.Title = request.Title ?? task.Title;
-        task.Description = request.Description ?? task.Description;
-        task.DueDate = request.DueDate ?? task.DueDate;
-        task.CompletionDate = request.CompletionDate ?? task.CompletionDate;
-        task.GoalId = request.GoalId ?? task.GoalId;
+        if (request.Title is null)
+            return BadRequest();
+
+        task.Title = request.Title;
+        task.Description = request.Description;
+        task.DueDate = request.DueDate;
+        task.CompletionDate = request.CompletionDate;
+        task.GoalId = request.GoalId;
 
         await context.SaveChangesAsync();
 

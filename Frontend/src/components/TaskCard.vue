@@ -3,85 +3,35 @@ import Card from 'primevue/card'
 import Checkbox from 'primevue/checkbox'
 import { computed, ref, watch } from 'vue'
 import type { TaskDTO } from '@/api/TasksAPI';
+import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 
 const props = defineProps<{ task: TaskDTO }>()
 const emit = defineEmits<{
-  (e: 'edit', task: TaskDTO): void
+  (e: 'edit', task: TaskDTO): void,
+  (e: 'completion-change', taskId: string, value: boolean): void
 }>()
 
 const localCompleted = ref<boolean>(!!props.task.completionDate)
-
 watch(localCompleted, value => {
-  props.task.completionDate = value ? new Date().toISOString() : null
+  emit('completion-change', props.task.id, value)
 })
 
 const isOverdue = computed(() => {
   if (!props.task.dueDate || localCompleted.value) return false
 
-  const today = startOfDay(new Date())
-  const due = startOfDay(new Date(props.task.dueDate))
-
-  return due < today;
-})
-
-function startOfDay(date: Date) {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  return d
-}
-
-function diffInDays(from: Date, to: Date) {
-  const msPerDay = 24 * 60 * 60 * 1000
-  return Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / msPerDay)
-}
-
-function getDaysDiffString(target: Date): string {
-  const now = new Date()
-  const due = new Date(target)
-
-  const daysDiff = diffInDays(now, due)
-  if (daysDiff === 0) return 'Сегодня'
-  if (daysDiff === 1) return 'Завтра'
-  if (daysDiff === -1) return 'Вчера'
-
-  if (daysDiff > 1 && daysDiff <= 7) {
-    return `Через ${daysDiff} дн`
-  }
-
-  if (daysDiff < -1 && daysDiff >= -7) {
-    return `${Math.abs(daysDiff)} дн назад`
-  }
-
-  // Если дальше недели — можно день недели
-  if (daysDiff > 0 && daysDiff <= 14) {
-    return `В следующий ${due.toLocaleDateString('ru-RU', { weekday: 'long' })}`
-  }
-
-  // Фолбэк — обычная дата
-  return due.toLocaleString('ru-RU')
-}
-
-function getTimeString(date: Date) {
-  const hours = date.getHours()
-  const minutes = date.getMinutes()
-
-  // Если время ровно 00:00 — считаем, что его нет
-  if (hours === 0 && minutes === 0) return null
-
-  return date.toLocaleTimeString('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const deadlineText = computed(() => {
-  if (!props.task.dueDate) return null
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
   const due = new Date(props.task.dueDate)
-  const dayText = getDaysDiffString(due)
-  const timeText = getTimeString(due)
+  due.setHours(0, 0, 0, 0)
 
-  return timeText ? `${dayText}, ${timeText}` : dayText;
+  return due < today
+})
+
+const { formatDeadline } = useDeadlineFormatter()
+const deadlineText = computed(() => {
+  if (!props.task.dueDate) return null
+  return formatDeadline(new Date(props.task.dueDate))
 })
 </script>
 
@@ -105,6 +55,10 @@ const deadlineText = computed(() => {
 </template>
 
 <style scoped>
+.task-card {
+  border-radius: 0px;
+}
+
 :deep(.p-card-body) {
   padding: 1rem;
 }

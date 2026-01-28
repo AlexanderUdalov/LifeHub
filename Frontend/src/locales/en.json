@@ -14,5 +14,15 @@
     "unknown": "Unknown error",
     "invalidCredentials": "Incorrect email or password",
     "serverError": "Server error"
+  },
+  "tasks": {
+    "dates": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday",
+      "inDays": "In {count} day | In {count} days",
+      "daysAgo": "{count} day ago | {count} days ago",
+      "nextWeekday": "Next {weekday}"
+    }
   }
 }

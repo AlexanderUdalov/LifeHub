@@ -16,6 +16,31 @@ watch(localCompleted, value => {
   emit('completion-change', props.task.id, value)
 })
 
+const isExpanded = ref(false)
+const LONG_PRESS_MS = 500
+
+let pressTimer: number | null = null
+let longPressTriggered = false
+
+function onPressStart() {
+  longPressTriggered = false
+  pressTimer = window.setTimeout(() => {
+    longPressTriggered = true
+    emit('edit', props.task)
+  }, LONG_PRESS_MS)
+}
+
+function onPressEnd() {
+  if (pressTimer) {
+    clearTimeout(pressTimer)
+    pressTimer = null
+  }
+
+  if (!longPressTriggered) {
+    isExpanded.value = !isExpanded.value
+  }
+}
+
 const isOverdue = computed(() => {
   if (!props.task.dueDate || localCompleted.value) return false
 
@@ -37,13 +62,14 @@ const deadlineText = computed(() => {
 
 
 <template>
-  <Card class="task-card">
+  <Card class="task-card" @mousedown="onPressStart" @mouseup="onPressEnd" @mouseleave="onPressEnd"
+    @touchstart="onPressStart" @touchend="onPressEnd">
     <template #title>
       <Checkbox v-model="localCompleted" name="completed" binary />
       <label for="completed" class="title" :class="{ completed: localCompleted }"> {{ task.title }} </label>
     </template>
     <template #content>
-      <p v-if="props.task.description" class="description" :class="{ completed: localCompleted }">
+      <p v-if="props.task.description" class="description" :class="{ completed: localCompleted, expanded: isExpanded }">
         {{ props.task.description }}
       </p>
 
@@ -85,6 +111,12 @@ const deadlineText = computed(() => {
 
 .description.completed {
   color: var(--p-gray-500);
+}
+
+.description.expanded {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .deadline {

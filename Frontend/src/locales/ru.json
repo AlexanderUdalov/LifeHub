@@ -23,6 +23,19 @@
       "inDays": "Через {count} день | Через {count} дня | Через {count} дней",
       "daysAgo": "{count} день назад | {count} дня назад | {count} дней назад",
       "nextWeekday": "В следующий {weekday}"
+    },
+    "list": {
+      "overdue": "Просрочено",
+      "today": "Сегодня",
+      "thisweek": "На этой неделе",
+      "inbox": "Входящие",
+      "completed": "Выполнено"
+    },
+    "description": "Описание",
+    "duedate": "Дата выполнения",
+    "editdialog": {
+      "save": "Сохранить",
+      "create": "Создать"
     }
   }
 }

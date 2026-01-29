@@ -88,6 +88,15 @@ onMounted(async () => {
     goals.value = await goalsApi.getGoals()
 })
 
+function onTaskDialogClose(updated: boolean) {
+    editContext.value = null;
+
+    // todo: update pinia store
+    if (updated) {
+        window.location.reload()
+    }
+}
+
 </script>
 
 <template>
@@ -105,8 +114,7 @@ onMounted(async () => {
             :buttonProps="{ rounded: true }" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
-            @close="editContext = null" @update="(request: UpdateTaskRequest, id: string) => updateTask(id, request)"
-            @create="(request: CreateTaskRequest) => createTask(request)" />
+            @close="onTaskDialogClose" />
         <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" :goals="goals"
             @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"

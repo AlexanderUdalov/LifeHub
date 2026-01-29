@@ -23,6 +23,19 @@
       "inDays": "In {count} day | In {count} days",
       "daysAgo": "{count} day ago | {count} days ago",
       "nextWeekday": "Next {weekday}"
+    },
+    "list": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "thisweek": "This week",
+      "inbox": "Inbox",
+      "completed": "Completed"
+    },
+    "description": "Description",
+    "duedate": "Due date",
+    "editdialog": {
+      "save": "Save",
+      "create": "Create"
     }
   }
 }

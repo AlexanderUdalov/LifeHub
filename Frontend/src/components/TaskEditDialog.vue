@@ -2,23 +2,21 @@
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
-import Editor from 'primevue/editor'
+import FloatLabel from 'primevue/floatlabel'
+import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
-import { computed, ref, watch } from 'vue'
-import type { GoalItem } from '@/models/GoalItem'
-import { format, differenceInDays, isToday, isPast } from 'date-fns'
-import type { CreateTaskRequest, TaskDTO, UpdateTaskRequest } from '@/api/TasksAPI'
+import { computed, ref } from 'vue'
+import { createTask, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n();
 const props = defineProps<{
     task: TaskDTO | null
-    goals?: GoalItem[]
 }>()
 
 const emit = defineEmits<{
-    (e: 'close'): void
-    (e: 'create', task: CreateTaskRequest): void
-    (e: 'update', task: UpdateTaskRequest, id: string): void
+    (e: 'close', update: boolean): void
 }>()
 
 const localTask = ref<TaskDTO>({
@@ -30,39 +28,30 @@ const localTask = ref<TaskDTO>({
     goalId: props.task?.goalId ? props.task.goalId : null
 })
 
+const dueDateAsDate = computed<Date | null>({
+    get() {
+        return localTask.value.dueDate
+            ? new Date(localTask.value.dueDate)
+            : null
+    },
+    set(value) {
+        localTask.value.dueDate = value
+            ? value.toISOString()
+            : null
+    }
+})
+
 const isEdit = computed(() => !!props.task)
 const canSave = computed(() => localTask.value.title.trim().length > 0)
 
-const isCompleted = ref(false);
-watch(isCompleted, (val) => {
-    localTask.value.completionDate = val ? new Date().toDateString() : '';
-});
-
-const dueDateText = computed(() => {
-    if (!localTask.value.dueDate) {
-        return 'дата и повтор'
+const completedModel = computed({
+    get() {
+        return localTask.value.completionDate != null;
+    },
+    set(value) {
+        localTask.value.completionDate = value ? new Date().toISOString() : null;
     }
-
-    const date = new Date(localTask.value.dueDate)
-    const base = format(date, 'dd.MM.yyyy')
-
-    if (isToday(date)) {
-        return `${base}, сегодня`
-    }
-
-    const diff = differenceInDays(date, new Date())
-
-    if (diff < 0) {
-        return `${base}, просрочено ${Math.abs(diff)} дн.`
-    }
-
-    return `${base}, через ${diff} дн.`
 })
-
-const dueDateClass = computed(() => ({
-    'due-overdue': localTask.value.dueDate && isPast(new Date(localTask.value.dueDate)),
-    'due-empty': !localTask.value.dueDate
-}))
 
 const descriptionModel = computed({
     get() {
@@ -73,91 +62,111 @@ const descriptionModel = computed({
     }
 })
 
-function save() {
+const isLoading = ref<boolean>(false);
+
+async function save() {
     if (!canSave.value) return
-    if (isEdit.value) {
-        const request: UpdateTaskRequest = {
-            title: localTask.value.title,
-            description: localTask.value.description,
-            dueDate: localTask.value.dueDate,
-            completionDate: localTask.value.completionDate,
-            goalId: localTask.value.goalId,
-        }
+    try {
+        isLoading.value = true;
+        if (isEdit.value) {
+            const request: UpdateTaskRequest = {
+                title: localTask.value.title,
+                description: localTask.value.description,
+                dueDate: localTask.value.dueDate,
+                completionDate: localTask.value.completionDate,
+                goalId: localTask.value.goalId,
+            }
 
-        emit('update', request, localTask.value.id)
-    } else {
-        const request: CreateTaskRequest = {
-            title: localTask.value.title,
-            description: localTask.value.description,
-            dueDate: localTask.value.dueDate,
-            goalId: localTask.value.goalId,
+            await updateTask(localTask.value.id, request)
+        } else {
+            const request: CreateTaskRequest = {
+                title: localTask.value.title,
+                description: localTask.value.description,
+                dueDate: localTask.value.dueDate,
+                goalId: localTask.value.goalId,
+            }
+            await createTask(request)
         }
-
-        emit('create', request)
+        emit('close', true)
     }
-    emit('close')
+    catch (e) {
+
+    }
+    finally {
+        isLoading.value = false;
+    }
 }
 </script>
 
 <template>
-    <Dialog modal :visible="true" :closable="false" style="width: 90vw; max-width: 400px" class="task-dialog"
-        @hide="emit('close')">
+    <Dialog modal :visible="true" :closable="false" :draggable="false" @hide="emit('close', false)" :pt="{
+        header: { class: 'task-edit-header' },
+        content: { class: 'task-edit-content' }
+    }">
         <template #header>
-            <div class="form-field">
-                <Checkbox v-if="isEdit" v-model="isCompleted" />
-                <InputText id="title" v-model="localTask.title" placeholder="New task" size="large" fluid />
-            </div>
-
+            <Checkbox v-if="isEdit" binary v-model="completedModel" />
+            <InputText id="title" class="task-edit-title" :class="{ completed: completedModel }"
+                v-model="localTask.title" placeholder="New task" size="large" fluid />
+            <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel"
+                @click="emit('close', false)" />
         </template>
 
-        <div class="form-field">
-            <!-- <div class="due-date-row" :class="dueDateClass" @click="duePanel?.toggle($event)"> -->
-            <div class="due-date-row" :class="dueDateClass">
-                <i class="pi pi-calendar" />
-                <span>{{ dueDateText }}</span>
-            </div>
-            <!-- 
-            <OverlayPanel ref="duePanel">
-                <DatePicker v-model="localTask.dueDate" inline dateFormat="dd.mm.yy" />
-                <Divider />
-                <Dropdown v-model="localTask.repeat" :options="repeatOptions" placeholder="Повтор" />
-            </OverlayPanel> -->
-        </div>
+        <FloatLabel variant="on">
+            <Textarea id="description" v-model="descriptionModel" rows="5" fluid autoResize />
+            <label for="description">{{ $t('tasks.description') }}</label>
+        </FloatLabel>
 
-        <div class="form-field">
-            <Editor id="description" v-model="descriptionModel" placeholder="Description" editorStyle="height: 200px">
-                <template v-slot:toolbar>
-                    <span class="ql-formats">
-                        <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>
-                        <button v-tooltip.bottom="'Italic'" class="ql-italic"></button>
-                        <button v-tooltip.bottom="'Underline'" class="ql-underline"></button>
-                    </span>
-                    <span class="ql-formats">
-                        <button class="ql-list" value="ordered"></button>
-                        <button class="ql-list" value="bullet"></button>
-                    </span>
-                </template>
-            </Editor>
-        </div>
+        <FloatLabel variant="on" class="task-edit-date-field">
+            <DatePicker v-model="dueDateAsDate" inputId="due-date-picker" fluid />
+            <label for="due-date-picker" class="task-edit-date-label">{{ $t('tasks.duedate') }}</label>
+        </FloatLabel>
 
-        <!-- <div v-if="props.goals?.length" class="form-field">
-            <label for="goal">Assign to Goal</label>
-            <select id="goal" v-model.number="localTask.goalId">
-                <option v-for="goal in props.goals" :key="goal.id" :value="goal.id">
-                    {{ goal.title }}
-                </option>
-            </select>
-        </div> -->
         <template #footer>
-            <Button label="Cancel" text @click="emit('close')" />
-            <Button :label="isEdit ? 'Save' : 'Create'" :disabled="!canSave" @click="save" />
+            <Button :label="isEdit ? t('tasks.editdialog.save') : t('tasks.editdialog.create')" :disabled="!canSave"
+                @click="save" :loading="isLoading" />
         </template>
     </Dialog>
 </template>
 
-<style scoped>
-:deep(.p-inputtext) {
+<style>
+.p-inputtext.task-edit-title {
     border: none;
     box-shadow: none;
+    background-color: transparent;
+}
+
+.p-inputtext.task-edit-title.completed {
+    text-decoration: line-through
+}
+
+.p-dialog-header.task-edit-header {
+    padding: 1rem;
+}
+
+.p-dialog-content.task-edit-content {
+    padding-top: 0.25rem;
+}
+
+.p-floatlabel.task-edit-date-field {
+    margin-top: 0.75rem;
+}
+
+#due-date-picker {
+    background: transparent;
+    border: none;
+    text-align: center;
+}
+
+.p-floatlabel label.task-edit-date-label {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.p-floatlabel-on:has(input:focus) label.task-edit-date-label {
+    transform: translate(-50%, -50%);
+}
+
+.p-floatlabel-on:has(input.p-filled) label.task-edit-date-label {
+    transform: translate(-50%, -50%);
 }
 </style>

@@ -62,8 +62,7 @@ const deadlineText = computed(() => {
 
 
 <template>
-  <Card class="task-card" @mousedown="onPressStart" @mouseup="onPressEnd" @mouseleave="onPressEnd"
-    @touchstart="onPressStart" @touchend="onPressEnd">
+  <Card class="task-card" @pointerdown="onPressStart" @pointerup="onPressEnd">
     <template #title>
       <Checkbox v-model="localCompleted" name="completed" binary />
       <label for="completed" class="title" :class="{ completed: localCompleted }"> {{ task.title }} </label>
@@ -92,6 +91,7 @@ const deadlineText = computed(() => {
 .title {
   vertical-align: middle;
   padding-left: 1rem;
+  font-size: 1.25rem;
 }
 
 .title.completed {

@@ -5,6 +5,7 @@ import SpeedDial from 'primevue/speeddial'
 import Tabs from 'primevue/tabs'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
+import Button from 'primevue/button'
 
 import TaskEditDialog from '@/components/TaskEditDialog.vue'
 import HabitEditDialog from '@/components/HabitEditDialog.vue'
@@ -14,7 +15,7 @@ import { goalsApi } from '@/api/GoalsAPI'
 import type { GoalItem } from '@/models/GoalItem'
 import type { HabitItem } from '@/models/HabitItem'
 import type { AddictionItem } from '@/models/AddictionItem'
-import { createTask, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
+import { type TaskDTO } from '@/api/TasksAPI'
 
 type ItemType = 'task' | 'habit' | 'addiction' | 'goal'
 type EditContext =
@@ -93,9 +94,10 @@ function onTaskDialogClose(updated: boolean) {
 
     // todo: update pinia store
     if (updated) {
-        window.location.reload()
     }
 }
+
+const createTask = () => editContext.value = { type: 'task', item: null }
 
 </script>
 
@@ -110,8 +112,10 @@ function onTaskDialogClose(updated: boolean) {
             </RouterView>
         </main>
 
-        <SpeedDial :model="fabItems" direction="up" style="position: fixed; right: calc(50% - 190px); bottom: 110px"
-            :buttonProps="{ rounded: true }" />
+        <!-- <SpeedDial :model="fabItems" direction="up" style="position: fixed; right: calc(50% - 190px); bottom: 110px"
+            :buttonProps="{ rounded: true }" /> -->
+
+        <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createTask" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
             @close="onTaskDialogClose" />
@@ -196,6 +200,12 @@ function onTaskDialogClose(updated: boolean) {
 }
 
 :deep(.p-tab.p-tab-active) {
-    color: var(--p-primary-color);
+    color: var(--p-primary-color );
+}
+
+.fab {
+    position: fixed;
+    right: 1rem;
+    bottom: 7rem;
 }
 </style>

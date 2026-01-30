@@ -6,14 +6,18 @@ import FloatLabel from 'primevue/floatlabel'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
+import Message from 'primevue/message'
 import { computed, ref } from 'vue'
-import { createTask, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
+import { createTask, deleteTask, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n();
 const props = defineProps<{
     task: TaskDTO | null
 }>()
+
+import { useApiError } from "@/composables/useApiError";
+const apiError = useApiError();
 
 const emit = defineEmits<{
     (e: 'close', update: boolean): void
@@ -35,9 +39,7 @@ const dueDateAsDate = computed<Date | null>({
             : null
     },
     set(value) {
-        localTask.value.dueDate = value
-            ? value.toISOString()
-            : null
+        localTask.value.dueDate = value?.toISOString() ?? null;
     }
 })
 
@@ -62,12 +64,15 @@ const descriptionModel = computed({
     }
 })
 
-const isLoading = ref<boolean>(false);
+const isSaveLoading = ref<boolean>(false);
+const isDeleteLoading = ref<boolean>(false);
+const errorText = ref<string>("");
 
-async function save() {
+async function onSave() {
     if (!canSave.value) return
     try {
-        isLoading.value = true;
+        errorText.value = "";
+        isSaveLoading.value = true;
         if (isEdit.value) {
             const request: UpdateTaskRequest = {
                 title: localTask.value.title,
@@ -90,10 +95,25 @@ async function save() {
         emit('close', true)
     }
     catch (e) {
-
+        errorText.value = apiError.resolveMessage(e)
     }
     finally {
-        isLoading.value = false;
+        isSaveLoading.value = false;
+    }
+}
+
+async function onDelete() {
+    try {
+        errorText.value = "";
+        isDeleteLoading.value = true;
+        await deleteTask(localTask.value.id)
+        emit('close', true)
+    }
+    catch (e) {
+        errorText.value = apiError.resolveMessage(e)
+    }
+    finally {
+        isDeleteLoading.value = false;
     }
 }
 </script>
@@ -106,7 +126,7 @@ async function save() {
         <template #header>
             <Checkbox v-if="isEdit" binary v-model="completedModel" />
             <InputText id="title" class="task-edit-title" :class="{ completed: completedModel }"
-                v-model="localTask.title" placeholder="New task" size="large" fluid />
+                v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')" size="large" fluid />
             <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel"
                 @click="emit('close', false)" />
         </template>
@@ -121,14 +141,23 @@ async function save() {
             <label for="due-date-picker" class="task-edit-date-label">{{ $t('tasks.duedate') }}</label>
         </FloatLabel>
 
+        <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
+            {{ errorText }}
+        </Message>
         <template #footer>
+            <Button v-if="isEdit" :label="t('tasks.editdialog.delete')" severity="danger" @click="onDelete"
+                :loading="isDeleteLoading" />
             <Button :label="isEdit ? t('tasks.editdialog.save') : t('tasks.editdialog.create')" :disabled="!canSave"
-                @click="save" :loading="isLoading" />
+                @click="onSave" :loading="isSaveLoading" />
         </template>
     </Dialog>
 </template>
 
 <style>
+.p-dialog {
+    width: 95%;
+}
+
 .p-inputtext.task-edit-title {
     border: none;
     box-shadow: none;

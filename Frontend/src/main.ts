@@ -8,12 +8,14 @@ import router from './router'
 import { GesturePlugin } from '@vueuse/gesture'
 
 import PrimeVue from 'primevue/config'
-import Aura from '@primeuix/themes/aura';
+import ruPrime from 'primelocale/ru.json'
+import enPrime from 'primelocale/en.json'
+import Aura from '@primeuix/themes/aura'
 
 import 'primeicons/primeicons.css'
 import './main.css'
 
-
+const primeLocales = { ru: ruPrime.ru, en: enPrime.en }
 const i18n = createI18n({
     legacy: false,
     locale: 'ru',
@@ -30,7 +32,8 @@ app.use(GesturePlugin)
 app.use(PrimeVue, {
     theme: {
         preset: Aura
-    }
+    },
+    locale: primeLocales[i18n.global.locale.value]
 });
 
 app.mount('#app')

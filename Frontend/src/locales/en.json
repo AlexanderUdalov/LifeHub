@@ -35,7 +35,9 @@
     "duedate": "Due date",
     "editdialog": {
       "save": "Save",
-      "create": "Create"
+      "create": "Create",
+      "delete": "Delete",
+      "newTask": "New task"
     }
   }
 }

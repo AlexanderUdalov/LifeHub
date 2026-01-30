@@ -68,7 +68,7 @@ function onTaskCompletionChange(taskId: string, completed: boolean) {
   const task = tasks.value.find(t => t.id === taskId)
   if (!task) return
 
-  task.completionDate = completed ? new Date().toISOString() : null
+  task.completionDate = completed ? new Date().toUTCString() : null
   handleCompletionSideEffects(task, completed)
 }
 
@@ -81,7 +81,7 @@ async function handleCompletionSideEffects(task: TaskDTO, completed: boolean) {
       title: task.title,
       description: task.description,
       dueDate: task.dueDate,
-      completionDate: completed ? new Date().toISOString() : null,
+      completionDate: completed ? new Date().toUTCString() : null,
       goalId: task.goalId
     })
   } catch (e) {
@@ -120,7 +120,6 @@ function delay(ms: number) {
 
 <style scoped>
 .tasks-list {
-  margin: 12px;
   font-size: large;
 }
 

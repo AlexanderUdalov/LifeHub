@@ -7,8 +7,8 @@ public record TaskDTO
     Guid Id,
     string Title,
     string? Description,
-    DateTime? DueDate,
-    DateTime? CompletionDate,
+    DateTimeOffset? DueDate,
+    DateTimeOffset? CompletionDate,
     Guid? GoalId
 );
 
@@ -16,15 +16,15 @@ public record TaskDTO
 public record CreateTaskRequest(
     string Title,
     string? Description,
-    DateTime? DueDate,
+    DateTimeOffset? DueDate,
     Guid? GoalId
 );
 
 public record UpdateTaskRequest(
     string? Title,
     string? Description,
-    DateTime? DueDate,
-    DateTime? CompletionDate,
+    DateTimeOffset? DueDate,
+    DateTimeOffset? CompletionDate,
     Guid? GoalId
 );
 

@@ -8,8 +8,8 @@ public class TaskItem
     public required string Title { get; set; }
     public string? Description { get; set; }
 
-    public DateTime? DueDate { get; set; }
-    public DateTime? CompletionDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
+    public DateTimeOffset? CompletionDate { get; set; }
 
     public Guid? GoalId { get; set; }
     public Goal? Goal { get; set; }

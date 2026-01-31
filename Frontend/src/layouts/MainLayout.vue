@@ -89,14 +89,6 @@ onMounted(async () => {
     goals.value = await goalsApi.getGoals()
 })
 
-function onTaskDialogClose(updated: boolean) {
-    editContext.value = null;
-
-    // todo: update pinia store
-    if (updated) {
-    }
-}
-
 const createTask = () => editContext.value = { type: 'task', item: null }
 
 </script>
@@ -118,7 +110,7 @@ const createTask = () => editContext.value = { type: 'task', item: null }
         <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createTask" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
-            @close="onTaskDialogClose" />
+            @close="editContext = null" />
         <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" :goals="goals"
             @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"
@@ -200,7 +192,7 @@ const createTask = () => editContext.value = { type: 'task', item: null }
 }
 
 :deep(.p-tab.p-tab-active) {
-    color: var(--p-primary-color );
+    color: var(--p-primary-color);
 }
 
 .fab {

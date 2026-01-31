@@ -8,7 +8,7 @@ import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
-import { createTask, deleteTask, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
+import { type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n();
@@ -19,8 +19,11 @@ const props = defineProps<{
 import { useApiError } from "@/composables/useApiError";
 const apiError = useApiError();
 
+import { useTasksStore } from '@/stores/tasks'
+const tasksStore = useTasksStore()
+
 const emit = defineEmits<{
-    (e: 'close', update: boolean): void
+    (e: 'close'): void
 }>()
 
 const localTask = ref<TaskDTO>({
@@ -82,7 +85,7 @@ async function onSave() {
                 goalId: localTask.value.goalId,
             }
 
-            await updateTask(localTask.value.id, request)
+            await tasksStore.editTask(localTask.value.id, request)
         } else {
             const request: CreateTaskRequest = {
                 title: localTask.value.title,
@@ -90,9 +93,9 @@ async function onSave() {
                 dueDate: localTask.value.dueDate,
                 goalId: localTask.value.goalId,
             }
-            await createTask(request)
+            await tasksStore.createNewTask(request)
         }
-        emit('close', true)
+        emit('close')
     }
     catch (e) {
         errorText.value = apiError.resolveMessage(e)
@@ -106,8 +109,8 @@ async function onDelete() {
     try {
         errorText.value = "";
         isDeleteLoading.value = true;
-        await deleteTask(localTask.value.id)
-        emit('close', true)
+        await tasksStore.removeTask(localTask.value.id)
+        emit('close')
     }
     catch (e) {
         errorText.value = apiError.resolveMessage(e)
@@ -119,16 +122,16 @@ async function onDelete() {
 </script>
 
 <template>
-    <Dialog modal :visible="true" :closable="false" :draggable="false" @hide="emit('close', false)" :pt="{
+    <Dialog modal :visible="true" :closable="false" :draggable="false" @hide="emit('close')" :pt="{
         header: { class: 'task-edit-header' },
         content: { class: 'task-edit-content' }
     }">
         <template #header>
             <Checkbox v-if="isEdit" binary v-model="completedModel" />
             <InputText id="title" class="task-edit-title" :class="{ completed: completedModel }"
-                v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')" size="large" fluid />
-            <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel"
-                @click="emit('close', false)" />
+                v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')" size="large" />
+            <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel" size="small"
+                @click="emit('close')" />
         </template>
 
         <FloatLabel variant="on">

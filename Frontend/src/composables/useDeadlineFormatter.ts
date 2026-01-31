@@ -14,7 +14,7 @@ function diffInDays(from: Date, to: Date) {
 }
 
 export function useDeadlineFormatter() {
-    const { t } = useI18n()
+    const { te, t } = useI18n()
     const { locale } = useI18n()
 
     function getDaysDiffString(target: Date): string {
@@ -26,18 +26,12 @@ export function useDeadlineFormatter() {
         if (daysDiff === 1) return t("tasks.dates.tomorrow")
         if (daysDiff === -1) return t("tasks.dates.yesterday")
 
-        if (daysDiff > 1 && daysDiff <= 7) {
-            return t('tasks.dates.inDays', { count: daysDiff })
+        if (daysDiff > 1 && daysDiff <= 4) {
+            return t('tasks.dates.inDays', { count: daysDiff }, daysDiff)
         }
 
-        if (daysDiff < -1 && daysDiff >= -7) {
-            return t('tasks.dates.daysAgo', { count: Math.abs(daysDiff) })
-        }
-
-        if (daysDiff > 0 && daysDiff <= 14) {
-            return t('tasks.dates.nextWeekday', {
-                weekday: due.toLocaleDateString(locale.value, { weekday: 'long' })
-            })
+        if (daysDiff < -1 && daysDiff >= -4) {
+            return t('tasks.dates.daysAgo', { count: Math.abs(daysDiff) }, Math.abs(daysDiff))
         }
 
         return due.toLocaleDateString(locale.value)

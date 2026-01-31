@@ -17,20 +17,39 @@ watch(localCompleted, value => {
 })
 
 const isExpanded = ref(false)
-const LONG_PRESS_MS = 500
+
+const LONG_PRESS_MS = 400
+const MOVE_THRESHOLD = 10
 
 let pressTimer: number | null = null
 let longPressTriggered = false
+let startX = 0
+let startY = 0
 
-function onPressStart() {
+function onPressStart(e: PointerEvent) {
   longPressTriggered = false
+  startX = e.clientX
+  startY = e.clientY
+
   pressTimer = window.setTimeout(() => {
     longPressTriggered = true
     emit('edit', props.task)
   }, LONG_PRESS_MS)
 }
 
-function onPressEnd() {
+function onPressMove(e: PointerEvent) {
+  if (!pressTimer) return
+
+  const dx = Math.abs(e.clientX - startX)
+  const dy = Math.abs(e.clientY - startY)
+
+  if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
+    clearTimeout(pressTimer)
+    pressTimer = null
+  }
+}
+
+function onPressEnd(e: PointerEvent) {
   if (pressTimer) {
     clearTimeout(pressTimer)
     pressTimer = null
@@ -62,7 +81,8 @@ const deadlineText = computed(() => {
 
 
 <template>
-  <Card class="task-card" @pointerdown="onPressStart" @pointerup="onPressEnd">
+  <Card class="task-card" @pointerdown="onPressStart" @pointerup="onPressEnd" @pointermove="onPressMove"
+    @pointercancel="onPressEnd">
     <template #title>
       <Checkbox v-model="localCompleted" name="completed" binary />
       <label for="completed" class="title" :class="{ completed: localCompleted }"> {{ task.title }} </label>
@@ -82,6 +102,9 @@ const deadlineText = computed(() => {
 <style scoped>
 .task-card {
   border-radius: 0px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 :deep(.p-card-body) {

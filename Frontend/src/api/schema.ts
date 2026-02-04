@@ -108,6 +108,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserDTO"];
+                        "application/json": components["schemas"]["UserDTO"];
+                        "text/json": components["schemas"]["UserDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateRequest"];
+                    "text/json": components["schemas"]["UpdateRequest"];
+                    "application/*+json": components["schemas"]["UpdateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserDTO"];
+                        "application/json": components["schemas"]["UserDTO"];
+                        "text/json": components["schemas"]["UserDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/tasks": {
         parameters: {
             query?: never;
@@ -325,6 +427,12 @@ export interface components {
             /** Format: uuid */
             goalId: null | string;
         };
+        UpdateRequest: {
+            name: null | string;
+            email: null | string;
+            currentPassword: null | string;
+            newPassword: null | string;
+        };
         UpdateTaskRequest: {
             title: null | string;
             description: null | string;
@@ -334,6 +442,11 @@ export interface components {
             completionDate: null | string;
             /** Format: uuid */
             goalId: null | string;
+        };
+        UserDTO: {
+            name: string;
+            email: string;
+            token: string;
         };
     };
     responses: never;

@@ -6,6 +6,7 @@ import en from '@/locales/en.json'
 import App from './App.vue'
 import router from './router'
 import { GesturePlugin } from '@vueuse/gesture'
+import ToastService from 'primevue/toastservice';
 
 import PrimeVue from 'primevue/config'
 import ruPrime from 'primelocale/ru.json'
@@ -28,6 +29,7 @@ const app = createApp(App)
 app.use(i18n)
 app.use(pinia)
 app.use(router)
+app.use(ToastService);
 app.use(GesturePlugin)
 app.use(PrimeVue, {
     theme: {

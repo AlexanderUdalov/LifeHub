@@ -39,5 +39,24 @@
       "delete": "Удалить",
       "newTask": "Новая задача"
     }
-  }
+  },
+  "toasts": {
+    "logged-out": "Вы вышли из аккаунта",
+    "account-removed": "Ваш аккаунт был удален"
+  },
+  "profile-view": {
+    "profile": "Профиль",
+    "email": "Email",
+    "language": "Язык",
+    "name": "Никнейм",
+    "theme": "Тема",
+    "change-password": "Сменить пароль",
+    "delete-account": "Удалить аккаунт",
+    "logout": "Выйти из аккаунта",
+    "delete-confirmation": "Вы уверены? Это действие невозможно отменить."
+  },
+  "cancel": "Отмена",
+  "current-password": "Текущий пароль",
+  "change": "Изменить",
+  "new-password": "Новый пароль"
 }

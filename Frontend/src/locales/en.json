@@ -39,5 +39,24 @@
       "delete": "Delete",
       "newTask": "New task"
     }
-  }
+  },
+  "toasts": {
+    "logged-out": "You have logged out",
+    "account-removed": "Your account has been removed"
+  },
+  "profile-view": {
+    "profile": "Profile",
+    "name": "Name",
+    "email": "Email",
+    "theme": "Theme",
+    "language": "Language",
+    "change-password": "Change password",
+    "logout": "Logout",
+    "delete-account": "Delete account",
+    "delete-confirmation": "Are you sure? This action cannot be undone."
+  },
+  "cancel": "Cancel",
+  "change": "Change",
+  "current-password": "Current password",
+  "new-password": "New password"
 }

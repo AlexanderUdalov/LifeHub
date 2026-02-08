@@ -38,7 +38,8 @@
       "create": "Создать",
       "delete": "Удалить",
       "newTask": "Новая задача"
-    }
+    },
+    "tasks": "Задачи"
   },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",
@@ -58,5 +59,6 @@
   "cancel": "Отмена",
   "current-password": "Текущий пароль",
   "change": "Изменить",
-  "new-password": "Новый пароль"
+  "new-password": "Новый пароль",
+  "profile": "Профиль"
 }

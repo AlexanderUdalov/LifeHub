@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import SpeedDial from 'primevue/speeddial'
 import Tabs from 'primevue/tabs'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
@@ -17,6 +16,9 @@ import type { HabitItem } from '@/models/HabitItem'
 import type { AddictionItem } from '@/models/AddictionItem'
 import { type TaskDTO } from '@/api/TasksAPI'
 
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
+
 type ItemType = 'task' | 'habit' | 'addiction' | 'goal'
 type EditContext =
     | { type: ItemType; item: null }
@@ -30,7 +32,7 @@ const route = useRoute()
 
 const tabMenuItems = [
     {
-        label: 'Tasks',
+        label: t('tasks.tasks'),
         icon: 'pi pi-check-square',
         route: '/tasks',
     },
@@ -55,7 +57,7 @@ const tabMenuItems = [
     //     route: '/journal',
     // },
     {
-        label: 'Profile',
+        label: t('profile'),
         icon: 'pi pi-user',
         route: '/profile',
     },
@@ -94,7 +96,7 @@ const createTask = () => editContext.value = { type: 'task', item: null }
 </script>
 
 <template>
-    <div class="layout">
+    <div>
         <main class="content">
             <RouterView v-slot="{ Component }">
                 <component :is="Component" @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
@@ -130,12 +132,6 @@ const createTask = () => editContext.value = { type: 'task', item: null }
 </template>
 
 <style scoped>
-.layout {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-}
-
 .content {
     flex: 1;
     overflow-y: auto;
@@ -147,52 +143,12 @@ const createTask = () => editContext.value = { type: 'task', item: null }
 
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    gap: 4px;
-
-    font-size: 0.6rem;
-    color: var(--text-color-secondary);
-
-    border-radius: 12px;
-}
-
-.tab:hover {
-    background: rgba(0, 0, 0, 0.06);
-    transition: background 0.2s ease;
 }
 
 :deep(.p-tabs) {
     position: fixed;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-
-    width: calc(100% - 24px);
-    max-width: 420px;
-
-    background: var(--surface-card);
-    border-radius: 16px;
-
-    box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.12);
-
-    padding: 6px 0;
-}
-
-:deep(.p-tablist) {
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-around;
-}
-
-:deep(.p-tab) {
-    padding: 16px;
-}
-
-:deep(.p-tab.p-tab-active) {
-    color: var(--p-primary-color);
+    bottom: 0px;
+    width: 100%;
 }
 
 .fab {

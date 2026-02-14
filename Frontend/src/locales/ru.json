@@ -39,6 +39,48 @@
       "delete": "Удалить",
       "newTask": "Новая задача"
     },
+    "recurrence": {
+      "repeat": "Повтор",
+      "none": "Без повтора",
+      "everyDay": "Каждый день",
+      "everyTwoDays": "Через день",
+      "everyNDays": "Каждые {count} дн.",
+      "everyWeek": "Каждую неделю",
+      "everyNWeeks": "Каждые {count} нед.",
+      "weeklyOnWeekday": "Каждый {weekday}",
+      "weeklyOnWeekdays": "По {weekdays}",
+      "everyNWeeksOnWeekdays": "Каждые {count} нед. в {weekdays}",
+      "everyMonth": "Каждый месяц",
+      "everyNMonths": "Каждые {count} мес.",
+      "monthlyOnDays": "Ежемесячно {days} числа",
+      "everyNMonthsOnDays": "Каждые {count} мес. {days} числа",
+      "everyYear": "Каждый год",
+      "everyNYears": "Каждые {count} г.",
+      "monthDay": "{day}",
+      "weekdays": { "0": "Пн", "1": "Вт", "2": "Ср", "3": "Чт", "4": "Пт", "5": "Сб", "6": "Вс" },
+      "mode": {
+        "daily": "Каждый день",
+        "everyNdays": "Каждые N дней",
+        "weekly": "Каждую неделю (выберите дни)",
+        "everyNweeks": "Каждые N недель (выберите дни)",
+        "monthly": "Каждый месяц (выберите числа)",
+        "everyNmonths": "Каждые N месяцев (выберите числа)"
+      },
+      "everyNDaysHint": "дней",
+      "everyNWeeksHint": "недель",
+      "everyNMonthsHint": "месяцев",
+      "daysOfMonth": "Числа месяца",
+      "selectDays": "Выберите числа",
+      "dateAndRepeat": "Дата и повтор",
+      "preset": {
+        "none": "Без повтора",
+        "daily": "Ежедневно",
+        "weeklyWithDay": "Еженедельно ({weekday})",
+        "monthlyWithDay": "Ежемесячно ({day}-го)",
+        "yearlyWithDate": "Ежегодно ({day} {month} {year})",
+        "weekdays": "По будням"
+      }
+    },
     "tasks": "Задачи"
   },
   "toasts": {

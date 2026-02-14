@@ -53,6 +53,7 @@ public class TasksController(ApplicationContext context) : ControllerBase
             Title = request.Title,
             Description = request.Description,
             DueDate = request.DueDate,
+            RecurrenceRule = request.RecurrenceRule,
             GoalId = request.GoalId
         };
 
@@ -79,6 +80,7 @@ public class TasksController(ApplicationContext context) : ControllerBase
         task.Description = request.Description;
         task.DueDate = request.DueDate;
         task.CompletionDate = request.CompletionDate;
+        task.RecurrenceRule = request.RecurrenceRule;
         task.GoalId = request.GoalId;
 
         await context.SaveChangesAsync();

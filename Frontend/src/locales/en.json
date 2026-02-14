@@ -39,6 +39,48 @@
       "delete": "Delete",
       "newTask": "New task"
     },
+    "recurrence": {
+      "repeat": "Repeat",
+      "none": "No repeat",
+      "everyDay": "Every day",
+      "everyTwoDays": "Every other day",
+      "everyNDays": "Every {count} days",
+      "everyWeek": "Every week",
+      "everyNWeeks": "Every {count} weeks",
+      "weeklyOnWeekday": "Every {weekday}",
+      "weeklyOnWeekdays": "Every {weekdays}",
+      "everyNWeeksOnWeekdays": "Every {count} weeks on {weekdays}",
+      "everyMonth": "Every month",
+      "everyNMonths": "Every {count} months",
+      "monthlyOnDays": "Monthly on the {days}",
+      "everyNMonthsOnDays": "Every {count} months on the {days}",
+      "everyYear": "Every year",
+      "everyNYears": "Every {count} years",
+      "monthDay": "{day}",
+      "weekdays": { "0": "Mon", "1": "Tue", "2": "Wed", "3": "Thu", "4": "Fri", "5": "Sat", "6": "Sun" },
+      "mode": {
+        "daily": "Every day",
+        "everyNdays": "Every N days",
+        "weekly": "Every week (pick days)",
+        "everyNweeks": "Every N weeks (pick days)",
+        "monthly": "Every month (pick days)",
+        "everyNmonths": "Every N months (pick days)"
+      },
+      "everyNDaysHint": "days",
+      "everyNWeeksHint": "weeks",
+      "everyNMonthsHint": "months",
+      "daysOfMonth": "Days of month",
+      "selectDays": "Select days",
+      "dateAndRepeat": "Date and repeat",
+      "preset": {
+        "none": "No repeat",
+        "daily": "Daily",
+        "weeklyWithDay": "Weekly ({weekday})",
+        "monthlyWithDay": "Monthly (day {day})",
+        "yearlyWithDate": "Yearly ({day} {month} {year})",
+        "weekdays": "Weekdays"
+      }
+    },
     "tasks": "Tasks"
   },
   "toasts": {

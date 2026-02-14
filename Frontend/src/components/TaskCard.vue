@@ -2,8 +2,9 @@
 import Card from 'primevue/card'
 import Checkbox from 'primevue/checkbox'
 import { computed, ref, watch } from 'vue'
-import type { TaskDTO } from '@/api/TasksAPI';
+import type { TaskDTO } from '@/api/TasksAPI'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
+import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 
 const props = defineProps<{ task: TaskDTO }>()
 const emit = defineEmits<{
@@ -77,6 +78,11 @@ const deadlineText = computed(() => {
   if (!props.task.dueDate) return null
   return formatDeadline(new Date(props.task.dueDate))
 })
+
+const { formatRecurrence } = useRecurrenceFormatter()
+const recurrenceText = computed(() =>
+  formatRecurrence(props.task.recurrenceRule, props.task.dueDate)
+)
 </script>
 
 
@@ -94,6 +100,9 @@ const deadlineText = computed(() => {
 
       <p v-if="deadlineText" class="deadline" :class="{ overdue: isOverdue, completed: localCompleted }">
         {{ deadlineText }}
+      </p>
+      <p v-if="recurrenceText" class="recurrence" :class="{ completed: localCompleted }">
+        {{ recurrenceText }}
       </p>
     </template>
   </Card>
@@ -153,6 +162,17 @@ const deadlineText = computed(() => {
 }
 
 .deadline.completed {
+  color: var(--p-gray-400);
+}
+
+.recurrence {
+  font-size: small;
+  color: var(--p-gray-500);
+  padding-top: 0.25rem;
+  margin: 0;
+}
+
+.recurrence.completed {
   color: var(--p-gray-400);
 }
 </style>

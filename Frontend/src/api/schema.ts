@@ -150,23 +150,35 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/update": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
         };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch: {
@@ -395,6 +407,7 @@ export interface components {
             description: null | string;
             /** Format: date-time */
             dueDate: null | string;
+            recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
         };
@@ -424,6 +437,7 @@ export interface components {
             dueDate: null | string;
             /** Format: date-time */
             completionDate: null | string;
+            recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
         };
@@ -440,6 +454,7 @@ export interface components {
             dueDate: null | string;
             /** Format: date-time */
             completionDate: null | string;
+            recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
         };

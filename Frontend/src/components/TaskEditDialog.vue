@@ -4,14 +4,17 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import FloatLabel from 'primevue/floatlabel'
 import Textarea from 'primevue/textarea'
-import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
+import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
 import { type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
+import DateAndRecurrencePicker from '@/components/DateAndRecurrencePicker.vue'
+import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 
-const { t } = useI18n();
+const { t } = useI18n()
+
 const props = defineProps<{
     task: TaskDTO | null
 }>()
@@ -32,17 +35,16 @@ const localTask = ref<TaskDTO>({
     description: props.task?.description ?? null,
     dueDate: props.task?.dueDate ? props.task.dueDate : null,
     completionDate: props.task?.completionDate ? props.task.completionDate : null,
+    recurrenceRule: props.task?.recurrenceRule ?? null,
     goalId: props.task?.goalId ? props.task.goalId : null
 })
 
 const dueDateAsDate = computed<Date | null>({
     get() {
-        return localTask.value.dueDate
-            ? new Date(localTask.value.dueDate)
-            : null
+        return localTask.value.dueDate ? new Date(localTask.value.dueDate) : null
     },
     set(value) {
-        localTask.value.dueDate = value?.toISOString() ?? null;
+        localTask.value.dueDate = value?.toISOString() ?? null
     }
 })
 
@@ -51,21 +53,31 @@ const canSave = computed(() => localTask.value.title.trim().length > 0)
 
 const completedModel = computed({
     get() {
-        return localTask.value.completionDate != null;
+        return localTask.value.completionDate != null
     },
     set(value) {
-        localTask.value.completionDate = value ? new Date().toISOString() : null;
+        localTask.value.completionDate = value ? new Date().toISOString() : null
     }
 })
 
 const descriptionModel = computed({
     get() {
-        return localTask.value.description ?? "";
+        return localTask.value.description ?? ''
     },
     set(value) {
-        localTask.value.description = value || null;
+        localTask.value.description = value || null
     }
 })
+
+const { formatRecurrence } = useRecurrenceFormatter()
+const dateAndRepeatSummary = computed(() => {
+    const d = dueDateAsDate.value
+    const dateStr = d ? d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+    const recurStr = formatRecurrence(localTask.value.recurrenceRule, localTask.value.dueDate)
+    return recurStr ? `${dateStr} • ${recurStr}` : dateStr
+})
+
+const dateRecurrencePopover = ref<InstanceType<typeof Popover> | null>(null)
 
 const isSaveLoading = ref<boolean>(false);
 const isDeleteLoading = ref<boolean>(false);
@@ -82,6 +94,7 @@ async function onSave() {
                 description: localTask.value.description,
                 dueDate: localTask.value.dueDate,
                 completionDate: localTask.value.completionDate,
+                recurrenceRule: localTask.value.recurrenceRule,
                 goalId: localTask.value.goalId,
             }
 
@@ -91,6 +104,7 @@ async function onSave() {
                 title: localTask.value.title,
                 description: localTask.value.description,
                 dueDate: localTask.value.dueDate,
+                recurrenceRule: localTask.value.recurrenceRule,
                 goalId: localTask.value.goalId,
             }
             await tasksStore.createNewTask(request)
@@ -139,10 +153,24 @@ async function onDelete() {
             <label for="description">{{ $t('tasks.description') }}</label>
         </FloatLabel>
 
-        <FloatLabel variant="on" class="task-edit-date-field">
-            <DatePicker v-model="dueDateAsDate" inputId="due-date-picker" fluid />
-            <label for="due-date-picker" class="task-edit-date-label">{{ $t('tasks.duedate') }}</label>
-        </FloatLabel>
+        <div class="task-edit-date-and-repeat">
+            <label class="date-repeat-label">{{ $t('tasks.recurrence.dateAndRepeat') }}</label>
+            <Button
+                type="button"
+                :label="dateAndRepeatSummary"
+                icon="pi pi-calendar"
+                class="date-repeat-trigger"
+                @click="(e: Event) => dateRecurrencePopover?.toggle(e)"
+            />
+            <Popover ref="dateRecurrencePopover" append-to="body">
+                <DateAndRecurrencePicker
+                    :date="dueDateAsDate"
+                    :recurrence-rule="localTask.recurrenceRule"
+                    @update:date="(v) => { localTask.dueDate = v?.toISOString() ?? null }"
+                    @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }"
+                />
+            </Popover>
+        </div>
 
         <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
             {{ errorText }}
@@ -179,26 +207,19 @@ async function onDelete() {
     padding-top: 0.25rem;
 }
 
-.p-floatlabel.task-edit-date-field {
-    margin-top: 0.75rem;
+.task-edit-date-and-repeat {
+    margin-top: 1rem;
 }
 
-#due-date-picker {
-    background: transparent;
-    border: none;
-    text-align: center;
+.task-edit-date-and-repeat .date-repeat-label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--p-text-muted-color);
+    margin-bottom: 0.5rem;
 }
 
-.p-floatlabel label.task-edit-date-label {
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.p-floatlabel-on:has(input:focus) label.task-edit-date-label {
-    transform: translate(-50%, -50%);
-}
-
-.p-floatlabel-on:has(input.p-filled) label.task-edit-date-label {
-    transform: translate(-50%, -50%);
+.task-edit-date-and-repeat .date-repeat-trigger {
+    width: 100%;
+    justify-content: flex-start;
 }
 </style>

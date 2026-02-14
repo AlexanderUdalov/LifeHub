@@ -87,6 +87,7 @@ export const useTasksStore = defineStore('tasks', () => {
                 description: task.description,
                 dueDate: task.dueDate,
                 completionDate: task.completionDate,
+                recurrenceRule: task.recurrenceRule,
                 goalId: task.goalId
             })
         } catch {

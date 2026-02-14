@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Calendar from 'primevue/calendar'
+import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -86,11 +86,16 @@ function applyPreset(preset: RecurrencePresetKey) {
   emit('update:recurrenceRule', rule)
 }
 
-function onDateSelect(value: Date | Date[] | null) {
+function onDateSelect(value: Date | Date[] | (Date | null)[] | null | undefined) {
+  if (value == null) {
+    setDate(null)
+    return
+  }
   const d = Array.isArray(value) ? value[0] ?? null : value
-  setDate(d ? new Date(d) : null)
-  if (d && selectedPreset.value !== 'none' && selectedPreset.value !== 'daily' && selectedPreset.value !== 'weekdays') {
-    const rule = presetToRule(selectedPreset.value, new Date(d))
+  const date = d ? new Date(d) : null
+  setDate(date)
+  if (date && selectedPreset.value !== 'none' && selectedPreset.value !== 'daily' && selectedPreset.value !== 'weekdays') {
+    const rule = presetToRule(selectedPreset.value, date)
     emit('update:recurrenceRule', rule)
   }
 }
@@ -98,33 +103,33 @@ function onDateSelect(value: Date | Date[] | null) {
 
 <template>
   <div class="date-and-recurrence-picker">
-    <Calendar
+    <DatePicker
       :model-value="localDate"
       @update:model-value="onDateSelect"
       date-format="dd.mm.yy"
-      show-icon
-      show-button-bar
+      inline
       class="date-and-recurrence-calendar"
-    />
-    <div class="repeat-section">
-      <label class="repeat-label">{{ t('tasks.recurrence.repeat') }}</label>
-      <Select
-        :model-value="displayPreset"
-        :options="optionsWithLabels"
-        option-value="value"
-        option-label="label"
-        class="repeat-select"
-        @update:model-value="(v: RecurrencePresetKey) => applyPreset(v)"
-      />
-    </div>
+    >
+      <template #footer>
+        <div class="repeat-section">
+          <label class="repeat-label">{{ t('tasks.recurrence.repeat') }}</label>
+          <Select
+            :model-value="displayPreset"
+            :options="optionsWithLabels"
+            option-value="value"
+            option-label="label"
+            class="repeat-select"
+            @update:model-value="(v: RecurrencePresetKey) => applyPreset(v)"
+          />
+        </div>
+      </template>
+    </DatePicker>
   </div>
 </template>
 
 <style scoped>
 .date-and-recurrence-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  width: 100%;
 }
 
 .date-and-recurrence-calendar {
@@ -135,6 +140,8 @@ function onDateSelect(value: Date | Date[] | null) {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .repeat-label {

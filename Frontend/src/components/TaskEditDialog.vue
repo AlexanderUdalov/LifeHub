@@ -216,10 +216,11 @@ async function onDelete() {
     font-size: 0.875rem;
     color: var(--p-text-muted-color);
     margin-bottom: 0.5rem;
+    text-align: center;
 }
 
 .task-edit-date-and-repeat .date-repeat-trigger {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
 }
 </style>

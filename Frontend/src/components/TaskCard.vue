@@ -98,12 +98,15 @@ const recurrenceText = computed(() =>
         {{ props.task.description }}
       </p>
 
-      <p v-if="deadlineText" class="deadline" :class="{ overdue: isOverdue, completed: localCompleted }">
-        {{ deadlineText }}
-      </p>
-      <p v-if="recurrenceText" class="recurrence" :class="{ completed: localCompleted }">
-        {{ recurrenceText }}
-      </p>
+      <div v-if="deadlineText || recurrenceText" class="deadline-row">
+        <span v-if="deadlineText" class="deadline" :class="{ overdue: isOverdue, completed: localCompleted }">
+          {{ deadlineText }}
+        </span>
+        <span v-if="recurrenceText" class="recurrence" :class="{ completed: localCompleted }">
+          <i class="pi pi-refresh recurrence-icon" aria-hidden="true"></i>
+          {{ recurrenceText }}
+        </span>
+      </div>
     </template>
   </Card>
 </template>
@@ -151,10 +154,17 @@ const recurrenceText = computed(() =>
   text-overflow: unset;
 }
 
-.deadline {
+.deadline-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   font-size: small;
-  color: var(--p-orange-400);
   margin: 0;
+}
+
+.deadline {
+  color: var(--p-orange-400);
 }
 
 .deadline.overdue {
@@ -166,10 +176,14 @@ const recurrenceText = computed(() =>
 }
 
 .recurrence {
-  font-size: small;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   color: var(--p-gray-500);
-  padding-top: 0.25rem;
-  margin: 0;
+}
+
+.recurrence-icon {
+  font-size: 0.875em;
 }
 
 .recurrence.completed {

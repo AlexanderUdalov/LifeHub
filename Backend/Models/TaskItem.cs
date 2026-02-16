@@ -16,4 +16,7 @@ public class TaskItem
 
     public Guid? GoalId { get; set; }
     public Goal? Goal { get; set; }
+
+    /// <summary>Manual sort order for "Today" and "Inbox" lists. Null = end of list. Reset when due date changes.</summary>
+    public int? SortOrder { get; set; }
 }

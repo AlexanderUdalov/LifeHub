@@ -440,6 +440,8 @@ export interface components {
             recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
+            /** Manual sort order for Today/Inbox; null = end of list */
+            sortOrder: null | number;
         };
         UpdateRequest: {
             name: null | string;
@@ -457,6 +459,7 @@ export interface components {
             recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
+            sortOrder: null | number;
         };
         UserDTO: {
             name: string;

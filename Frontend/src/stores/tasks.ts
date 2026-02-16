@@ -66,11 +66,27 @@ export const useTasksStore = defineStore('tasks', () => {
         return date >= start && date < end
     }
 
-    const todayTasks = computed(() => tasks.value.filter(t => !t.completionDate && t.dueDate && isToday(new Date(t.dueDate))))
+    const todayTasks = computed(() => {
+        const list = tasks.value.filter(t => !t.completionDate && t.dueDate && isToday(new Date(t.dueDate)))
+        return list.sort((a, b) => sortByOrder(a.sortOrder, b.sortOrder))
+    })
     const overdueTasks = computed(() => tasks.value.filter(t => !t.completionDate && t.dueDate && new Date(t.dueDate) < new Date() && !todayTasks.value.includes(t)))
     const weekTasks = computed(() => tasks.value.filter(t => !t.completionDate && t.dueDate && isThisWeek(new Date(t.dueDate)) && !overdueTasks.value.includes(t) && !todayTasks.value.includes(t)))
-    const completedTasks = computed(() => tasks.value.filter(t => t.completionDate))
-    const inboxTasks = computed(() => tasks.value.filter(t => !overdueTasks.value.includes(t) && !todayTasks.value.includes(t) && !weekTasks.value.includes(t) && !completedTasks.value.includes(t)))
+    const completedTasks = computed(() => {
+        const list = tasks.value.filter(t => t.completionDate)
+        return list.sort((a, b) => (new Date(b.completionDate!).getTime()) - (new Date(a.completionDate!).getTime()))
+    })
+    const inboxTasks = computed(() => {
+        const list = tasks.value.filter(t => !overdueTasks.value.includes(t) && !todayTasks.value.includes(t) && !weekTasks.value.includes(t) && !completedTasks.value.includes(t))
+        return list.sort((a, b) => sortByOrder(a.sortOrder, b.sortOrder))
+    })
+
+    function sortByOrder(a: number | null | undefined, b: number | null | undefined): number {
+        if (a == null && b == null) return 0
+        if (a == null) return 1
+        if (b == null) return -1
+        return a - b
+    }
 
     async function toggleTaskCompletion(taskId: string, completed: boolean) {
         const task = tasks.value.find(t => t.id === taskId)
@@ -88,7 +104,8 @@ export const useTasksStore = defineStore('tasks', () => {
                 dueDate: task.dueDate,
                 completionDate: task.completionDate,
                 recurrenceRule: task.recurrenceRule,
-                goalId: task.goalId
+                goalId: task.goalId,
+                sortOrder: task.sortOrder
             })
         } catch {
             task.completionDate = previousCompletionDate
@@ -99,6 +116,24 @@ export const useTasksStore = defineStore('tasks', () => {
         return new Promise(resolve => setTimeout(resolve, ms))
     }
 
+    async function reorderTasksInList(orderedTasks: TaskDTO[]) {
+        for (let i = 0; i < orderedTasks.length; i++) {
+            const t = tasks.value.find(x => x.id === orderedTasks[i]?.id)
+            if (t && t.sortOrder != i) {
+                t.sortOrder = i
+                await updateTask(t.id, {
+                    title: t.title,
+                    description: t.description,
+                    dueDate: t.dueDate,
+                    completionDate: t.completionDate,
+                    recurrenceRule: t.recurrenceRule,
+                    goalId: t.goalId,
+                    sortOrder: i
+                })
+            }
+        }
+    }
+
     return {
         tasks,
         isLoading,
@@ -107,6 +142,7 @@ export const useTasksStore = defineStore('tasks', () => {
         removeTask,
         createNewTask,
         toggleTaskCompletion,
+        reorderTasksInList,
         todayTasks,
         overdueTasks,
         weekTasks,

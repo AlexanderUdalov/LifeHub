@@ -82,6 +82,7 @@ public class TasksController(ApplicationContext context) : ControllerBase
         task.CompletionDate = request.CompletionDate;
         task.RecurrenceRule = request.RecurrenceRule;
         task.GoalId = request.GoalId;
+        task.SortOrder = request.SortOrder;
 
         await context.SaveChangesAsync();
 

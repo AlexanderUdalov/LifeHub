@@ -6,10 +6,14 @@ import type { TaskDTO } from '@/api/TasksAPI'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 
-const props = defineProps<{ task: TaskDTO }>()
+const props = withDefaults(
+  defineProps<{ task: TaskDTO; draggable?: boolean }>(),
+  { draggable: false }
+)
 const emit = defineEmits<{
-  (e: 'edit', task: TaskDTO): void,
+  (e: 'edit', task: TaskDTO): void
   (e: 'completion-change', taskId: string, value: boolean): void
+  (e: 'drag-start', event: PointerEvent): void
 }>()
 
 const localCompleted = ref<boolean>(!!props.task.completionDate)
@@ -90,8 +94,13 @@ const recurrenceText = computed(() =>
   <Card class="task-card" @pointerdown="onPressStart" @pointerup="onPressEnd" @pointermove="onPressMove"
     @pointercancel="onPressEnd">
     <template #title>
-      <Checkbox v-model="localCompleted" name="completed" binary />
-      <label for="completed" class="title" :class="{ completed: localCompleted }"> {{ task.title }} </label>
+      <div class="task-card-title-row">
+        <Checkbox v-model="localCompleted" name="completed" binary />
+        <label for="completed" class="title" :class="{ completed: localCompleted }"> {{ task.title }} </label>
+        <div v-if="draggable" class="drag-handle" @pointerdown.prevent.stop="emit('drag-start', $event)">
+          <i class="pi pi-bars" />
+        </div>
+      </div>
     </template>
     <template #content>
       <p v-if="props.task.description" class="description" :class="{ completed: localCompleted, expanded: isExpanded }">
@@ -123,10 +132,24 @@ const recurrenceText = computed(() =>
   padding: 1rem;
 }
 
+.task-card-title-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
 .title {
+  flex: 1;
+  min-width: 0;
   vertical-align: middle;
   padding-left: 1rem;
   font-size: 1.25rem;
+}
+
+.drag-handle {
+  color: var(--p-text-muted-color);
+  cursor: grab;
 }
 
 .title.completed {

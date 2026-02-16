@@ -36,7 +36,8 @@ const localTask = ref<TaskDTO>({
     dueDate: props.task?.dueDate ? props.task.dueDate : null,
     completionDate: props.task?.completionDate ? props.task.completionDate : null,
     recurrenceRule: props.task?.recurrenceRule ?? null,
-    goalId: props.task?.goalId ? props.task.goalId : null
+    goalId: props.task?.goalId ? props.task.goalId : null,
+    sortOrder: props.task?.sortOrder ?? null
 })
 
 const dueDateAsDate = computed<Date | null>({
@@ -96,6 +97,7 @@ async function onSave() {
                 completionDate: localTask.value.completionDate,
                 recurrenceRule: localTask.value.recurrenceRule,
                 goalId: localTask.value.goalId,
+                sortOrder: localTask.value.dueDate ? null : (localTask.value.sortOrder ?? null)
             }
 
             await tasksStore.editTask(localTask.value.id, request)

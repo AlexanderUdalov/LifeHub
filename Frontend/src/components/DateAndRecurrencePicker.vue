@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
+import Button from 'primevue/button'
+import Divider from 'primevue/divider'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { presetToRule, ruleToPreset, type RecurrencePresetKey } from '@/composables/useRecurrencePresets'
@@ -13,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:date', value: Date | null): void
   (e: 'update:recurrenceRule', value: string | null): void
+  (e: 'close'): void
 }>()
 
 const { t } = useI18n()
@@ -99,28 +102,34 @@ function onDateSelect(value: Date | Date[] | (Date | null)[] | null | undefined)
     emit('update:recurrenceRule', rule)
   }
 }
+
+function onClear() {
+  setDate(null)
+  selectedPreset.value = 'none'
+  emit('update:recurrenceRule', null)
+  emit('close')
+}
+
+function onConfirm() {
+  emit('close')
+}
 </script>
 
 <template>
   <div class="date-and-recurrence-picker">
-    <DatePicker
-      :model-value="localDate"
-      @update:model-value="onDateSelect"
-      date-format="dd.mm.yy"
-      inline
-      class="date-and-recurrence-calendar"
-    >
+    <DatePicker :model-value="localDate" @update:model-value="onDateSelect" date-format="dd.mm.yy" inline
+      class="date-and-recurrence-calendar">
       <template #footer>
+        <Divider />
         <div class="repeat-section">
           <label class="repeat-label">{{ t('tasks.recurrence.repeat') }}</label>
-          <Select
-            :model-value="displayPreset"
-            :options="optionsWithLabels"
-            option-value="value"
-            option-label="label"
-            class="repeat-select"
-            @update:model-value="(v: RecurrencePresetKey) => applyPreset(v)"
-          />
+          <Select :model-value="displayPreset" :options="optionsWithLabels" option-value="value" option-label="label"
+            class="repeat-select" @update:model-value="(v: RecurrencePresetKey) => applyPreset(v)" />
+        </div>
+        <Divider />
+        <div class="picker-actions">
+          <Button :label="t('tasks.recurrence.clear')" severity="secondary" text @click="onClear" />
+          <Button :label="t('tasks.recurrence.confirm')" @click="onConfirm" />
         </div>
       </template>
     </DatePicker>
@@ -140,8 +149,6 @@ function onDateSelect(value: Date | Date[] | (Date | null)[] | null | undefined)
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding-top: 0.5rem;
-  margin-top: 0.5rem;
 }
 
 .repeat-label {
@@ -151,5 +158,11 @@ function onDateSelect(value: Date | Date[] | (Date | null)[] | null | undefined)
 
 .repeat-select {
   width: 100%;
+}
+
+.picker-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 </style>

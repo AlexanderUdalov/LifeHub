@@ -79,7 +79,11 @@
         "monthlyWithDay": "Ежемесячно ({day}-го)",
         "yearlyWithDate": "Ежегодно ({day} {month} {year})",
         "weekdays": "По будням"
-      }
+      },
+      "noDate": "Без даты",
+      "noRepeat": "Без повтора",
+      "clear": "Очистить",
+      "confirm": "Готово"
     },
     "tasks": "Задачи"
   },

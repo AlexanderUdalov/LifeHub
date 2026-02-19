@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Tabs from 'primevue/tabs'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
@@ -30,38 +30,18 @@ const editContext = ref<EditContext>(null)
 const router = useRouter()
 const route = useRoute()
 
-const tabMenuItems = [
+const tabMenuItems = computed(() => [
     {
         label: t('tasks.tasks'),
         icon: 'pi pi-check-square',
         route: '/tasks',
     },
-    // {
-    //     label: 'Habbits',
-    //     icon: 'pi pi-sync',
-    //     route: '/habbits',
-    // },
-    // {
-    //     label: 'Addiсtions',
-    //     icon: 'pi pi-ban',
-    //     route: '/addiсtions',
-    // },
-    // {
-    //     label: 'Goals',
-    //     icon: 'pi pi-flag',
-    //     route: '/goals',
-    // },
-    // {
-    //     label: 'Journal',
-    //     icon: 'pi pi-book',
-    //     route: '/journal',
-    // },
     {
         label: t('profile'),
         icon: 'pi pi-user',
         route: '/profile',
     },
-]
+])
 
 const fabItems = [
     {
@@ -135,12 +115,12 @@ const createTask = () => editContext.value = { type: 'task', item: null }
 .content {
     flex: 1;
     overflow-y: auto;
+    max-height: calc(100vh - 72px);
 }
 
 .tab {
     flex: 1;
     min-height: 4px;
-
     display: flex;
     flex-direction: column;
 }
@@ -149,6 +129,7 @@ const createTask = () => editContext.value = { type: 'task', item: null }
     position: fixed;
     bottom: 0px;
     width: 100%;
+    box-shadow: 2px 2px 10px 2px rgba(255, 255, 255, 0.08);
 }
 
 .fab {

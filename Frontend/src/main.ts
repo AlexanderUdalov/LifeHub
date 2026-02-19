@@ -15,11 +15,19 @@ import Aura from '@primeuix/themes/aura'
 
 import 'primeicons/primeicons.css'
 import './main.css'
+import { applyTheme, getStoredTheme } from '@/utils/theme'
+
+const storedTheme = getStoredTheme()
+applyTheme(storedTheme ?? 'auto')
 
 const primeLocales = { ru: ruPrime.ru, en: enPrime.en }
+const initialLocale = (() => {
+    const saved = localStorage.getItem('locale')
+    return saved === 'en' || saved === 'ru' ? saved : 'ru'
+})()
 const i18n = createI18n({
     legacy: false,
-    locale: 'ru',
+    locale: initialLocale,
     fallbackLocale: 'en',
     messages: { ru, en }
 })
@@ -33,9 +41,10 @@ app.use(ToastService);
 app.use(GesturePlugin)
 app.use(PrimeVue, {
     theme: {
-        preset: Aura
+        preset: Aura,
+        options: { darkModeSelector: '.p-dark' }
     },
-    locale: primeLocales[i18n.global.locale.value]
+    locale: primeLocales[initialLocale]
 });
 
 app.mount('#app')

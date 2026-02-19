@@ -1,6 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { rrulestr } from 'rrule'
 import { createTask, deleteTask, getTasks, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
+
+function getNextRecurrenceDate(ruleStr: string | null | undefined, afterDate: Date, dtstart?: Date): Date | null {
+    const str = ruleStr?.trim()
+    if (!str) return null
+    try {
+        const fullStr = str.toUpperCase().startsWith('RRULE:') ? str : `RRULE:${str}`
+        const rule = rrulestr(fullStr, { dtstart: dtstart ?? afterDate, unfold: true })
+        const next = rule.after(afterDate, false)
+        return next ?? null
+    } catch {
+        return null
+    }
+}
 
 export const useTasksStore = defineStore('tasks', () => {
     const tasks = ref<TaskDTO[]>([])
@@ -98,6 +112,21 @@ export const useTasksStore = defineStore('tasks', () => {
         await delay(400)
 
         try {
+            if (completed && task.recurrenceRule?.trim()) {
+                const afterDate = new Date()
+                const dtstart = task.dueDate ? new Date(task.dueDate) : undefined
+                const nextDate = getNextRecurrenceDate(task.recurrenceRule, afterDate, dtstart)
+                if (nextDate) {
+                    await createNewTask({
+                        title: task.title,
+                        description: task.description,
+                        dueDate: nextDate.toISOString(),
+                        recurrenceRule: task.recurrenceRule,
+                        goalId: task.goalId
+                    })
+                }
+            }
+
             await updateTask(task.id, {
                 title: task.title,
                 description: task.description,

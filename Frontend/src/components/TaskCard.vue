@@ -28,11 +28,13 @@ const MOVE_THRESHOLD = 10
 
 let pressTimer: number | null = null
 let longPressTriggered = false
+let hadSignificantMove = false
 let startX = 0
 let startY = 0
 
 function onPressStart(e: PointerEvent) {
   longPressTriggered = false
+  hadSignificantMove = false
   startX = e.clientX
   startY = e.clientY
 
@@ -49,6 +51,7 @@ function onPressMove(e: PointerEvent) {
   const dy = Math.abs(e.clientY - startY)
 
   if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
+    hadSignificantMove = true
     clearTimeout(pressTimer)
     pressTimer = null
   }
@@ -60,7 +63,7 @@ function onPressEnd(e: PointerEvent) {
     pressTimer = null
   }
 
-  if (!longPressTriggered) {
+  if (!longPressTriggered && !hadSignificantMove) {
     isExpanded.value = !isExpanded.value
   }
 }
@@ -150,6 +153,7 @@ const recurrenceText = computed(() =>
 .drag-handle {
   color: var(--p-text-muted-color);
   cursor: grab;
+  touch-action: none;
 }
 
 .title.completed {

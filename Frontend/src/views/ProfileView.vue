@@ -14,6 +14,7 @@ import router from "@/router";
 import { deleteUser, getUser, updateUser, type UpdateRequest, type User } from '@/api/AuthAPI'
 
 import { useI18n } from 'vue-i18n'
+type Language = 'en' | 'ru'
 const { t, locale } = useI18n()
 
 import { useApiError } from "@/composables/useApiError";
@@ -63,25 +64,21 @@ const submitUserData = async () => {
     }
 }
 
-type ThemeMode = 'light' | 'dark' | 'auto'
-const theme = ref<ThemeMode>('auto')
+import { applyTheme, getStoredTheme, setStoredTheme, type ThemeMode } from '@/utils/theme'
+
+const theme = ref<ThemeMode>(getStoredTheme() ?? 'auto')
 const themeOptions = [
     { label: 'Light', value: 'light' },
     { label: 'Dark', value: 'dark' },
     { label: 'Auto', value: 'auto' }
 ]
 
-function applyTheme(mode: ThemeMode) {
-    if (mode === 'auto') {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        document.documentElement.classList.toggle('p-dark', isDark)
-    } else {
-        document.documentElement.classList.toggle('p-dark', mode === 'dark')
-    }
+function onThemeChange(mode: ThemeMode) {
+    setStoredTheme(mode)
+    applyTheme(mode)
 }
 
 
-type Language = 'en' | 'ru'
 const language = ref<Language>('en')
 const languageOptions = [
     { label: 'English', value: 'en' },
@@ -138,6 +135,12 @@ onMounted(async () => {
         language.value = savedLocale
         locale.value = savedLocale
     }
+
+    const savedTheme = getStoredTheme()
+    if (savedTheme) {
+        theme.value = savedTheme
+        applyTheme(savedTheme)
+    }
 })
 </script>
 
@@ -171,7 +174,7 @@ onMounted(async () => {
                     <label>{{ $t('profile-view.theme') }}</label>
                 </div>
                 <SelectButton v-model="theme" :options="themeOptions" optionLabel="label" optionValue="value"
-                    @change="applyTheme(theme)" />
+                    @change="onThemeChange(theme)" />
             </div>
 
             <Divider />

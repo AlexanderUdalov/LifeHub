@@ -70,6 +70,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     document.removeEventListener('pointerup', onPointerUp)
     document.removeEventListener('pointercancel', cleanup)
     document.body.style.cursor = ''
+    document.body.style.touchAction = ''
   }
 
   function onPointerUp(e: PointerEvent) {
@@ -95,6 +96,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
   const fromIndex = taskIndex
   document.body.style.cursor = 'grabbing'
+  document.body.style.touchAction = 'none'
   document.addEventListener('pointermove', onPointerMove)
   document.addEventListener('pointerup', onPointerUp)
   document.addEventListener('pointercancel', cleanup)

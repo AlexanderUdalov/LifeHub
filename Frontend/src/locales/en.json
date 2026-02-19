@@ -79,7 +79,11 @@
         "monthlyWithDay": "Monthly (day {day})",
         "yearlyWithDate": "Yearly ({day} {month} {year})",
         "weekdays": "Weekdays"
-      }
+      },
+      "noDate": "No date",
+      "noRepeat": "No repeat",
+      "clear": "Clear",
+      "confirm": "Done"
     },
     "tasks": "Tasks"
   },

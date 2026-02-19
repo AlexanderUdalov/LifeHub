@@ -73,7 +73,7 @@ const descriptionModel = computed({
 const { formatRecurrence } = useRecurrenceFormatter()
 const dateAndRepeatSummary = computed(() => {
     const d = dueDateAsDate.value
-    const dateStr = d ? d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+    const dateStr = d ? d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : t('tasks.recurrence.noDate')
     const recurStr = formatRecurrence(localTask.value.recurrenceRule, localTask.value.dueDate)
     return recurStr ? `${dateStr} • ${recurStr}` : dateStr
 })
@@ -143,11 +143,15 @@ async function onDelete() {
         content: { class: 'task-edit-content' }
     }">
         <template #header>
-            <Checkbox v-if="isEdit" binary v-model="completedModel" />
-            <InputText id="title" class="task-edit-title" :class="{ completed: completedModel }"
-                v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')" size="large" />
-            <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel" size="small"
-                @click="emit('close')" />
+            <div class="task-edit-header-left">
+                <Checkbox v-if="isEdit" binary v-model="completedModel" />
+                <InputText id="title" class="task-edit-title" :class="{ completed: completedModel }"
+                    v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')" size="large" />
+            </div>
+            <div class="task-edit-close-wrap">
+                <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel" size="small"
+                    @click="emit('close')" />
+            </div>
         </template>
 
         <FloatLabel variant="on">
@@ -170,6 +174,7 @@ async function onDelete() {
                     :recurrence-rule="localTask.recurrenceRule"
                     @update:date="(v) => { localTask.dueDate = v?.toISOString() ?? null }"
                     @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }"
+                    @close="dateRecurrencePopover?.hide()"
                 />
             </Popover>
         </div>
@@ -192,6 +197,8 @@ async function onDelete() {
 }
 
 .p-inputtext.task-edit-title {
+    flex: 1;
+    min-width: 0;
     border: none;
     box-shadow: none;
     background-color: transparent;
@@ -202,7 +209,23 @@ async function onDelete() {
 }
 
 .p-dialog-header.task-edit-header {
+    position: relative;
     padding: 1rem;
+    padding-right: 3rem;
+}
+
+.task-edit-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.task-edit-close-wrap {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
 }
 
 .p-dialog-content.task-edit-content {

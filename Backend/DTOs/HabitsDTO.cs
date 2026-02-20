@@ -27,6 +27,8 @@ public record HabitUpsertRequest(
     Guid? GoalId
 );
 
+public record SetDayStatusRequest(string Status);
+
 public static class HabitMapping
 {
     public static HabitDTO ToDTO(this Habit habit) =>

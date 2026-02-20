@@ -64,6 +64,10 @@ function nextState() {
   transform: scale(0.9);
 }
 
+.cell.none {
+  background-color: transparent;
+  border-color: var(--p-content-border-color);
+}
 
 .cell.full {
   background-color: color-mix(in srgb, var(--habit-color) var(--habit-strength), transparent);
@@ -71,7 +75,7 @@ function nextState() {
 }
 
 .cell.skip {
-  border-color: color-mix(in srgb, var(--habit-color) var(--habit-strength), transparent);
+  border-color: var(--habit-color);
 }
 
 .cell.disabled {

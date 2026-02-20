@@ -29,7 +29,7 @@ export const habitsApi = {
 
   async setDayStatus(habitId: string, date: Date, status: string): Promise<HabitDayDTO> {
     const dateOnly = toDateOnlyString(date)
-    const { data } = await api.put<HabitDayDTO>(`/habits/${habitId}/days/${dateOnly}`, status)
+    const { data } = await api.put<HabitDayDTO>(`/habits/${habitId}/days/${dateOnly}`, { status })
     return data
   }
 }

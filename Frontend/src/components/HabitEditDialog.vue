@@ -201,6 +201,7 @@ async function onDelete() {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
   }
 
   .field-label {
@@ -211,7 +212,9 @@ async function onDelete() {
   .color-chips {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
     gap: 0.5rem;
+    width: 100%;
   }
 
   .color-chip {
@@ -236,7 +239,9 @@ async function onDelete() {
   .weekday-pills {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
     gap: 0.35rem;
+    width: 100%;
   }
 
   .weekday-pill {

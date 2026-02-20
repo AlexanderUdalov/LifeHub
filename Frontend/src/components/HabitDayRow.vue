@@ -78,7 +78,7 @@ const streaks = computed(() => days.value.map((_, idx) => streakAtIndex(idx)))
 function strengthPercent(streak: number): string {
   if (streak <= 0) return '0%'
   const s = Math.min(streak, 10)
-  if (s === 1) return '30%'
+  if (s === 1) return '15%'
   const pct = 30 + Math.round((70 * (s - 1)) / 13)
   return `${pct}%`
 }

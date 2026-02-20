@@ -4,12 +4,12 @@ import type { HabitWithHistoryDTO } from '@/api/HabitsAPI'
 import { computed, onMounted, ref } from 'vue'
 import { rrulestr, RRule } from 'rrule'
 import { useHabitsStore } from '@/stores/habits'
-import { toDateOnlyString, startOfDay, endOfDay } from '@/utils/dateOnly'
+import { toDateOnlyString, startOfDay, isToday } from '@/utils/dateOnly'
 
 type HabitCompletion = 'none' | 'skip' | 'full'
 
 const props = defineProps<{
-    habit: HabitWithHistoryDTO
+  habit: HabitWithHistoryDTO
 }>()
 
 const habitsStore = useHabitsStore()
@@ -33,29 +33,40 @@ const days = computed(() => {
   return result
 })
 
-const activeDateSet = computed<Set<string> | null>(() => {
+/** Weekdays from the rule (0=Mon … 6=Sun, RRule convention). Used to avoid timezone shifts from between(). */
+const activeWeekdays = computed<Set<number> | null>(() => {
   const ruleStr = props.habit.habit.recurrenceRule?.trim()
   if (!ruleStr) return null
 
   try {
     const fullStr = ruleStr.toUpperCase().startsWith('RRULE:') ? ruleStr : `RRULE:${ruleStr}`
-    const start = startOfDay(days.value[0] ?? new Date())
-    const end = endOfDay(days.value[days.value.length - 1] ?? new Date())
-    const parsed = rrulestr(fullStr, { dtstart: start, unfold: true })
+    const parsed = rrulestr(fullStr, { dtstart: startOfDay(new Date()), unfold: true })
 
     if (!(parsed instanceof RRule)) return null
 
-    const occurrences = parsed.between(start, end, true)
-    return new Set(occurrences.map(toDateOnlyString))
+    const opt = parsed.options
+    const byweekday = opt.byweekday
+    if (byweekday == null) return null
+
+    const arr = Array.isArray(byweekday) ? byweekday : [byweekday]
+    const nums = arr.map((d: number | { weekday: number }) =>
+      typeof d === 'number' ? d : (d as { weekday: number }).weekday
+    )
+    return new Set(nums)
   } catch {
     return null
   }
 })
 
+/** Local weekday in RRule convention: 0=Mon, 1=Tue, … 6=Sun (same as JS getDay() with (d+6)%7). */
+function localWeekday(date: Date): number {
+  return (date.getDay() + 6) % 7
+}
+
 const disabledByIndex = computed(() => {
-  const set = activeDateSet.value
-  if (!set) return days.value.map(() => false)
-  return days.value.map(d => !set.has(toDateOnlyString(d)))
+  const weekdays = activeWeekdays.value
+  if (!weekdays) return days.value.map(() => false)
+  return days.value.map(d => !weekdays.has(localWeekday(d)))
 })
 
 function streakAtIndex(index: number): number {
@@ -100,9 +111,11 @@ function onUpdate(date: Date, value: HabitCompletion) {
 <template>
   <div ref="rowRef" class="day-row">
     <div class="legend-row">
-      <div v-for="day in days" :key="toDateOnlyString(day)" class="legend-cell">
+      <div v-for="day in days" :key="toDateOnlyString(day)" class="legend-cell" :class="{ today: isToday(day) }">
         <div class="legend-date">{{ day.getDate() }}</div>
-        <div class="legend-weekday">{{ day.toLocaleDateString(undefined, { weekday: 'short' }) }}</div>
+        <div class="legend-weekday" :class="{ today: isToday(day) }">
+          {{ day.toLocaleDateString(undefined, { weekday: 'short' }) }}
+        </div>
       </div>
     </div>
 
@@ -141,6 +154,11 @@ function onUpdate(date: Date, value: HabitCompletion) {
   flex-shrink: 0;
 }
 
+.legend-cell.today {
+  background-color: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
+}
+
 .legend-date {
   font-size: 0.7rem;
   line-height: 1;
@@ -150,5 +168,10 @@ function onUpdate(date: Date, value: HabitCompletion) {
   font-size: 0.65rem;
   line-height: 1;
   color: var(--p-text-muted-color);
+}
+
+.legend-weekday.today {
+  background-color: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
 }
 </style>

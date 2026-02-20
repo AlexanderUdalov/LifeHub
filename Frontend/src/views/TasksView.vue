@@ -55,7 +55,8 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   function getTargetIndex(clientY: number): number {
     for (let i = 0; i < rows.length; i++) {
       const rect = rows[i]!.getBoundingClientRect()
-      if (clientY < rect.top) return i
+      const mid = rect.top + rect.height / 2
+      if (clientY < mid) return i
     }
     return rows.length
   }

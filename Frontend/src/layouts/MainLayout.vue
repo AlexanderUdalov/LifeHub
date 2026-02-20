@@ -48,29 +48,6 @@ const tabMenuItems = computed(() => [
     },
 ])
 
-const fabItems = [
-    {
-        label: 'Task',
-        icon: 'pi pi-check-square',
-        command: () => (editContext.value = { type: 'task', item: null })
-    },
-    // {
-    //     label: 'Habit',
-    //     icon: 'pi pi-calendar',
-    //     command: () => (editContext.value = { type: 'habit', item: null })
-    // },
-    // {
-    //     label: 'Addiction',
-    //     icon: 'pi pi-ban',
-    //     command: () => (editContext.value = { type: 'addiction', item: null })
-    // },
-    // {
-    //     label: 'Goal',
-    //     icon: 'pi pi-flag',
-    //     command: () => (editContext.value = { type: 'goal', item: null })
-    // }
-]
-
 const goals = ref<GoalItem[]>([])
 onMounted(async () => {
     goals.value = await goalsApi.getGoals()
@@ -96,9 +73,6 @@ const createPrimary = () => {
                     @edit-goal="(goal: GoalItem) => editContext = { type: 'goal', item: goal }" />
             </RouterView>
         </main>
-
-        <!-- <SpeedDial :model="fabItems" direction="up" style="position: fixed; right: calc(50% - 190px); bottom: 110px"
-            :buttonProps="{ rounded: true }" /> -->
 
         <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
 
@@ -126,7 +100,7 @@ const createPrimary = () => {
 .content {
     flex: 1;
     overflow-y: auto;
-    max-height: calc(100vh - 72px);
+    max-height: calc(100dvh - 72px);
 }
 
 .tab {

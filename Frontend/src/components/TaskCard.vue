@@ -23,49 +23,12 @@ watch(localCompleted, value => {
 
 const isExpanded = ref(false)
 
-const LONG_PRESS_MS = 400
-const MOVE_THRESHOLD = 10
-
-let pressTimer: number | null = null
-let longPressTriggered = false
-let hadSignificantMove = false
-let startX = 0
-let startY = 0
-
-function onPressStart(e: PointerEvent) {
-  longPressTriggered = false
-  hadSignificantMove = false
-  startX = e.clientX
-  startY = e.clientY
-
-  pressTimer = window.setTimeout(() => {
-    longPressTriggered = true
-    emit('edit', props.task)
-  }, LONG_PRESS_MS)
+function onHeaderClick() {
+  emit('edit', props.task)
 }
 
-function onPressMove(e: PointerEvent) {
-  if (!pressTimer) return
-
-  const dx = Math.abs(e.clientX - startX)
-  const dy = Math.abs(e.clientY - startY)
-
-  if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
-    hadSignificantMove = true
-    clearTimeout(pressTimer)
-    pressTimer = null
-  }
-}
-
-function onPressEnd(e: PointerEvent) {
-  if (pressTimer) {
-    clearTimeout(pressTimer)
-    pressTimer = null
-  }
-
-  if (!longPressTriggered && !hadSignificantMove) {
-    isExpanded.value = !isExpanded.value
-  }
+function onContentClick() {
+  isExpanded.value = !isExpanded.value
 }
 
 const isOverdue = computed(() => {
@@ -94,19 +57,21 @@ const recurrenceText = computed(() =>
 
 
 <template>
-  <Card class="task-card" @pointerdown="onPressStart" @pointerup="onPressEnd" @pointermove="onPressMove"
-    @pointercancel="onPressEnd">
+  <Card class="task-card">
     <template #title>
-      <div class="task-card-title-row">
-        <Checkbox v-model="localCompleted" name="completed" binary />
-        <label for="completed" class="title" :class="{ completed: localCompleted }"> {{ task.title }} </label>
+      <div class="task-card-title-row" @click="onHeaderClick">
+        <Checkbox v-model="localCompleted" name="completed" binary @click.stop />
+        <label for="completed" class="title title-clickable" :class="{ completed: localCompleted }">
+          {{ task.title }}
+        </label>
         <div v-if="draggable" class="drag-handle" @pointerdown.prevent.stop="emit('drag-start', $event)">
           <i class="pi pi-bars" />
         </div>
       </div>
     </template>
     <template #content>
-      <p v-if="props.task.description" class="description" :class="{ completed: localCompleted, expanded: isExpanded }">
+      <p v-if="props.task.description" class="description" :class="{ completed: localCompleted, expanded: isExpanded }"
+        @click="onContentClick">
         {{ props.task.description }}
       </p>
 
@@ -138,8 +103,10 @@ const recurrenceText = computed(() =>
 .task-card-title-row {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
   width: 100%;
   min-width: 0;
+  cursor: pointer;
 }
 
 .title {
@@ -150,7 +117,14 @@ const recurrenceText = computed(() =>
   font-size: 1.25rem;
 }
 
+.title-clickable {
+  cursor: pointer;
+}
+
 .drag-handle {
+  flex-shrink: 0;
+  margin-left: 0.25rem;
+  padding: 0.25rem;
   color: var(--p-text-muted-color);
   cursor: grab;
   touch-action: none;

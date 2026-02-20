@@ -9,4 +9,65 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
     public DbSet<Goal> Goals => Set<Goal>();
     public DbSet<LifeFocus> LifeFocuses => Set<LifeFocus>();
+    public DbSet<Habit> Habits => Set<Habit>();
+    public DbSet<HabitDay> HabitDays => Set<HabitDay>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Keep delete behaviors explicit for consistency across the model.
+
+        modelBuilder.Entity<User>()
+            .HasMany(x => x.Tasks)
+            .WithOne()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(x => x.Habits)
+            .WithOne()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(x => x.Goals)
+            .WithOne()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(x => x.Focuses)
+            .WithOne()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TaskItem>()
+            .HasOne(x => x.Goal)
+            .WithMany(x => x.Tasks)
+            .HasForeignKey(x => x.GoalId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Habit>()
+            .HasOne(x => x.Goal)
+            .WithMany()
+            .HasForeignKey(x => x.GoalId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Goal>()
+            .HasOne(x => x.LifeFocus)
+            .WithMany(x => x.Goals)
+            .HasForeignKey(x => x.LifeFocusId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<HabitDay>()
+            .HasIndex(x => new { x.HabitId, x.Date })
+            .IsUnique();
+
+        modelBuilder.Entity<HabitDay>()
+            .HasOne(x => x.Habit)
+            .WithMany(x => x.Days)
+            .HasForeignKey(x => x.HabitId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
 }

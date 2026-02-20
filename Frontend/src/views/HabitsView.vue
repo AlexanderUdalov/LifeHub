@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { habitsApi } from '@/api/HabitsAPI'
 import HabitCard from '@/components/HabitCard.vue'
-import type { HabitWithHistory } from '@/models/HabitItem'
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
+import { useHabitsStore } from '@/stores/habits'
+import type { HabitDTO } from '@/api/HabitsAPI'
 
-const habits = ref<HabitWithHistory[]>([])
+const habitsStore = useHabitsStore()
+
+const emit = defineEmits<{
+    (e: 'edit-habit', habit: HabitDTO): void
+}>()
 
 onMounted(async () => {
-  habits.value = await habitsApi.getHabits()
+    await habitsStore.fetchHabits(14)
 })
 </script>
 
 <template>
     <div class="habits-view">
-        <HabitCard v-for="h in habits" :key="h.habit.id" :habit="h" />
+        <HabitCard v-for="h in habitsStore.habitsSorted" :key="h.habit.id" :habit="h"
+            @edit="(habit) => emit('edit-habit', habit)" />
     </div>
 </template>
 

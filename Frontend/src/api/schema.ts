@@ -222,6 +222,282 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/habits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    days?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["HabitWithHistoryDTO"][];
+                        "application/json": components["schemas"]["HabitWithHistoryDTO"][];
+                        "text/json": components["schemas"]["HabitWithHistoryDTO"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HabitUpsertRequest"];
+                    "text/json": components["schemas"]["HabitUpsertRequest"];
+                    "application/*+json": components["schemas"]["HabitUpsertRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["HabitDTO"];
+                        "application/json": components["schemas"]["HabitDTO"];
+                        "text/json": components["schemas"]["HabitDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/habits/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["HabitDTO"];
+                        "application/json": components["schemas"]["HabitDTO"];
+                        "text/json": components["schemas"]["HabitDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HabitUpsertRequest"];
+                    "text/json": components["schemas"]["HabitUpsertRequest"];
+                    "application/*+json": components["schemas"]["HabitUpsertRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["HabitDTO"];
+                        "application/json": components["schemas"]["HabitDTO"];
+                        "text/json": components["schemas"]["HabitDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/habits/{id}/days/{date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    date: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HabitDayDTO"];
+                    "text/json": components["schemas"]["HabitDayDTO"];
+                    "application/*+json": components["schemas"]["HabitDayDTO"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["HabitDayDTO"];
+                        "application/json": components["schemas"]["HabitDayDTO"];
+                        "text/json": components["schemas"]["HabitDayDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tasks": {
         parameters: {
             query?: never;
@@ -411,6 +687,31 @@ export interface components {
             /** Format: uuid */
             goalId: null | string;
         };
+        HabitDayDTO: {
+            /** Format: date */
+            date: string;
+            status: string;
+        };
+        HabitDTO: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            color: string;
+            recurrenceRule: string;
+            /** Format: uuid */
+            goalId: null | string;
+        };
+        HabitUpsertRequest: {
+            title: string;
+            color: string;
+            recurrenceRule: string;
+            /** Format: uuid */
+            goalId: null | string;
+        };
+        HabitWithHistoryDTO: {
+            habit: components["schemas"]["HabitDTO"];
+            history: components["schemas"]["HabitDayDTO"][];
+        };
         LoginRequest: {
             email: string;
             password: string;
@@ -440,8 +741,8 @@ export interface components {
             recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
-            /** Manual sort order for Today/Inbox; null = end of list */
-            sortOrder: null | number;
+            /** Format: int32 */
+            sortOrder: null | number | string;
         };
         UpdateRequest: {
             name: null | string;
@@ -459,7 +760,8 @@ export interface components {
             recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
-            sortOrder: null | number;
+            /** Format: int32 */
+            sortOrder: null | number | string;
         };
         UserDTO: {
             name: string;

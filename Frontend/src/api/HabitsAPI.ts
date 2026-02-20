@@ -1,60 +1,35 @@
-import type { HabitWithHistory } from "@/models/HabitItem";
+import { api } from './API'
+import type { components } from './schema'
+import { toDateOnlyString } from '@/utils/dateOnly'
 
-const mockHabits: HabitWithHistory[] = [
-    {
-        habit: {
-            id: 1,
-            title: 'Drink water',
-            color: '#ff0000'
-        },
-        history: [
-            {
-                date: new Date("January 1, 2026"),
-                completion: 'full'
-            },
-            {
-                date: new Date("January 2, 2026"),
-                completion: 'full'
-            },
-            {
-                date: new Date("January 3, 2026"),
-                completion: 'skip'
-            },
-            {
-                date: new Date("January 4, 2026"),
-                completion: 'full'
-            },
-
-        ]
-    },
-    {
-        habit: {
-            id: 2,
-            title: 'Sport',
-            color: '#0000ff'
-        },
-        history: [
-            {
-                date: new Date("January 1, 2026"),
-                completion: 'full'
-            },
-            {
-                date: new Date("January 3, 2026"),
-                completion: 'full'
-            },
-            {
-                date: new Date("January 4, 2026"),
-                completion: 'skip'
-            },
-
-        ]
-    }
-];
+export type HabitDTO = components['schemas']['HabitDTO']
+export type HabitDayDTO = components['schemas']['HabitDayDTO']
+export type HabitWithHistoryDTO = components['schemas']['HabitWithHistoryDTO']
+export type HabitUpsertRequest = components['schemas']['HabitUpsertRequest']
 
 export const habitsApi = {
-    async getHabits(): Promise<HabitWithHistory[]> {
-        return new Promise(resolve => {
-            setTimeout(() => resolve(mockHabits), 300)
-        })
-    },
+  async getHabits(days = 14): Promise<HabitWithHistoryDTO[]> {
+    const { data } = await api.get<HabitWithHistoryDTO[]>('/habits', { params: { days } })
+    return data ?? []
+  },
+
+  async createHabit(request: HabitUpsertRequest): Promise<HabitDTO> {
+    const { data } = await api.post<HabitDTO>('/habits', request)
+    return data
+  },
+
+  async updateHabit(id: string, request: HabitUpsertRequest): Promise<HabitDTO> {
+    const { data } = await api.put<HabitDTO>(`/habits/${id}`, request)
+    return data
+  },
+
+  async deleteHabit(id: string): Promise<void> {
+    await api.delete(`/habits/${id}`)
+  },
+
+  async setDayStatus(habitId: string, date: Date, status: string): Promise<HabitDayDTO> {
+    const dateOnly = toDateOnlyString(date)
+    const { data } = await api.put<HabitDayDTO>(`/habits/${habitId}/days/${dateOnly}`, status)
+    return data
+  }
 }

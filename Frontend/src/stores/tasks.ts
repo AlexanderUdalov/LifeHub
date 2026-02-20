@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { rrulestr } from 'rrule'
 import { createTask, deleteTask, getTasks, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
+import { isToday } from '@/utils/dateOnly'
 
 function getNextRecurrenceDate(ruleStr: string | null | undefined, afterDate: Date, dtstart?: Date): Date | null {
     const str = ruleStr?.trim()
@@ -66,11 +67,6 @@ export const useTasksStore = defineStore('tasks', () => {
         }
     }
 
-    function isToday(date: Date) {
-        const today = new Date()
-        return date.toDateString() === today.toDateString()
-    }
-
     function isThisWeek(date: Date) {
         const now = new Date()
         const start = new Date(now)
@@ -82,7 +78,7 @@ export const useTasksStore = defineStore('tasks', () => {
 
     const todayTasks = computed(() => {
         const list = tasks.value.filter(t => !t.completionDate && t.dueDate && isToday(new Date(t.dueDate)))
-        return list.sort((a, b) => sortByOrder(a.sortOrder, b.sortOrder))
+        return list.sort((a, b) => sortByOrder(a.sortOrder as number, b.sortOrder as number))
     })
     const overdueTasks = computed(() => tasks.value.filter(t => !t.completionDate && t.dueDate && new Date(t.dueDate) < new Date() && !todayTasks.value.includes(t)))
     const weekTasks = computed(() => tasks.value.filter(t => !t.completionDate && t.dueDate && isThisWeek(new Date(t.dueDate)) && !overdueTasks.value.includes(t) && !todayTasks.value.includes(t)))
@@ -92,7 +88,7 @@ export const useTasksStore = defineStore('tasks', () => {
     })
     const inboxTasks = computed(() => {
         const list = tasks.value.filter(t => !overdueTasks.value.includes(t) && !todayTasks.value.includes(t) && !weekTasks.value.includes(t) && !completedTasks.value.includes(t))
-        return list.sort((a, b) => sortByOrder(a.sortOrder, b.sortOrder))
+        return list.sort((a, b) => sortByOrder(a.sortOrder as number, b.sortOrder as number))
     })
 
     function sortByOrder(a: number | null | undefined, b: number | null | undefined): number {

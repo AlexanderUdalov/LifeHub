@@ -12,7 +12,7 @@ import AddictionEditDialog from '@/components/AddictionEditDialog.vue'
 import GoalEditDialog from '@/components/GoalEditDialog.vue'
 import { goalsApi } from '@/api/GoalsAPI'
 import type { GoalItem } from '@/models/GoalItem'
-import type { HabitItem } from '@/models/HabitItem'
+import type { HabitDTO } from '@/api/HabitsAPI'
 import type { AddictionItem } from '@/models/AddictionItem'
 import { type TaskDTO } from '@/api/TasksAPI'
 
@@ -35,6 +35,11 @@ const tabMenuItems = computed(() => [
         label: t('tasks.tasks'),
         icon: 'pi pi-check-square',
         route: '/tasks',
+    },
+    {
+        label: t('habits.habits'),
+        icon: 'pi pi-calendar',
+        route: '/habits',
     },
     {
         label: t('profile'),
@@ -71,7 +76,13 @@ onMounted(async () => {
     goals.value = await goalsApi.getGoals()
 })
 
-const createTask = () => editContext.value = { type: 'task', item: null }
+const createPrimary = () => {
+    if (route.path.startsWith('/habits')) {
+        editContext.value = { type: 'habit', item: null }
+        return
+    }
+    editContext.value = { type: 'task', item: null }
+}
 
 </script>
 
@@ -80,7 +91,7 @@ const createTask = () => editContext.value = { type: 'task', item: null }
         <main class="content">
             <RouterView v-slot="{ Component }">
                 <component :is="Component" @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
-                    @edit-habit="(habit: HabitItem) => editContext = { type: 'habit', item: habit }"
+                    @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
                     @edit-addiction="(addiction: AddictionItem) => editContext = { type: 'addiction', item: addiction }"
                     @edit-goal="(goal: GoalItem) => editContext = { type: 'goal', item: goal }" />
             </RouterView>
@@ -89,7 +100,7 @@ const createTask = () => editContext.value = { type: 'task', item: null }
         <!-- <SpeedDial :model="fabItems" direction="up" style="position: fixed; right: calc(50% - 190px); bottom: 110px"
             :buttonProps="{ rounded: true }" /> -->
 
-        <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createTask" />
+        <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
             @close="editContext = null" />

@@ -10,4 +10,5 @@ public class User
     public List<LifeFocus> Focuses { get; } = [];
     public List<Goal> Goals { get; } = [];
     public List<TaskItem> Tasks { get; } = [];
+    public List<Habit> Habits { get; } = [];
 }

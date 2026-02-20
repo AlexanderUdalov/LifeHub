@@ -1,8 +1,10 @@
 import { RRule, rrulestr, type Options } from 'rrule'
 
-/** State for recurrence UI: rrule Options subset; freq null = no repeat */
-export type RecurrenceOptionsState = Partial<Pick<Options, 'interval' | 'byweekday' | 'bymonthday'>> & {
+/** State for recurrence UI: freq, interval, byweekday (normalized to number[]), bymonthday. */
+export type RecurrenceOptionsState = Partial<Pick<Options, 'interval'>> & {
   freq: Options['freq'] | null
+  byweekday?: number[]
+  bymonthday?: number[]
 }
 
 const DEFAULT_STATE: RecurrenceOptionsState = {
@@ -63,8 +65,8 @@ export function optionsToRuleString(state: RecurrenceOptionsState, dtstart?: Dat
   if (state.freq == null) return null
 
   const start = dtstart ?? new Date()
-  const byweekdayArr = state.byweekday == null ? [] : Array.isArray(state.byweekday) ? state.byweekday : [state.byweekday]
-  const bymonthdayArr = state.bymonthday == null ? [] : Array.isArray(state.bymonthday) ? state.bymonthday : [state.bymonthday]
+  const byweekdayArr = state.byweekday ?? []
+  const bymonthdayArr = state.bymonthday ?? []
   const byweekday = byweekdayArr.length ? byweekdayArr : undefined
   const bymonthday = bymonthdayArr.length ? bymonthdayArr : undefined
   const rule = new RRule({

@@ -1,10 +1,5 @@
 import { useI18n } from 'vue-i18n'
-
-function startOfDay(date: Date) {
-    const d = new Date(date)
-    d.setHours(0, 0, 0, 0)
-    return d
-}
+import { startOfDay } from '@/utils/dateOnly'
 
 function diffInDays(from: Date, to: Date) {
     const msPerDay = 24 * 60 * 60 * 1000

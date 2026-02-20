@@ -87,6 +87,19 @@
     },
     "tasks": "Tasks"
   },
+  "habits": {
+    "habits": "Habits",
+    "editdialog": {
+      "newHabit": "New habit",
+      "color": "Color",
+      "days": "Days",
+      "everyDay": "Every day",
+      "weekly": "Weekly",
+      "save": "Save",
+      "create": "Create",
+      "delete": "Delete"
+    }
+  },
   "toasts": {
     "logged-out": "You have logged out",
     "account-removed": "Your account has been removed"

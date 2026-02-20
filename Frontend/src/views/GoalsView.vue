@@ -5,13 +5,13 @@ import { goalsApi } from '@/api/GoalsAPI'
 import { habitsApi } from '@/api/HabitsAPI'
 import { addictionsApi } from '@/api/AddictionAPI'
 import type { GoalItem } from '@/models/GoalItem'
-import type { HabitWithHistory } from '@/models/HabitItem'
+import type { HabitWithHistoryDTO } from '@/api/HabitsAPI'
 import type { AddictionItem } from '@/models/AddictionItem'
 import { getTasks, type TaskDTO } from '@/api/TasksAPI'
 
 const goals = ref<GoalItem[]>([])
 const tasksMap = ref<Record<number, TaskDTO>>({})
-const habitsMap = ref<Record<number, HabitWithHistory>>({})
+const habitsMap = ref<Record<number, HabitWithHistoryDTO>>({})
 const addictionsMap = ref<Record<number, AddictionItem>>({})
 
 onMounted(async () => {

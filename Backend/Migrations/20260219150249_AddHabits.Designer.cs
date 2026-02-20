@@ -3,6 +3,7 @@ using System;
 using LifeHub.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LifeHub_Backend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20260219150249_AddHabits")]
+    partial class AddHabits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
@@ -62,7 +65,6 @@ namespace LifeHub_Backend.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RecurrenceRule")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
@@ -197,8 +199,7 @@ namespace LifeHub_Backend.Migrations
                 {
                     b.HasOne("LifeHub.Models.LifeFocus", "LifeFocus")
                         .WithMany("Goals")
-                        .HasForeignKey("LifeFocusId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("LifeFocusId");
 
                     b.HasOne("LifeHub.Models.User", null)
                         .WithMany("Goals")
@@ -213,8 +214,7 @@ namespace LifeHub_Backend.Migrations
                 {
                     b.HasOne("LifeHub.Models.Goal", "Goal")
                         .WithMany()
-                        .HasForeignKey("GoalId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("GoalId");
 
                     b.HasOne("LifeHub.Models.User", null)
                         .WithMany("Habits")
@@ -249,8 +249,7 @@ namespace LifeHub_Backend.Migrations
                 {
                     b.HasOne("LifeHub.Models.Goal", "Goal")
                         .WithMany("Tasks")
-                        .HasForeignKey("GoalId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("GoalId");
 
                     b.HasOne("LifeHub.Models.User", null)
                         .WithMany("Tasks")

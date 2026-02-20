@@ -87,6 +87,19 @@
     },
     "tasks": "Задачи"
   },
+  "habits": {
+    "habits": "Привычки",
+    "editdialog": {
+      "newHabit": "Новая привычка",
+      "color": "Цвет",
+      "days": "Дни",
+      "everyDay": "Каждый день",
+      "weekly": "По дням недели",
+      "save": "Сохранить",
+      "create": "Создать",
+      "delete": "Удалить"
+    }
+  },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",
     "account-removed": "Ваш аккаунт был удален"

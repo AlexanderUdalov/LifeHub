@@ -121,7 +121,8 @@ function onUpdate(date: Date, value: HabitCompletion) {
 
     <div class="cells-row">
       <HabitDayCell v-for="(day, idx) in days" :key="toDateOnlyString(day)" :date="day" :habit="habit"
-        :disabled="disabledByIndex[idx]!" :strength="strengthByIndex[idx]!" @update="onUpdate" />
+        :disabled="disabledByIndex[idx]!" :strength="strengthByIndex[idx]!" :streak-number="streaks[idx]!"
+        @update="onUpdate" />
     </div>
   </div>
 </template>
@@ -157,6 +158,7 @@ function onUpdate(date: Date, value: HabitCompletion) {
 .legend-cell.today {
   background-color: var(--p-primary-color);
   color: var(--p-primary-contrast-color);
+  border-radius: 8px;
 }
 
 .legend-date {

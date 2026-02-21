@@ -10,6 +10,7 @@ const props = defineProps<{
   habit: HabitWithHistoryDTO
   disabled: boolean
   strength: string
+  streakNumber: number
 }>()
 
 const emit = defineEmits<{
@@ -38,7 +39,9 @@ function nextState() {
 <template>
   <div class="cell-wrapper">
     <div class="cell" :class="[completion, { disabled: disabled }]"
-      :style="{ '--habit-color': habit.habit.color, '--habit-strength': strength }" @click="nextState" />
+      :style="{ '--habit-color': habit.habit.color, '--habit-strength': strength }" @click="nextState">
+      <span v-if="streakNumber > 0 && completion === 'full'" class="streak-num">{{ streakNumber }}</span>
+    </div>
   </div>
 </template>
 
@@ -49,6 +52,10 @@ function nextState() {
 }
 
 .cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 28px;
   height: 28px;
   margin: 2px;
@@ -76,6 +83,10 @@ function nextState() {
 
 .cell.skip {
   border-color: var(--habit-color);
+}
+
+.streak-num {
+  font-size: 0.7rem;
 }
 
 .cell.disabled {

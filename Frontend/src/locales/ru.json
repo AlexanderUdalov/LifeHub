@@ -100,6 +100,22 @@
       "delete": "Удалить"
     }
   },
+  "addictions": {
+    "addictions": "Зависимости",
+    "timeSince": "{days} дн {hours} ч {minutes} мин",
+    "daysCount": "{count} дн.",
+    "editdialog": {
+      "newAddiction": "Новая зависимость",
+      "title": "Название",
+      "color": "Цвет",
+      "save": "Сохранить",
+      "create": "Создать",
+      "delete": "Удалить"
+    },
+    "calendar": "Календарь",
+    "collapse": "Свернуть",
+    "reset": "Сброс"
+  },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",
     "account-removed": "Ваш аккаунт был удален"

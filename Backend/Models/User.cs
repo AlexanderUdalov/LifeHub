@@ -11,4 +11,5 @@ public class User
     public List<Goal> Goals { get; } = [];
     public List<TaskItem> Tasks { get; } = [];
     public List<Habit> Habits { get; } = [];
+    public List<Addiction> Addictions { get; } = [];
 }

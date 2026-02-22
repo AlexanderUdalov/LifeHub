@@ -675,6 +675,29 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AddictionDTO: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            color: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            goalId: null | string;
+        };
+        AddictionUpsertRequest: {
+            title: string;
+            color: string;
+            /** Format: uuid */
+            goalId: null | string;
+        };
+        AddictionWithResetsDTO: {
+            addiction: components["schemas"]["AddictionDTO"];
+            /** Format: date */
+            resetDates: string[];
+            /** Format: date-time. When last reset was (for "time since" when reset was today). */
+            lastResetAt: null | string;
+        };
         AuthResponse: {
             token: string;
             refreshToken: string;

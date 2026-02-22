@@ -1,133 +1,120 @@
 <script setup lang="ts">
-import type { AddictionItem } from '@/models/AddictionItem';
-import Card from 'primevue/card';
-import ProgressBar from 'primevue/progressbar'
-import Button from 'primevue/button';
-import { useAddictionProgress } from '@/composables/useAddictionProgress'
-import { toRef } from 'vue';
-import { useRouter } from 'vue-router';
-import SwipeableCard from './SwipeableCard.vue';
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import AddictionDayRow from './AddictionDayRow.vue'
+import type { AddictionDTO, AddictionWithResetsDTO } from '@/api/AddictionsAPI'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { getTimeSince, fromDateOnlyString, toDateOnlyString, isSameDateOnly, startOfDay, parseUtcIso } from '@/utils/dateOnly'
+import { useI18n } from 'vue-i18n'
+import { useAddictionsStore } from '@/stores/addictions'
 
-const props = defineProps<{ addiction: AddictionItem }>()
+const props = defineProps<{ addiction: AddictionWithResetsDTO }>()
+
 const emit = defineEmits<{
-    (e: 'trigger', addiction: AddictionItem): void,
-    (e: 'reset', addiction: AddictionItem): void
+  (e: 'edit', addiction: AddictionDTO): void
 }>()
 
-const {
-    elapsedHours,
-    elapsedText,
-    progressPercent,
-    currentStage,
-    nextStageText
-} = useAddictionProgress(toRef(props.addiction))
+const { t } = useI18n()
+const addictionsStore = useAddictionsStore()
 
-const router = useRouter()
+/** Updated every minute so the "time since" counter refreshes. */
+const now = ref(new Date())
+let tickInterval: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  tickInterval = setInterval(() => {
+    now.value = new Date()
+  }, 60_000)
+})
+onUnmounted(() => {
+  if (tickInterval) clearInterval(tickInterval)
+})
 
-const open = () => {
-    router.push({
-        name: 'addiction-details',
-        params: { id: props.addiction.id }
-    })
+function onReset() {
+  addictionsStore.setReset(props.addiction.addiction.id, new Date())
 }
 
-const edit = () => { }
-const remove = () => { }
-const archive = () => { }
+/** Date of the most recent reset (last in list, since API returns ordered by ResetAt). */
+const lastResetDateKey = computed(() =>
+  props.addiction.resetDates.length ? props.addiction.resetDates[props.addiction.resetDates.length - 1]! : null
+)
 
+/** Reference moment for "time since": when last reset is today use lastResetAt (exact time), otherwise start of that day. */
+const timeSinceRef = computed(() => {
+  const key = lastResetDateKey.value
+  if (!key) return null
+  const lastResetAt = props.addiction.lastResetAt
+  const refDate = fromDateOnlyString(key)
+  if (lastResetAt && isSameDateOnly(parseUtcIso(lastResetAt), now.value)) {
+    return parseUtcIso(lastResetAt)
+  }
+  return startOfDay(refDate)
+})
+
+const timeSince = computed(() => {
+  const ref = timeSinceRef.value
+  if (!ref) return null
+  return getTimeSince(ref, now.value)
+})
+
+/** If days >= 5 show only days count; if days < 5 show full time (days, hours, minutes). */
+const timeSinceText = computed(() => {
+  const ts = timeSince.value
+  if (!ts) return null
+  if (ts.days >= 5) {
+    return t('addictions.daysCount', { count: ts.days })
+  }
+  return t('addictions.timeSince', { days: ts.days, hours: ts.hours, minutes: ts.minutes })
+})
 </script>
 
 <template>
-    <SwipeableCard :left-actions="[
-        {
-            icon: 'pi pi-pencil',
-            bg: 'var(--blue-500)',
-            onClick: () => edit()
-        }
-    ]" :right-actions="[
-        {
-            icon: 'pi pi-trash',
-            bg: 'var(--red-500)',
-            onClick: () => remove()
-        },
-        {
-            icon: 'pi pi-flag',
-            bg: 'var(--orange-500)',
-            onClick: () => archive()
-        }
-    ]" @open="open()">
-        <Card class="addiction-card">
-            <template #content>
-                <div class="card-header">
-                    <div class="icon-wrapper">
-                        <i class="pi icon" :class="addiction.icon" />
-                    </div>
-                    <div class="text-wrapper">
-                        <div class="title">
-                            {{ addiction.title }}
-                        </div>
-                        <div class="elapsed">
-                            {{ elapsedText }}
-                        </div>
-                    </div>
-                    <div class="control-wrapper">
-                        <Button label="Trigger" icon="pi pi-bolt" severity="danger"
-                            @click="emit('trigger', addiction)" />
-                        <Button label="Reset" icon="pi pi-undo" @click="emit('reset', addiction)" />
-                    </div>
-                </div>
+  <Card class="addiction-card">
+    <template #title>
+      <div class="addiction-card-header">
+        <div class="addiction-title" @click="emit('edit', addiction.addiction)">
+          {{ addiction.addiction.title }}
+        </div>
+        <Button :label="t('addictions.reset')" icon="pi pi-undo" severity="danger" size="small" @click="onReset" />
+      </div>
+    </template>
 
-                <div class="progress-wrapper">
-                    <ProgressBar :value="progressPercent">{{ nextStageText }}</ProgressBar>
-                </div>
-            </template>
-        </Card>
-    </SwipeableCard>
+    <template #content>
+      <div v-if="timeSinceText" class="time-since">
+        {{ timeSinceText }}
+      </div>
+
+      <AddictionDayRow :addiction="addiction" />
+    </template>
+  </Card>
 </template>
 
-
-<style>
+<style scoped>
 .addiction-card {
-    margin: 12px;
+  border-radius: 16px;
 }
 
-.card-header {
-    display: flex;
-    gap: 12px;
-    align-items: center;
+.addiction-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }
 
-.icon-wrapper {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: var(--surface-200);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+.addiction-title {
+  cursor: pointer;
+  user-select: none;
+  flex: 1;
+  min-width: 0;
 }
 
-.icon {
-    font-size: 20px;
+.time-since {
+  font-size: 0.875rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 8px;
 }
 
-.text-wrapper {
-    display: flex;
-    flex-direction: column;
-}
-
-.title {
-    font-weight: 600;
-    line-height: 1.2;
-}
-
-.elapsed {
-    font-size: 0.85rem;
-    color: var(--text-color-secondary);
-}
-
-.progress-wrapper {
-    margin-top: 12px;
+.time-since.no-reset {
+  font-style: italic;
 }
 </style>

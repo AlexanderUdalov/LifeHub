@@ -100,6 +100,22 @@
       "delete": "Delete"
     }
   },
+  "addictions": {
+    "addictions": "Addictions",
+    "timeSince": "{days}d {hours}h {minutes}m",
+    "daysCount": "{count} days",
+    "editdialog": {
+      "newAddiction": "New addiction",
+      "title": "Title",
+      "color": "Color",
+      "save": "Save",
+      "create": "Create",
+      "delete": "Delete"
+    },
+    "calendar": "Calendar",
+    "collapse": "Collapse",
+    "reset": "Reset"
+  },
   "toasts": {
     "logged-out": "You have logged out",
     "account-removed": "Your account has been removed"

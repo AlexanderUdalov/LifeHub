@@ -11,6 +11,8 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<LifeFocus> LifeFocuses => Set<LifeFocus>();
     public DbSet<Habit> Habits => Set<Habit>();
     public DbSet<HabitDay> HabitDays => Set<HabitDay>();
+    public DbSet<Addiction> Addictions => Set<Addiction>();
+    public DbSet<AddictionReset> AddictionResets => Set<AddictionReset>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,6 +29,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
 
         modelBuilder.Entity<User>()
             .HasMany(x => x.Habits)
+            .WithOne()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(x => x.Addictions)
             .WithOne()
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -54,6 +62,18 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .WithMany()
             .HasForeignKey(x => x.GoalId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Addiction>()
+            .HasOne(x => x.Goal)
+            .WithMany()
+            .HasForeignKey(x => x.GoalId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<AddictionReset>()
+            .HasOne(x => x.Addiction)
+            .WithMany(x => x.Resets)
+            .HasForeignKey(x => x.AddictionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Goal>()
             .HasOne(x => x.LifeFocus)

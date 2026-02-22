@@ -13,7 +13,7 @@ import GoalEditDialog from '@/components/GoalEditDialog.vue'
 import { goalsApi } from '@/api/GoalsAPI'
 import type { GoalItem } from '@/models/GoalItem'
 import type { HabitDTO } from '@/api/HabitsAPI'
-import type { AddictionItem } from '@/models/AddictionItem'
+import type { AddictionDTO } from '@/api/AddictionsAPI'
 import { type TaskDTO } from '@/api/TasksAPI'
 
 import { useI18n } from 'vue-i18n'
@@ -42,6 +42,11 @@ const tabMenuItems = computed(() => [
         route: '/habits',
     },
     {
+        label: t('addictions.addictions'),
+        icon: 'pi pi-ban',
+        route: '/addictions',
+    },
+    {
         label: t('profile'),
         icon: 'pi pi-user',
         route: '/profile',
@@ -58,6 +63,10 @@ const createPrimary = () => {
         editContext.value = { type: 'habit', item: null }
         return
     }
+    if (route.path.startsWith('/addictions')) {
+        editContext.value = { type: 'addiction', item: null }
+        return
+    }
     editContext.value = { type: 'task', item: null }
 }
 
@@ -69,7 +78,7 @@ const createPrimary = () => {
             <RouterView v-slot="{ Component }">
                 <component :is="Component" @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
                     @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
-                    @edit-addiction="(addiction: AddictionItem) => editContext = { type: 'addiction', item: addiction }"
+                    @edit-addiction="(addiction: AddictionDTO) => editContext = { type: 'addiction', item: addiction }"
                     @edit-goal="(goal: GoalItem) => editContext = { type: 'goal', item: goal }" />
             </RouterView>
         </main>
@@ -81,7 +90,7 @@ const createPrimary = () => {
         <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" :goals="goals"
             @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"
-            :goals="goals" @close="editContext = null" />
+            @close="editContext = null" />
         <GoalEditDialog v-if="editContext && editContext.type === 'goal'" :goal="editContext.item" :goals="goals"
             @close="editContext = null" />
 

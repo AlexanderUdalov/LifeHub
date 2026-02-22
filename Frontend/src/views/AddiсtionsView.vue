@@ -1,49 +1,32 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { addictionsApi } from '@/api/AddictionAPI'
-import type { AddictionItem } from '@/models/AddictionItem'
-
 import AddictionCard from '@/components/AddictionCard.vue'
-import AddictionTriggerModal from '@/components/AddictionTriggerModal.vue'
-import AddictionResetModal from '@/components/AddictionResetModal.vue'
+import { onMounted } from 'vue'
+import { useAddictionsStore } from '@/stores/addictions'
+import type { AddictionDTO } from '@/api/AddictionsAPI'
 
-const addictions = ref<AddictionItem[]>([])
-const activeAddiction = ref<AddictionItem | null>(null)
-const triggerVisible = ref(false)
-const resetVisible = ref(false)
+const addictionsStore = useAddictionsStore()
+
+const emit = defineEmits<{
+  (e: 'edit-addiction', addiction: AddictionDTO): void
+}>()
 
 onMounted(async () => {
-  addictions.value = await addictionsApi.getAddictions()
+  await addictionsStore.fetchAddictions(60)
 })
-
-function onTrigger(addiction: AddictionItem) {
-  activeAddiction.value = addiction
-  triggerVisible.value = true
-}
-
-function onReset(addiction: AddictionItem) {
-  activeAddiction.value = addiction
-  resetVisible.value = true
-}
-
-function handleReset(payload: { addiction: AddictionItem; note: string; }) {
-  resetVisible.value = false;
-  payload.addiction.lastReset = new Date();
-  // todo: store notes in the journal
-}
 </script>
 
 <template>
-  <AddictionCard v-for="addiction in addictions" :key="addiction.id" :addiction="addiction" @trigger="onTrigger"
-    @reset="onReset" />
-  <AddictionTriggerModal v-if="activeAddiction" v-model:visible="triggerVisible" :addiction="activeAddiction"
-    @close="triggerVisible = false" />
-  <AddictionResetModal v-if="activeAddiction" v-model:visible="resetVisible" :addiction="activeAddiction"
-    @close="resetVisible = false" @confirm="handleReset" />
+  <div class="addictions-view">
+    <AddictionCard v-for="a in addictionsStore.addictionsSorted" :key="a.addiction.id" :addiction="a"
+      @edit="(addiction) => emit('edit-addiction', addiction)" />
+  </div>
 </template>
 
 <style scoped>
-.tasks-list {
-  margin: 12px;
+.addictions-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
 }
 </style>

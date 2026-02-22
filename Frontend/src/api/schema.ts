@@ -677,6 +677,7 @@ export interface components {
     schemas: {
         AuthResponse: {
             token: string;
+            refreshToken: string;
         };
         CreateTaskRequest: {
             title: string;

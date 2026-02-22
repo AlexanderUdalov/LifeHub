@@ -11,6 +11,7 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<LifeFocus> LifeFocuses => Set<LifeFocus>();
     public DbSet<Habit> Habits => Set<Habit>();
     public DbSet<HabitDay> HabitDays => Set<HabitDay>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,6 +63,16 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
 
         modelBuilder.Entity<HabitDay>()
             .HasIndex(x => new { x.HabitId, x.Date })
+            .IsUnique();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(x => x.Token)
             .IsUnique();
 
         modelBuilder.Entity<HabitDay>()

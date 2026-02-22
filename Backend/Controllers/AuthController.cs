@@ -1,6 +1,6 @@
-
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using LifeHub.DTOs;
 using LifeHub.Models;
@@ -39,7 +39,10 @@ public class AuthController(ApplicationContext context, IConfiguration config) :
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        return Ok(new AuthResponse(new JwtSecurityTokenHandler().WriteToken(CreateJwtToken(user))));
+        var refreshToken = await CreateRefreshTokenAsync(user);
+        return Ok(new AuthResponse(
+            new JwtSecurityTokenHandler().WriteToken(CreateJwtToken(user)),
+            refreshToken.Token));
     }
 
     [HttpPost("login")]
@@ -60,9 +63,48 @@ public class AuthController(ApplicationContext context, IConfiguration config) :
         if (result == PasswordVerificationResult.Failed)
             return Unauthorized();
 
-        return Ok(new AuthResponse(new JwtSecurityTokenHandler().WriteToken(CreateJwtToken(user))));
+        var refreshToken = await CreateRefreshTokenAsync(user);
+        return Ok(new AuthResponse(
+            new JwtSecurityTokenHandler().WriteToken(CreateJwtToken(user)),
+            refreshToken.Token));
     }
 
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh(RefreshRequest request)
+    {
+        var stored = await context.RefreshTokens
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Token == request.RefreshToken);
+
+        if (stored is null || stored.RevokedAt is not null || stored.ExpiresAt < DateTime.UtcNow)
+            return Unauthorized();
+
+        stored.RevokedAt = DateTime.UtcNow;
+        var newRefreshToken = await CreateRefreshTokenAsync(stored.User);
+        await context.SaveChangesAsync();
+
+        var accessToken = new JwtSecurityTokenHandler().WriteToken(CreateJwtToken(stored.User));
+        return Ok(new AuthResponse(accessToken, newRefreshToken.Token));
+    }
+
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout(RefreshRequest request)
+    {
+        var stored = await context.RefreshTokens
+            .FirstOrDefaultAsync(x => x.Token == request.RefreshToken);
+
+        if (stored is not null && stored.RevokedAt is null)
+        {
+            stored.RevokedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+        }
+
+        return NoContent();
+    }
 
     [Authorize]
     [HttpGet]
@@ -135,6 +177,22 @@ public class AuthController(ApplicationContext context, IConfiguration config) :
             )
         );
         return token;
+    }
+
+    private async Task<RefreshToken> CreateRefreshTokenAsync(User user)
+    {
+        var expiresDays = int.Parse(config["RefreshToken:ExpiresDays"] ?? "7");
+        var refreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
+            ExpiresAt = DateTime.UtcNow.AddDays(expiresDays),
+            CreatedAt = DateTime.UtcNow
+        };
+        context.RefreshTokens.Add(refreshToken);
+        await context.SaveChangesAsync();
+        return refreshToken;
     }
 
     [Authorize]

@@ -9,9 +9,8 @@ import Dialog from 'primevue/dialog'
 import Divider from 'primevue/divider'
 import IftaLabel from 'primevue/iftalabel'
 import Message from 'primevue/message'
-import { useAuthStore } from '@/stores/auth'
 import router from "@/router";
-import { deleteUser, getUser, updateUser, type UpdateRequest, type User } from '@/api/AuthAPI'
+import { deleteUser, getUser, logout as apiLogout, updateUser, type UpdateRequest, type User } from "@/api/AuthAPI";
 
 import { useI18n } from 'vue-i18n'
 type Language = 'en' | 'ru'
@@ -114,16 +113,16 @@ async function changePassword() {
     }
 }
 
-const auth = useAuthStore();
-function logout() {
-    auth.logout()
-    router.push('/login')
+async function logout() {
+    await apiLogout();
+    router.push("/login");
 }
 
-const isDeleteDialogVisible = ref(false)
+const isDeleteDialogVisible = ref(false);
 async function deleteAccount() {
-    await deleteUser()
-    router.push('/register')
+    await deleteUser();
+    await apiLogout();
+    router.push("/register");
 }
 
 onMounted(async () => {

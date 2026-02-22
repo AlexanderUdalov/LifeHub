@@ -53,22 +53,18 @@ const submit = async ({ valid, values }: any) => {
     try {
         errorText.value = "";
         isLoading.value = true;
-        let token: string;
-        if (isRegister.value) {
-            token = await register({
+        const data = isRegister.value
+            ? await register({
                 name: values.nickname,
                 email: values.email,
                 password: values.password
-            });
-        }
-        else {
-            token = await login({
+            })
+            : await login({
                 email: values.email,
                 password: values.password
             });
-        }
 
-        auth.setToken(token);
+        auth.setTokens(data.token, data.refreshToken);
         router.push("/");
     }
     catch (e) {

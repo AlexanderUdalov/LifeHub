@@ -55,6 +55,13 @@ public class HabitsController(ApplicationContext context) : ControllerBase
             return BadRequest();
 
         var userId = User.GetUserId();
+        if (request.LifeAreaId.HasValue)
+        {
+            var lifeAreaExists = await context.LifeAreas.AnyAsync(x => x.Id == request.LifeAreaId.Value && x.UserId == userId);
+            if (!lifeAreaExists)
+                return BadRequest();
+        }
+
         var habit = new Habit
         {
             Id = Guid.NewGuid(),
@@ -62,7 +69,8 @@ public class HabitsController(ApplicationContext context) : ControllerBase
             Title = request.Title.Trim(),
             Color = (request.Color ?? "").Trim().Length > 0 ? request.Color!.Trim() : "#3b82f6",
             RecurrenceRule = request.RecurrenceRule.Trim(),
-            GoalId = request.GoalId
+            GoalId = request.GoalId,
+            LifeAreaId = request.LifeAreaId
         };
 
         context.Habits.Add(habit);
@@ -102,10 +110,18 @@ public class HabitsController(ApplicationContext context) : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.RecurrenceRule))
             return BadRequest();
 
+        if (request.LifeAreaId.HasValue)
+        {
+            var lifeAreaExists = await context.LifeAreas.AnyAsync(x => x.Id == request.LifeAreaId.Value && x.UserId == userId);
+            if (!lifeAreaExists)
+                return BadRequest();
+        }
+
         habit.Title = request.Title.Trim();
         habit.Color = (request.Color ?? "").Trim().Length > 0 ? request.Color!.Trim() : habit.Color;
         habit.RecurrenceRule = request.RecurrenceRule.Trim();
         habit.GoalId = request.GoalId;
+        habit.LifeAreaId = request.LifeAreaId;
 
         await context.SaveChangesAsync();
         return habit.ToDTO();

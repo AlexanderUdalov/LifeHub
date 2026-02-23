@@ -11,6 +11,7 @@ public record TaskDTO
     DateTimeOffset? CompletionDate,
     string? RecurrenceRule,
     Guid? GoalId,
+    Guid? LifeAreaId,
     int? SortOrder
 );
 
@@ -19,7 +20,8 @@ public record CreateTaskRequest(
     string? Description,
     DateTimeOffset? DueDate,
     string? RecurrenceRule,
-    Guid? GoalId
+    Guid? GoalId,
+    Guid? LifeAreaId
 );
 
 public record UpdateTaskRequest(
@@ -29,6 +31,7 @@ public record UpdateTaskRequest(
     DateTimeOffset? CompletionDate,
     string? RecurrenceRule,
     Guid? GoalId,
+    Guid? LifeAreaId,
     int? SortOrder
 );
 
@@ -43,6 +46,7 @@ public static class TaskMapping
             task.CompletionDate,
             task.RecurrenceRule,
             task.GoalId,
+            task.LifeAreaId,
             task.SortOrder
         );
 }

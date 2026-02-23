@@ -8,14 +8,14 @@ import TaskCard from './TaskCard.vue'
 import HabitCard from './HabitCard.vue'
 import AddictionCard from './AddictionCard.vue'
 import type { HabitWithHistoryDTO } from '@/api/HabitsAPI'
-import type { AddictionItem } from '@/models/AddictionItem'
+import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import type { TaskDTO } from '@/api/TasksAPI'
 
 const props = defineProps<{
     goal: GoalItem
     tasksMap: Record<number, TaskDTO>
     habitsMap: Record<number, HabitWithHistoryDTO>
-    addictionsMap: Record<number, AddictionItem>
+    addictionsMap: Record<number, AddictionWithResetsDTO>
 }>()
 
 function daysUntil(date: Date) {

@@ -7,7 +7,8 @@ public record AddictionDTO(
     string Title,
     string Color,
     DateTime CreatedAt,
-    Guid? GoalId
+    Guid? GoalId,
+    Guid? LifeAreaId
 );
 
 public record AddictionWithResetsDTO(
@@ -19,7 +20,8 @@ public record AddictionWithResetsDTO(
 public record AddictionUpsertRequest(
     string Title,
     string Color,
-    Guid? GoalId
+    Guid? GoalId,
+    Guid? LifeAreaId
 );
 
 public static class AddictionMapping
@@ -30,6 +32,7 @@ public static class AddictionMapping
             addiction.Title,
             addiction.Color,
             addiction.CreatedAt,
-            addiction.GoalId
+            addiction.GoalId,
+            addiction.LifeAreaId
         );
 }

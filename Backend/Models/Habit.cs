@@ -13,6 +13,8 @@ public class Habit
 
     public Guid? GoalId { get; set; }
     public Goal? Goal { get; set; }
+    public Guid? LifeAreaId { get; set; }
+    public LifeArea? LifeArea { get; set; }
 
     public List<HabitDay> Days { get; } = [];
 }

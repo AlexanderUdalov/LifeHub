@@ -7,9 +7,11 @@ import Textarea from 'primevue/textarea'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
 import Popover from 'primevue/popover'
+import Select from 'primevue/select'
 import { computed, ref } from 'vue'
 import { type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 import DateAndRecurrencePicker from '@/components/DateAndRecurrencePicker.vue'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 
@@ -24,6 +26,7 @@ const apiError = useApiError();
 
 import { useTasksStore } from '@/stores/tasks'
 const tasksStore = useTasksStore()
+const lifeAreasStore = useLifeAreasStore()
 
 const emit = defineEmits<{
     (e: 'close'): void
@@ -37,6 +40,7 @@ const localTask = ref<TaskDTO>({
     completionDate: props.task?.completionDate ? props.task.completionDate : null,
     recurrenceRule: props.task?.recurrenceRule ?? null,
     goalId: props.task?.goalId ? props.task.goalId : null,
+    lifeAreaId: props.task?.lifeAreaId ? props.task.lifeAreaId : null,
     sortOrder: props.task?.sortOrder ?? null
 })
 
@@ -97,6 +101,7 @@ async function onSave() {
                 completionDate: localTask.value.completionDate,
                 recurrenceRule: localTask.value.recurrenceRule,
                 goalId: localTask.value.goalId,
+                lifeAreaId: localTask.value.lifeAreaId,
                 sortOrder: localTask.value.dueDate ? null : (localTask.value.sortOrder ?? null)
             }
 
@@ -108,6 +113,7 @@ async function onSave() {
                 dueDate: localTask.value.dueDate,
                 recurrenceRule: localTask.value.recurrenceRule,
                 goalId: localTask.value.goalId,
+                lifeAreaId: localTask.value.lifeAreaId
             }
             await tasksStore.createNewTask(request)
         }
@@ -159,8 +165,8 @@ async function onDelete() {
             <label for="description">{{ $t('tasks.description') }}</label>
         </FloatLabel>
 
-        <div class="task-edit-date-and-repeat">
-            <label class="date-repeat-label">{{ $t('tasks.recurrence.dateAndRepeat') }}</label>
+        <div class="task-edit-section task-edit-date-and-repeat">
+            <label class="task-edit-field-label">{{ $t('tasks.recurrence.dateAndRepeat') }}</label>
             <Button
                 type="button"
                 :label="dateAndRepeatSummary"
@@ -177,6 +183,12 @@ async function onDelete() {
                     @close="dateRecurrencePopover?.hide()"
                 />
             </Popover>
+        </div>
+
+        <div class="task-edit-section">
+            <label class="task-edit-field-label">{{ t('lifeareas.field') }}</label>
+            <Select v-model="localTask.lifeAreaId" class="lifearea-select" :options="lifeAreasStore.lifeAreas" option-label="name"
+                option-value="id" show-clear :placeholder="t('lifeareas.selectPlaceholder')" />
         </div>
 
         <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
@@ -232,11 +244,11 @@ async function onDelete() {
     padding-top: 0.25rem;
 }
 
-.task-edit-date-and-repeat {
+.task-edit-section {
     margin-top: 1rem;
 }
 
-.task-edit-date-and-repeat .date-repeat-label {
+.task-edit-section .task-edit-field-label {
     display: block;
     font-size: 0.875rem;
     color: var(--p-text-muted-color);
@@ -247,5 +259,9 @@ async function onDelete() {
 .task-edit-date-and-repeat .date-repeat-trigger {
     width: 100%;
     justify-content: center;
+}
+
+.task-edit-section .lifearea-select {
+    width: 100%;
 }
 </style>

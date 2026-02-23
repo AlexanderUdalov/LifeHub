@@ -13,6 +13,7 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<HabitDay> HabitDays => Set<HabitDay>();
     public DbSet<Addiction> Addictions => Set<Addiction>();
     public DbSet<AddictionReset> AddictionResets => Set<AddictionReset>();
+    public DbSet<LifeArea> LifeAreas => Set<LifeArea>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,6 +36,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
 
         modelBuilder.Entity<User>()
             .HasMany(x => x.Addictions)
+            .WithOne()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(x => x.LifeAreas)
             .WithOne()
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -67,6 +74,30 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .HasOne(x => x.Goal)
             .WithMany()
             .HasForeignKey(x => x.GoalId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<TaskItem>()
+            .HasOne(x => x.LifeArea)
+            .WithMany()
+            .HasForeignKey(x => x.LifeAreaId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Habit>()
+            .HasOne(x => x.LifeArea)
+            .WithMany()
+            .HasForeignKey(x => x.LifeAreaId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Addiction>()
+            .HasOne(x => x.LifeArea)
+            .WithMany()
+            .HasForeignKey(x => x.LifeAreaId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Goal>()
+            .HasOne(x => x.LifeArea)
+            .WithMany()
+            .HasForeignKey(x => x.LifeAreaId)
             .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<AddictionReset>()

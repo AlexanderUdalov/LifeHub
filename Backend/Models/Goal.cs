@@ -11,5 +11,7 @@ public class Goal
 
     public Guid? LifeFocusId { get; set; }
     public LifeFocus? LifeFocus { get; set; }
+    public Guid? LifeAreaId { get; set; }
+    public LifeArea? LifeArea { get; set; }
     public List<TaskItem> Tasks { get; } = [];
 }

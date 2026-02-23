@@ -64,6 +64,13 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
             return BadRequest();
 
         var userId = User.GetUserId();
+        if (request.LifeAreaId.HasValue)
+        {
+            var lifeAreaExists = await context.LifeAreas.AnyAsync(x => x.Id == request.LifeAreaId.Value && x.UserId == userId);
+            if (!lifeAreaExists)
+                return BadRequest();
+        }
+
         var addiction = new Addiction
         {
             Id = Guid.NewGuid(),
@@ -71,7 +78,8 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
             Title = request.Title.Trim(),
             Color = request.Color.Trim(),
             CreatedAt = DateTime.UtcNow,
-            GoalId = request.GoalId
+            GoalId = request.GoalId,
+            LifeAreaId = request.LifeAreaId
         };
 
         context.Addictions.Add(addiction);
@@ -111,9 +119,17 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Title))
             return BadRequest();
 
+        if (request.LifeAreaId.HasValue)
+        {
+            var lifeAreaExists = await context.LifeAreas.AnyAsync(x => x.Id == request.LifeAreaId.Value && x.UserId == userId);
+            if (!lifeAreaExists)
+                return BadRequest();
+        }
+
         addiction.Title = request.Title.Trim();
         addiction.Color = request.Color.Trim();
         addiction.GoalId = request.GoalId;
+        addiction.LifeAreaId = request.LifeAreaId;
 
         await context.SaveChangesAsync();
         return addiction.ToDTO();

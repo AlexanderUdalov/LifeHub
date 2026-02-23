@@ -10,51 +10,43 @@ import TaskEditDialog from '@/components/TaskEditDialog.vue'
 import HabitEditDialog from '@/components/HabitEditDialog.vue'
 import AddictionEditDialog from '@/components/AddictionEditDialog.vue'
 import GoalEditDialog from '@/components/GoalEditDialog.vue'
+import LifeAreaEditDialog from '@/components/LifeAreaEditDialog.vue'
 import { goalsApi } from '@/api/GoalsAPI'
 import type { GoalItem } from '@/models/GoalItem'
 import type { HabitDTO } from '@/api/HabitsAPI'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
+import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { type TaskDTO } from '@/api/TasksAPI'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
-type ItemType = 'task' | 'habit' | 'addiction' | 'goal'
+type ItemType = 'task' | 'habit' | 'addiction' | 'goal' | 'lifearea'
 type EditContext =
     | { type: ItemType; item: null }
     | { type: ItemType; item: any }
     | null
 
 const editContext = ref<EditContext>(null)
+const lifeAreasStore = useLifeAreasStore()
 
 const router = useRouter()
 const route = useRoute()
 
-const tabMenuItems = computed(() => [
-    {
-        label: t('tasks.tasks'),
-        icon: 'pi pi-check-square',
-        route: '/tasks',
-    },
-    {
-        label: t('habits.habits'),
-        icon: 'pi pi-calendar',
-        route: '/habits',
-    },
-    {
-        label: t('addictions.addictions'),
-        icon: 'pi pi-ban',
-        route: '/addictions',
-    },
-    {
-        label: t('profile'),
-        icon: 'pi pi-user',
-        route: '/profile',
-    },
+const leftTabs = computed(() => [
+    { label: t('tasks.tasks'), icon: 'pi pi-check-square', route: '/tasks' },
+    { label: t('habits.habits'), icon: 'pi pi-calendar', route: '/habits' },
+])
+const centerTab = { route: '/lifeareas' }
+const rightTabs = computed(() => [
+    { label: t('addictions.addictions'), icon: 'pi pi-ban', route: '/addictions' },
+    { label: t('profile'), icon: 'pi pi-user', route: '/profile' },
 ])
 
 const goals = ref<GoalItem[]>([])
 onMounted(async () => {
+    await lifeAreasStore.fetchLifeAreas()
     goals.value = await goalsApi.getGoals()
 })
 
@@ -65,6 +57,10 @@ const createPrimary = () => {
     }
     if (route.path.startsWith('/addictions')) {
         editContext.value = { type: 'addiction', item: null }
+        return
+    }
+    if (route.path.startsWith('/lifeareas')) {
+        editContext.value = { type: 'lifearea', item: null }
         return
     }
     editContext.value = { type: 'task', item: null }
@@ -79,6 +75,7 @@ const createPrimary = () => {
                 <component :is="Component" @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
                     @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
                     @edit-addiction="(addiction: AddictionDTO) => editContext = { type: 'addiction', item: addiction }"
+                    @edit-lifearea="(area: LifeAreaDTO) => editContext = { type: 'lifearea', item: area }"
                     @edit-goal="(goal: GoalItem) => editContext = { type: 'goal', item: goal }" />
             </RouterView>
         </main>
@@ -91,15 +88,28 @@ const createPrimary = () => {
             @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"
             @close="editContext = null" />
+        <LifeAreaEditDialog v-if="editContext && editContext.type === 'lifearea'" :area="editContext.item"
+            @close="editContext = null" />
         <GoalEditDialog v-if="editContext && editContext.type === 'goal'" :goal="editContext.item" :goals="goals"
             @close="editContext = null" />
 
         <Tabs :value="route.path" @update:value="(v) => router.push(v as string)">
-            <TabList>
-                <Tab v-for="tab in tabMenuItems" :key="tab.route" :value="tab.route" class="tab">
-                    <i :class="tab.icon" />
-                    <span>{{ tab.label }}</span>
+            <TabList class="tab-list">
+                <div class="tab-group tab-group-left">
+                    <Tab v-for="tab in leftTabs" :key="tab.route" :value="tab.route" class="tab">
+                        <i :class="tab.icon" />
+                        <span class="tab-label">{{ tab.label }}</span>
+                    </Tab>
+                </div>
+                <Tab :value="centerTab.route" class="tab tab-center">
+                    <img src="/favicon.ico" class="tab-logo" :alt="t('lifeareas.title')" />
                 </Tab>
+                <div class="tab-group tab-group-right">
+                    <Tab v-for="tab in rightTabs" :key="tab.route" :value="tab.route" class="tab">
+                        <i :class="tab.icon" />
+                        <span class="tab-label">{{ tab.label }}</span>
+                    </Tab>
+                </div>
             </TabList>
         </Tabs>
     </div>
@@ -112,18 +122,77 @@ const createPrimary = () => {
     max-height: calc(100dvh - 72px);
 }
 
+.tab-list {
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+    align-items: stretch;
+}
+
+.tab-group {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    overflow: hidden;
+}
+
+.tab-group-left {
+    justify-content: flex-end;
+}
+
+.tab-group-right {
+    justify-content: flex-start;
+}
+
 .tab {
     flex: 1;
+    min-width: 0;
     min-height: 4px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    overflow: hidden;
+}
+
+.tab-center {
+    flex: 0 0 auto;
+    width: 3.5rem;
+}
+
+.tab-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    font-size: 0.7rem;
+}
+
+.tab-logo {
+    width: 1.8rem;
+    height: 1.8rem;
+    display: block;
 }
 
 :deep(.p-tabs) {
     position: fixed;
-    bottom: 0px;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
+    overflow: hidden;
     box-shadow: 2px 2px 10px 2px rgba(255, 255, 255, 0.08);
+}
+
+:deep(.p-tablist) {
+    overflow: hidden;
+}
+
+@media (max-width: 420px) {
+    .tab-label {
+        display: none;
+    }
 }
 
 .fab {

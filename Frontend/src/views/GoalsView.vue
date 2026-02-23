@@ -3,16 +3,16 @@ import { onMounted, ref } from 'vue'
 import GoalCard from '@/components/GoalCard.vue'
 import { goalsApi } from '@/api/GoalsAPI'
 import { habitsApi } from '@/api/HabitsAPI'
-import { addictionsApi } from '@/api/AddictionAPI'
+import { addictionsApi } from '@/api/AddictionsAPI'
 import type { GoalItem } from '@/models/GoalItem'
 import type { HabitWithHistoryDTO } from '@/api/HabitsAPI'
-import type { AddictionItem } from '@/models/AddictionItem'
+import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import { getTasks, type TaskDTO } from '@/api/TasksAPI'
 
 const goals = ref<GoalItem[]>([])
 const tasksMap = ref<Record<number, TaskDTO>>({})
 const habitsMap = ref<Record<number, HabitWithHistoryDTO>>({})
-const addictionsMap = ref<Record<number, AddictionItem>>({})
+const addictionsMap = ref<Record<number, AddictionWithResetsDTO>>({})
 
 onMounted(async () => {
     goals.value = await goalsApi.getGoals()
@@ -31,7 +31,7 @@ onMounted(async () => {
     const addictions = await addictionsApi.getAddictions()
 
     addictionsMap.value = Object.fromEntries(
-        addictions.map(addiction => [addiction.id, addiction])
+        addictions.map(addiction => [Number(addiction.addiction.id), addiction])
     )
 })
 

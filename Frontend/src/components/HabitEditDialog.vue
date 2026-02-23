@@ -2,6 +2,7 @@
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -10,6 +11,7 @@ import { RRule } from 'rrule'
 import { useHabitsStore } from '@/stores/habits'
 import type { HabitDTO } from '@/api/HabitsAPI'
 import { parseRuleToOptions, optionsToRuleString } from '@/composables/useRecurrenceOptions'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useApiError } from '@/composables/useApiError'
 
 const HABIT_COLOR_OPTIONS = [
@@ -20,15 +22,16 @@ type LocalHabit = {
   title: string
   color: string
   selectedWeekdays: number[]
+  lifeAreaId: string | null
 }
 
 function getInitialHabit(habit: HabitDTO | null): LocalHabit {
   if (!habit) {
-    return { title: '', color: HABIT_COLOR_OPTIONS[0] ?? '#3b82f6', selectedWeekdays: [] }
+    return { title: '', color: HABIT_COLOR_OPTIONS[0] ?? '#3b82f6', selectedWeekdays: [], lifeAreaId: null }
   }
   const opt = parseRuleToOptions(habit.recurrenceRule)
   const selectedWeekdays = opt.byweekday ?? []
-  return { title: habit.title, color: habit.color, selectedWeekdays }
+  return { title: habit.title, color: habit.color, selectedWeekdays, lifeAreaId: habit.lifeAreaId }
 }
 
 const props = defineProps<{
@@ -41,6 +44,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const habitsStore = useHabitsStore()
+const lifeAreasStore = useLifeAreasStore()
 const apiError = useApiError()
 
 const localHabit = ref<LocalHabit>(getInitialHabit(props.habit))
@@ -102,7 +106,8 @@ async function onSave() {
       title: localHabit.value.title.trim(),
       color: localHabit.value.color.trim(),
       recurrenceRule: recurrenceRule.value,
-      goalId: null
+      goalId: null,
+      lifeAreaId: localHabit.value.lifeAreaId
     }
 
     if (isEdit.value) {
@@ -152,6 +157,12 @@ async function onDelete() {
           :class="{ selected: localHabit.color === color }" :style="{ backgroundColor: color }"
           :aria-pressed="localHabit.color === color" :aria-label="color" @click="localHabit.color = color" />
       </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">{{ t('lifeareas.field') }}</label>
+      <Select v-model="localHabit.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
+        show-clear :placeholder="t('lifeareas.selectPlaceholder')" />
     </div>
 
     <div class="form-field">

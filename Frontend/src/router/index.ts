@@ -17,6 +17,7 @@ const router = createRouter({
         { path: "tasks", component: () => import("@/views/TasksView.vue") },
         { path: "habits", component: () => import("@/views/HabitsView.vue") },
         { path: "addictions", component: () => import("@/views/AddiсtionsView.vue") },
+        { path: "lifeareas", component: () => import("@/views/LifeAreasView.vue") },
         { path: "goals", component: () => import("@/views/GoalsView.vue") },
         { path: "journal", component: () => import("@/views/JournalView.vue") },
         { path: "profile", component: () => import("@/views/ProfileView.vue") },

@@ -7,8 +7,14 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { getTimeSince, fromDateOnlyString, toDateOnlyString, isSameDateOnly, startOfDay, parseUtcIso } from '@/utils/dateOnly'
 import { useI18n } from 'vue-i18n'
 import { useAddictionsStore } from '@/stores/addictions'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 
 const props = defineProps<{ addiction: AddictionWithResetsDTO }>()
+const lifeAreasStore = useLifeAreasStore()
+const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.addiction.addiction.lifeAreaId))
+const cardBorderStyle = computed(() =>
+  areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
+)
 
 const emit = defineEmits<{
   (e: 'edit', addiction: AddictionDTO): void
@@ -68,7 +74,7 @@ const timeSinceText = computed(() => {
 </script>
 
 <template>
-  <Card class="addiction-card">
+  <Card class="addiction-card" :style="cardBorderStyle">
     <template #title>
       <div class="addiction-card-header">
         <div class="addiction-title" @click="emit('edit', addiction.addiction)">
@@ -91,6 +97,8 @@ const timeSinceText = computed(() => {
 <style scoped>
 .addiction-card {
   border-radius: 16px;
+  border-left-width: 4px;
+  border-left-style: solid;
 }
 
 .addiction-card-header {

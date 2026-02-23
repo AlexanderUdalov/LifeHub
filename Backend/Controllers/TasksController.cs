@@ -31,9 +31,10 @@ public class TasksController(ApplicationContext context) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TaskDTO>> Get(Guid id)
     {
+        var userId = User.GetUserId();
         var task = await context.Tasks
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
 
         if (task is null)
             return NotFound();
@@ -46,6 +47,13 @@ public class TasksController(ApplicationContext context) : ControllerBase
     public async Task<ActionResult<TaskDTO>> Create(CreateTaskRequest request)
     {
         var userId = User.GetUserId();
+        if (request.LifeAreaId.HasValue)
+        {
+            var lifeAreaExists = await context.LifeAreas.AnyAsync(x => x.Id == request.LifeAreaId.Value && x.UserId == userId);
+            if (!lifeAreaExists)
+                return BadRequest();
+        }
+
         var task = new TaskItem
         {
             Id = Guid.NewGuid(),
@@ -54,7 +62,8 @@ public class TasksController(ApplicationContext context) : ControllerBase
             Description = request.Description,
             DueDate = request.DueDate,
             RecurrenceRule = request.RecurrenceRule,
-            GoalId = request.GoalId
+            GoalId = request.GoalId,
+            LifeAreaId = request.LifeAreaId
         };
 
         context.Tasks.Add(task);
@@ -68,7 +77,8 @@ public class TasksController(ApplicationContext context) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TaskDTO>> Update(Guid id, UpdateTaskRequest request)
     {
-        var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == id);
+        var userId = User.GetUserId();
+        var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
 
         if (task is null)
             return NotFound();
@@ -76,12 +86,20 @@ public class TasksController(ApplicationContext context) : ControllerBase
         if (request.Title is null)
             return BadRequest();
 
+        if (request.LifeAreaId.HasValue)
+        {
+            var lifeAreaExists = await context.LifeAreas.AnyAsync(x => x.Id == request.LifeAreaId.Value && x.UserId == userId);
+            if (!lifeAreaExists)
+                return BadRequest();
+        }
+
         task.Title = request.Title;
         task.Description = request.Description;
         task.DueDate = request.DueDate;
         task.CompletionDate = request.CompletionDate;
         task.RecurrenceRule = request.RecurrenceRule;
         task.GoalId = request.GoalId;
+        task.LifeAreaId = request.LifeAreaId;
         task.SortOrder = request.SortOrder;
 
         await context.SaveChangesAsync();
@@ -93,7 +111,8 @@ public class TasksController(ApplicationContext context) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == id);
+        var userId = User.GetUserId();
+        var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
 
         if (task is null)
             return NotFound();

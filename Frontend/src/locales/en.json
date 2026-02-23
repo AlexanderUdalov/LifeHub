@@ -116,6 +116,24 @@
     "collapse": "Collapse",
     "reset": "Reset"
   },
+  "lifeareas": {
+    "title": "Life Areas",
+    "field": "Life area",
+    "selectPlaceholder": "No area",
+    "empty": "Add your first life area",
+    "addFirst": "Add life area",
+    "add": "Add life area",
+    "editdialog": {
+      "newLifeArea": "New life area",
+      "editTitle": "Edit life area",
+      "nameLabel": "Name",
+      "color": "Color",
+      "save": "Save",
+      "create": "Create",
+      "delete": "Delete",
+      "limitReached": "Life areas limit reached (10)"
+    }
+  },
   "toasts": {
     "logged-out": "You have logged out",
     "account-removed": "Your account has been removed"

@@ -2,11 +2,13 @@
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 import { useAddictionsStore } from '@/stores/addictions'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useApiError } from '@/composables/useApiError'
 
 const ADDICTION_COLOR_OPTIONS = [
@@ -23,10 +25,12 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const addictionsStore = useAddictionsStore()
+const lifeAreasStore = useLifeAreasStore()
 const apiError = useApiError()
 
 const localTitle = ref(props.addiction?.title ?? '')
 const localColor = ref(props.addiction?.color ?? ADDICTION_COLOR_OPTIONS[0] ?? '#ef4444')
+const localLifeAreaId = ref<string | null>(props.addiction?.lifeAreaId ?? null)
 
 const isEdit = computed(() => !!props.addiction)
 const canSave = computed(() => localTitle.value.trim().length > 0)
@@ -43,7 +47,8 @@ async function onSave() {
     const request = {
       title: localTitle.value.trim(),
       color: localColor.value.trim(),
-      goalId: null as string | null
+      goalId: null as string | null,
+      lifeAreaId: localLifeAreaId.value
     }
     if (isEdit.value) {
       await addictionsStore.updateAddiction(props.addiction!.id, request)
@@ -93,6 +98,12 @@ async function onDelete() {
           :class="{ selected: localColor === color }" :style="{ backgroundColor: color }"
           :aria-pressed="localColor === color" :aria-label="color" @click="localColor = color" />
       </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">{{ t('lifeareas.field') }}</label>
+      <Select v-model="localLifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id" show-clear
+        :placeholder="t('lifeareas.selectPlaceholder')" />
     </div>
 
     <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">

@@ -118,7 +118,8 @@ export const useTasksStore = defineStore('tasks', () => {
                         description: task.description,
                         dueDate: nextDate.toISOString(),
                         recurrenceRule: task.recurrenceRule,
-                        goalId: task.goalId
+                        goalId: task.goalId,
+                        lifeAreaId: task.lifeAreaId
                     })
                 }
             }
@@ -130,6 +131,7 @@ export const useTasksStore = defineStore('tasks', () => {
                 completionDate: task.completionDate,
                 recurrenceRule: task.recurrenceRule,
                 goalId: task.goalId,
+                lifeAreaId: task.lifeAreaId,
                 sortOrder: task.sortOrder
             })
         } catch {
@@ -153,6 +155,7 @@ export const useTasksStore = defineStore('tasks', () => {
                     completionDate: t.completionDate,
                     recurrenceRule: t.recurrenceRule,
                     goalId: t.goalId,
+                    lifeAreaId: t.lifeAreaId,
                     sortOrder: i
                 })
             }

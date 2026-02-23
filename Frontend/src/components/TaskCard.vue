@@ -5,10 +5,16 @@ import { computed, ref, watch } from 'vue'
 import type { TaskDTO } from '@/api/TasksAPI'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 
 const props = withDefaults(
   defineProps<{ task: TaskDTO; draggable?: boolean }>(),
   { draggable: false }
+)
+const lifeAreasStore = useLifeAreasStore()
+const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.task.lifeAreaId))
+const cardBorderStyle = computed(() =>
+  areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
 )
 const emit = defineEmits<{
   (e: 'edit', task: TaskDTO): void
@@ -57,7 +63,7 @@ const recurrenceText = computed(() =>
 
 
 <template>
-  <Card class="task-card">
+  <Card class="task-card" :style="cardBorderStyle">
     <template #title>
       <div class="task-card-title-row" @click="onHeaderClick">
         <Checkbox v-model="localCompleted" name="completed" binary @click.stop />
@@ -91,6 +97,8 @@ const recurrenceText = computed(() =>
 <style scoped>
 .task-card {
   border-radius: 0px;
+  border-left-width: 4px;
+  border-left-style: solid;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;

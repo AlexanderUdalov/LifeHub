@@ -34,6 +34,21 @@ const lifeAreasStore = useLifeAreasStore()
 const router = useRouter()
 const route = useRoute()
 
+const contentRef = ref<HTMLElement | null>(null)
+const contentScrollTop = ref(0)
+const SCROLL_THRESHOLD = 8
+
+const currentTitle = computed(() => {
+    const key = (route.meta as { titleKey?: string }).titleKey
+    return key ? t(key) : ''
+})
+
+const showStickyHeader = computed(() => currentTitle.value && contentScrollTop.value > SCROLL_THRESHOLD)
+
+function onContentScroll() {
+    contentScrollTop.value = contentRef.value?.scrollTop ?? 0
+}
+
 const leftTabs = computed(() => [
     { label: t('tasks.tasks'), icon: 'pi pi-check-square', route: '/tasks' },
     { label: t('habits.habits'), icon: 'pi pi-calendar', route: '/habits' },
@@ -70,7 +85,12 @@ const createPrimary = () => {
 
 <template>
     <div>
-        <main class="content">
+        <Transition name="sticky-header">
+            <div v-if="showStickyHeader" class="sticky-header" aria-hidden="true">
+                <span class="sticky-header-title">{{ currentTitle }}</span>
+            </div>
+        </Transition>
+        <main ref="contentRef" class="content" @scroll="onContentScroll">
             <RouterView v-slot="{ Component }">
                 <component :is="Component" @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
                     @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
@@ -116,6 +136,42 @@ const createPrimary = () => {
 </template>
 
 <style scoped>
+.sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--p-surface-ground) 92%, transparent) 0%,
+        color-mix(in srgb, var(--p-surface-ground) 50%, transparent) 40%,
+        transparent 100%
+    );
+}
+
+.sticky-header-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--p-text-color);
+    text-align: center;
+}
+
+.sticky-header-enter-active,
+.sticky-header-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.sticky-header-enter-from,
+.sticky-header-leave-to {
+    opacity: 0;
+}
+
 .content {
     flex: 1;
     overflow-y: auto;

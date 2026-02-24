@@ -17,6 +17,7 @@ onMounted(async () => {
 
 <template>
     <div class="habits-view">
+        <h1 class="view-page-header">{{ $t('habits.habits') }}</h1>
         <HabitCard v-for="h in habitsStore.habitsSorted" :key="h.habit.id" :habit="h"
             @edit="(habit) => emit('edit-habit', habit)" />
     </div>
@@ -27,6 +28,12 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 12px;
+    padding: 0 12px 12px;
+}
+
+.view-page-header {
+  font-size: var(--p-card-title-font-size);
+  font-weight: 600;
+  text-align: center;
 }
 </style>

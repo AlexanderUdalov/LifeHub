@@ -134,6 +134,9 @@
       "limitReached": "Life areas limit reached (10)"
     }
   },
+  "goals": {
+    "title": "Goals"
+  },
   "toasts": {
     "logged-out": "You have logged out",
     "account-removed": "Your account has been removed"

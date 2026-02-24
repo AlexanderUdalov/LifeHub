@@ -105,6 +105,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 </script>
 
 <template>
+  <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
   <Accordion :value="['0']" multiple>
     <template v-for="(section, index) in taskSections" :key="section.key">
       <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
@@ -143,6 +144,12 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
 
 <style scoped>
+.view-page-header {
+  font-size: var(--p-card-title-font-size);
+  font-weight: 600;
+  text-align: center;
+}
+
 .tasks-list {
   font-size: large;
 }

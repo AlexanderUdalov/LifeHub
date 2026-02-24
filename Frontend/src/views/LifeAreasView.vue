@@ -47,7 +47,7 @@ function onEditArea(area: LifeAreaDTO) {
 
 <template>
   <div class="lifeareas-view">
-    <h1 class="view-header">{{ t('lifeareas.title') }}</h1>
+    <h1 class="view-page-header">{{ $t('lifeareas.title') }}</h1>
 
     <div class="wheel-wrap">
       <div class="wheel" :style="wheelStyle" aria-hidden="true" />
@@ -68,16 +68,12 @@ function onEditArea(area: LifeAreaDTO) {
   flex-direction: column;
   gap: 1rem;
   align-items: center;
-  padding: 1rem;
-  padding-bottom: 2rem;
+  padding: 0 1rem 2rem;
 }
 
-.view-header {
-  margin: 0;
-  font-size: 1.5rem;
+.view-page-header {
+  font-size: var(--p-card-title-font-size);
   font-weight: 600;
-  color: var(--p-text-color);
-  width: 100%;
   text-align: center;
 }
 

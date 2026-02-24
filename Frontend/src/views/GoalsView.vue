@@ -38,6 +38,24 @@ onMounted(async () => {
 </script>
 
 <template>
-    <GoalCard v-for="goal in goals" :key="goal.id" :goal="goal" :tasksMap="tasksMap" :habitsMap="habitsMap"
-        :addictionsMap="addictionsMap" />
+    <div class="goals-view">
+        <h1 class="view-page-header">{{ $t('goals.title') }}</h1>
+        <GoalCard v-for="goal in goals" :key="goal.id" :goal="goal" :tasksMap="tasksMap" :habitsMap="habitsMap"
+            :addictionsMap="addictionsMap" />
+    </div>
 </template>
+
+<style scoped>
+.goals-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 12px 12px;
+}
+
+.view-page-header {
+    font-size: var(--p-card-title-font-size);
+    font-weight: 600;
+    text-align: center;
+}
+</style>

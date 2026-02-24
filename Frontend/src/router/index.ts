@@ -14,11 +14,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         { path: "", redirect: "/tasks" },
-        { path: "tasks", component: () => import("@/views/TasksView.vue") },
-        { path: "habits", component: () => import("@/views/HabitsView.vue") },
-        { path: "addictions", component: () => import("@/views/AddiсtionsView.vue") },
-        { path: "lifeareas", component: () => import("@/views/LifeAreasView.vue") },
-        { path: "goals", component: () => import("@/views/GoalsView.vue") },
+        { path: "tasks", component: () => import("@/views/TasksView.vue"), meta: { titleKey: "tasks.tasks" } },
+        { path: "habits", component: () => import("@/views/HabitsView.vue"), meta: { titleKey: "habits.habits" } },
+        { path: "addictions", component: () => import("@/views/AddiсtionsView.vue"), meta: { titleKey: "addictions.addictions" } },
+        { path: "lifeareas", component: () => import("@/views/LifeAreasView.vue"), meta: { titleKey: "lifeareas.title" } },
+        { path: "goals", component: () => import("@/views/GoalsView.vue"), meta: { titleKey: "goals.title" } },
         { path: "journal", component: () => import("@/views/JournalView.vue") },
         { path: "profile", component: () => import("@/views/ProfileView.vue") },
       ]

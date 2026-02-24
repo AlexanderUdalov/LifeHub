@@ -60,5 +60,4 @@ jobs:
           export Jwt__Key="${{ secrets.JWT_KEY }}"
           rsync -av --delete ~/publish/migrate /var/www/lifehub/database/migrate
           chmod +x /var/www/lifehub/database/migrate
-          # Run migrate as www-data so it can write to the database (same owner as the app)
-          sudo -u www-data env Jwt__Key="${{ secrets.JWT_KEY }}" /var/www/lifehub/database/migrate
+          /var/www/lifehub/database/migrate

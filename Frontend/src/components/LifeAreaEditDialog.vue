@@ -6,7 +6,7 @@ import Message from 'primevue/message'
 import ColorPicker from 'primevue/colorpicker'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -29,6 +29,13 @@ const apiError = useApiError()
 const localName = ref(props.area?.name ?? '')
 const localColor = ref(props.area?.color ?? DEFAULT_COLOR)
 const localEmoji = ref(props.area?.emoji ?? null)
+
+const emojiTheme = ref<'light' | 'dark' | 'auto'>('auto')
+
+onMounted(() => {
+  const isDark = document.documentElement.classList.contains('p-dark')
+  emojiTheme.value = isDark ? 'dark' : 'light'
+})
 
 const isEdit = computed(() => !!props.area)
 const canSave = computed(() => localName.value.trim().length > 0 && localColor.value.trim().length > 0)
@@ -89,55 +96,34 @@ async function onDelete() {
 </script>
 
 <template>
-  <Dialog
-    modal
-    :visible="true"
-    :closable="false"
-    :draggable="false"
-    class="lifearea-edit-dialog"
-    :pt="{
-      root: { class: 'lifearea-edit-dialog-root' },
-      header: { class: 'lifearea-edit-header' },
-      content: { class: 'lifearea-edit-content' }
-    }"
-    @hide="emit('close')"
-  >
+  <Dialog modal :visible="true" :closable="false" :draggable="false" class="lifearea-edit-dialog" :pt="{
+    root: { class: 'lifearea-edit-dialog-root' },
+    header: { class: 'lifearea-edit-header' },
+    content: { class: 'lifearea-edit-content' }
+  }" @hide="emit('close')">
     <template #header>
       <div class="lifearea-edit-header-left">
-        <InputText
-          id="lifearea-name"
-          class="lifearea-edit-title"
-          v-model="localName"
-          :placeholder="t('lifeareas.editdialog.newLifeArea')"
-          size="large"
-        />
+        <InputText id="lifearea-name" class="lifearea-edit-title" v-model="localName"
+          :placeholder="t('lifeareas.editdialog.newLifeArea')" size="large" />
       </div>
       <div class="lifearea-edit-close-wrap">
-        <Button
-          icon="pi pi-times"
-          severity="secondary"
-          rounded
-          variant="outlined"
-          aria-label="Close"
-          size="small"
-          @click="emit('close')"
-        />
+        <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Close" size="small"
+          @click="emit('close')" />
       </div>
     </template>
 
     <div class="lifearea-edit-section">
       <label class="lifearea-edit-field-label" for="lifearea-color">{{ t('lifeareas.editdialog.color') }}</label>
-      <div class="color-picker-wrap">
-        <ColorPicker id="lifearea-color" v-model="localColor" format="hex" inline class="color-picker" />
-      </div>
+      <ColorPicker id="lifearea-color" v-model="localColor" format="hex" inline class="color-picker" />
     </div>
 
     <div class="lifearea-edit-section">
-      <label class="lifearea-edit-field-label">{{ t('lifeareas.editdialog.emoji') }}</label>
-      <div class="emoji-picker-wrap">
-        <EmojiPicker :native="true" @select="(e: { i: string }) => { localEmoji = e.i }" />
-        <div v-if="localEmoji" class="lifearea-edit-emoji-preview">{{ localEmoji }}</div>
+      <div class="lifearea-edit-field-header">
+        <span class="lifearea-edit-field-label">{{ t('lifeareas.editdialog.emoji') }}</span>
+        <span v-if="localEmoji" class="lifearea-edit-emoji-preview">{{ localEmoji }}</span>
       </div>
+      <EmojiPicker :native="false" :theme="emojiTheme" :disable-skin-tones="true"
+        @select="(e: { i: string }) => { localEmoji = e.i }" />
     </div>
 
     <Message v-if="errorText.length" severity="error" :life="3000">
@@ -145,19 +131,10 @@ async function onDelete() {
     </Message>
 
     <template #footer>
-      <Button
-        v-if="isEdit"
-        :label="t('lifeareas.editdialog.delete')"
-        severity="danger"
-        :loading="isDeleteLoading"
-        @click="onDelete"
-      />
-      <Button
-        :label="isEdit ? t('lifeareas.editdialog.save') : t('lifeareas.editdialog.create')"
-        :disabled="!canSave"
-        :loading="isSaveLoading"
-        @click="onSave"
-      />
+      <Button v-if="isEdit" :label="t('lifeareas.editdialog.delete')" severity="danger" :loading="isDeleteLoading"
+        @click="onDelete" />
+      <Button :label="isEdit ? t('lifeareas.editdialog.save') : t('lifeareas.editdialog.create')" :disabled="!canSave"
+        :loading="isSaveLoading" @click="onSave" />
     </template>
   </Dialog>
 </template>
@@ -205,24 +182,19 @@ async function onDelete() {
 }
 
 .lifearea-edit-section {
-  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.lifearea-edit-field-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .lifearea-edit-field-label {
-  display: block;
   font-size: 0.875rem;
   color: var(--p-text-muted-color);
-  margin-bottom: 0.5rem;
-  text-align: center;
-}
-
-.color-picker-wrap {
-  width: 100%;
-  min-width: 0;
-  border-radius: 12px;
-  padding: 0.75rem;
-  background: var(--p-content-background);
-  border: 1px solid var(--p-content-border-color);
 }
 
 .color-picker {
@@ -230,21 +202,7 @@ async function onDelete() {
   min-width: 0;
 }
 
-.emoji-picker-wrap {
-  position: relative;
-  border-radius: 12px;
-  padding: 0.75rem;
-  background: var(--p-content-background);
-  border: 1px solid var(--p-content-border-color);
-}
-
-.emoji-picker-wrap :deep(.epr-main) {
-  max-height: 220px;
-}
-
 .lifearea-edit-emoji-preview {
-  margin-top: 0.5rem;
   font-size: 1.5rem;
-  text-align: center;
 }
 </style>

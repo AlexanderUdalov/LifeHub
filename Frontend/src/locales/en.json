@@ -108,6 +108,8 @@
       "newAddiction": "New addiction",
       "title": "Title",
       "color": "Color",
+      "lastRelapseDate": "Last relapse date",
+      "lastRelapseDatePlaceholder": "Not set",
       "save": "Save",
       "create": "Create",
       "delete": "Delete"

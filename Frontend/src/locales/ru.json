@@ -108,6 +108,8 @@
       "newAddiction": "Новая зависимость",
       "title": "Название",
       "color": "Цвет",
+      "lastRelapseDate": "Дата последнего срыва",
+      "lastRelapseDatePlaceholder": "Не задано",
       "save": "Сохранить",
       "create": "Создать",
       "delete": "Удалить"

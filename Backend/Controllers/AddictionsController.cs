@@ -85,6 +85,19 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
         context.Addictions.Add(addiction);
         await context.SaveChangesAsync();
 
+        if (request.LastRelapseDate.HasValue)
+        {
+            var date = request.LastRelapseDate.Value;
+            context.AddictionResets.Add(new AddictionReset
+            {
+                Id = Guid.NewGuid(),
+                AddictionId = addiction.Id,
+                Date = date,
+                ResetAt = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc)
+            });
+            await context.SaveChangesAsync();
+        }
+
         return CreatedAtAction(nameof(Get), new { id = addiction.Id }, addiction.ToDTO());
     }
 

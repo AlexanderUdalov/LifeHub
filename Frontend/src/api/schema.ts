@@ -1304,6 +1304,7 @@ export interface components {
         CreateLifeAreaRequest: {
             name: string;
             color: string;
+            emoji?: null | string;
         };
         CreateTaskRequest: {
             title: string;
@@ -1350,6 +1351,7 @@ export interface components {
             id: string;
             name: string;
             color: string;
+            emoji: null | string;
         };
         LoginRequest: {
             email: string;
@@ -1394,6 +1396,7 @@ export interface components {
         UpdateLifeAreaRequest: {
             name: null | string;
             color: null | string;
+            emoji?: null | string;
         };
         UpdateRequest: {
             name: null | string;

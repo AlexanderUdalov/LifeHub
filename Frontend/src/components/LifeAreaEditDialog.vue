@@ -4,7 +4,9 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import ColorPicker from 'primevue/colorpicker'
-import { computed, ref } from 'vue'
+import EmojiPicker from 'vue3-emoji-picker'
+import 'vue3-emoji-picker/css'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -26,6 +28,7 @@ const apiError = useApiError()
 
 const localName = ref(props.area?.name ?? '')
 const localColor = ref(props.area?.color ?? DEFAULT_COLOR)
+const localEmoji = ref(props.area?.emoji ?? null)
 
 const isEdit = computed(() => !!props.area)
 const canSave = computed(() => localName.value.trim().length > 0 && localColor.value.trim().length > 0)
@@ -42,10 +45,12 @@ async function onSave() {
   try {
     const color = localColor.value.trim()
     const hexColor = color.startsWith('#') ? color : '#' + color
+    const emoji = localEmoji.value?.trim() || null
     if (isEdit.value) {
       await lifeAreasStore.updateLifeArea(props.area!.id, {
         name: localName.value.trim(),
-        color: hexColor
+        color: hexColor,
+        emoji
       })
     } else {
       if (lifeAreasStore.isLimitReached) {
@@ -55,7 +60,8 @@ async function onSave() {
 
       await lifeAreasStore.createLifeArea({
         name: localName.value.trim(),
-        color: hexColor
+        color: hexColor,
+        emoji
       })
     }
 
@@ -123,6 +129,14 @@ async function onDelete() {
       <label class="lifearea-edit-field-label" for="lifearea-color">{{ t('lifeareas.editdialog.color') }}</label>
       <div class="color-picker-wrap">
         <ColorPicker id="lifearea-color" v-model="localColor" format="hex" inline class="color-picker" />
+      </div>
+    </div>
+
+    <div class="lifearea-edit-section">
+      <label class="lifearea-edit-field-label">{{ t('lifeareas.editdialog.emoji') }}</label>
+      <div class="emoji-picker-wrap">
+        <EmojiPicker :native="true" @select="(e: { i: string }) => { localEmoji = e.i }" />
+        <div v-if="localEmoji" class="lifearea-edit-emoji-preview">{{ localEmoji }}</div>
       </div>
     </div>
 
@@ -214,5 +228,23 @@ async function onDelete() {
 .color-picker {
   width: 100%;
   min-width: 0;
+}
+
+.emoji-picker-wrap {
+  position: relative;
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+}
+
+.emoji-picker-wrap :deep(.epr-main) {
+  max-height: 220px;
+}
+
+.lifearea-edit-emoji-preview {
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  text-align: center;
 }
 </style>

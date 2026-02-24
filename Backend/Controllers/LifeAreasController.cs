@@ -61,7 +61,8 @@ public class LifeAreasController(ApplicationContext context) : ControllerBase
             Id = Guid.NewGuid(),
             UserId = userId,
             Name = request.Name.Trim(),
-            Color = request.Color.Trim()
+            Color = request.Color.Trim(),
+            Emoji = string.IsNullOrWhiteSpace(request.Emoji) ? null : request.Emoji.Trim()
         };
 
         context.LifeAreas.Add(area);
@@ -97,6 +98,9 @@ public class LifeAreasController(ApplicationContext context) : ControllerBase
                 return BadRequest();
             area.Color = trimmed;
         }
+
+        if (request.Emoji is not null)
+            area.Emoji = string.IsNullOrWhiteSpace(request.Emoji) ? null : request.Emoji.Trim();
 
         await context.SaveChangesAsync();
         return Ok(area.ToDTO());

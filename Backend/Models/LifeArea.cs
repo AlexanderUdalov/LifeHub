@@ -7,4 +7,5 @@ public class LifeArea
 
     public required string Name { get; set; }
     public required string Color { get; set; }
+    public string? Emoji { get; set; }
 }

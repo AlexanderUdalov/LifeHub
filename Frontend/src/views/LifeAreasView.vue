@@ -22,15 +22,19 @@ const sortedAreas = computed(() =>
   [...lifeAreasStore.lifeAreas].sort((a, b) => a.name.localeCompare(b.name))
 )
 
+const segmentSize = computed(() =>
+  sortedAreas.value.length ? 360 / sortedAreas.value.length : 0
+)
+
 const wheelStyle = computed(() => {
   if (!sortedAreas.value.length) {
     return { background: 'var(--p-content-border-color)' }
   }
 
-  const segmentSize = 360 / sortedAreas.value.length
+  const size = segmentSize.value
   const segments = sortedAreas.value.map((area, index) => {
-    const from = index * segmentSize
-    const to = (index + 1) * segmentSize
+    const from = index * size
+    const to = (index + 1) * size
     return `${area.color} ${from}deg ${to}deg`
   })
 
@@ -38,6 +42,10 @@ const wheelStyle = computed(() => {
     background: `conic-gradient(${segments.join(', ')})`
   }
 })
+
+function getSectorCenterAngle(index: number): number {
+  return (index + 0.5) * segmentSize.value
+}
 
 function onEditArea(area: LifeAreaDTO) {
   emit('edit-lifearea', area)
@@ -51,12 +59,20 @@ function onEditArea(area: LifeAreaDTO) {
 
     <div class="wheel-wrap">
       <div class="wheel" :style="wheelStyle" aria-hidden="true" />
+      <div v-if="sortedAreas.length" class="wheel-emojis" aria-hidden="true">
+        <span v-for="(area, index) in sortedAreas" v-show="area.emoji" :key="area.id" class="wheel-emoji" :style="{
+          transform: `rotate(${getSectorCenterAngle(index)}deg) translate(0, -150%) rotate(${-getSectorCenterAngle(index)}deg)`
+        }">{{ area.emoji }}</span>
+      </div>
     </div>
 
     <div class="legend">
       <Card v-for="area in sortedAreas" :key="area.id" class="legend-card" :style="{ borderLeftColor: area.color }"
         @click="onEditArea(area)">
-        <template #title>{{ area.name }}</template>
+        <template #title>
+          <span v-if="area.emoji">{{ area.emoji }}</span>
+          {{ area.name }}
+        </template>
       </Card>
     </div>
   </div>
@@ -78,6 +94,7 @@ function onEditArea(area: LifeAreaDTO) {
 }
 
 .wheel-wrap {
+  position: relative;
   width: min(72vw, 170px);
   max-width: 170px;
   aspect-ratio: 1 / 1;
@@ -91,6 +108,28 @@ function onEditArea(area: LifeAreaDTO) {
   border-radius: 9999px;
   border: 2px solid var(--p-content-border-color);
   pointer-events: none;
+}
+
+.wheel-emojis {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.wheel-emoji {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.5em;
+  height: 1.5em;
+  margin-left: -0.75em;
+  margin-top: -0.75em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .legend {
@@ -112,6 +151,7 @@ function onEditArea(area: LifeAreaDTO) {
 .legend-card :deep(.p-card-body) {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+  flex-direction: row;
 }
 
 .legend-card:hover {

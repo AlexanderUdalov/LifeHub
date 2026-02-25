@@ -12,6 +12,7 @@ import { useHabitsStore } from '@/stores/habits'
 import type { HabitDTO } from '@/api/HabitsAPI'
 import { parseRuleToOptions, optionsToRuleString } from '@/composables/useRecurrenceOptions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 import { useApiError } from '@/composables/useApiError'
 
 const HABIT_COLOR_OPTIONS = [
@@ -22,16 +23,17 @@ type LocalHabit = {
   title: string
   color: string
   selectedWeekdays: number[]
+  goalId: string | null
   lifeAreaId: string | null
 }
 
 function getInitialHabit(habit: HabitDTO | null): LocalHabit {
   if (!habit) {
-    return { title: '', color: HABIT_COLOR_OPTIONS[0] ?? '#3b82f6', selectedWeekdays: [], lifeAreaId: null }
+    return { title: '', color: HABIT_COLOR_OPTIONS[0] ?? '#3b82f6', selectedWeekdays: [], goalId: null, lifeAreaId: null }
   }
   const opt = parseRuleToOptions(habit.recurrenceRule)
   const selectedWeekdays = opt.byweekday ?? []
-  return { title: habit.title, color: habit.color, selectedWeekdays, lifeAreaId: habit.lifeAreaId }
+  return { title: habit.title, color: habit.color, selectedWeekdays, goalId: habit.goalId, lifeAreaId: habit.lifeAreaId }
 }
 
 const props = defineProps<{
@@ -45,6 +47,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const habitsStore = useHabitsStore()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const apiError = useApiError()
 
 const localHabit = ref<LocalHabit>(getInitialHabit(props.habit))
@@ -106,7 +109,7 @@ async function onSave() {
       title: localHabit.value.title.trim(),
       color: localHabit.value.color.trim(),
       recurrenceRule: recurrenceRule.value,
-      goalId: null,
+      goalId: localHabit.value.goalId,
       lifeAreaId: localHabit.value.lifeAreaId
     }
 
@@ -157,6 +160,12 @@ async function onDelete() {
           :class="{ selected: localHabit.color === color }" :style="{ backgroundColor: color }"
           :aria-pressed="localHabit.color === color" :aria-label="color" @click="localHabit.color = color" />
       </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">{{ t('goals.field') }}</label>
+      <Select v-model="localHabit.goalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id" show-clear
+        :placeholder="t('goals.selectPlaceholder')" />
     </div>
 
     <div class="form-field">

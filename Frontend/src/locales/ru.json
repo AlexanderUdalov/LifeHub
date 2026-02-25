@@ -138,7 +138,17 @@
     }
   },
   "goals": {
-    "title": "Цели"
+    "title": "Цели",
+    "field": "Цель",
+    "selectPlaceholder": "Не выбрано",
+    "newGoal": "Новая цель",
+    "dueDate": "Срок",
+    "save": "Сохранить",
+    "create": "Создать",
+    "delete": "Удалить",
+    "tasksCount": "Задачи ({count})",
+    "habitsCount": "Привычки ({count})",
+    "addictionsCount": "Зависимости ({count})"
   },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",

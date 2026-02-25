@@ -4,13 +4,16 @@ import HabitDayRow from './HabitDayRow.vue'
 import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
 import { computed } from 'vue'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 
 const props = defineProps<{ habit: HabitWithHistoryDTO }>()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.habit.habit.lifeAreaId))
 const cardBorderStyle = computed(() =>
   areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
 )
+const goalTitle = computed(() => goalsStore.getGoalById(props.habit.habit.goalId)?.title ?? null)
 
 const emit = defineEmits<{
   (e: 'edit', habit: HabitDTO): void
@@ -26,6 +29,9 @@ const emit = defineEmits<{
         </template>
 
         <template #content>
+            <div v-if="goalTitle" class="goal-text">
+                {{ goalTitle }}
+            </div>
             <HabitDayRow :habit="habit" />
         </template>
     </Card>
@@ -41,5 +47,11 @@ const emit = defineEmits<{
 .habit-title {
     cursor: pointer;
     user-select: none;
+}
+
+.goal-text {
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
 }
 </style>

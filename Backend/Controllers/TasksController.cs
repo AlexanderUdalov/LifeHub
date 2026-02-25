@@ -47,6 +47,12 @@ public class TasksController(ApplicationContext context) : ControllerBase
     public async Task<ActionResult<TaskDTO>> Create(CreateTaskRequest request)
     {
         var userId = User.GetUserId();
+        if (request.GoalId.HasValue)
+        {
+            var goalExists = await context.Goals.AnyAsync(x => x.Id == request.GoalId.Value && x.UserId == userId);
+            if (!goalExists)
+                return BadRequest();
+        }
         if (request.LifeAreaId.HasValue)
         {
             var lifeAreaExists = await context.LifeAreas.AnyAsync(x => x.Id == request.LifeAreaId.Value && x.UserId == userId);
@@ -85,6 +91,13 @@ public class TasksController(ApplicationContext context) : ControllerBase
 
         if (request.Title is null)
             return BadRequest();
+
+        if (request.GoalId.HasValue)
+        {
+            var goalExists = await context.Goals.AnyAsync(x => x.Id == request.GoalId.Value && x.UserId == userId);
+            if (!goalExists)
+                return BadRequest();
+        }
 
         if (request.LifeAreaId.HasValue)
         {

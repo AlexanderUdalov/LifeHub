@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 import { useAddictionsStore } from '@/stores/addictions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 import { useApiError } from '@/composables/useApiError'
 import { toDateOnlyString } from '@/utils/dateOnly'
 
@@ -28,10 +29,12 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const addictionsStore = useAddictionsStore()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const apiError = useApiError()
 
 const localTitle = ref(props.addiction?.title ?? '')
 const localColor = ref(props.addiction?.color ?? ADDICTION_COLOR_OPTIONS[0] ?? '#ef4444')
+const localGoalId = ref<string | null>(props.addiction?.goalId ?? null)
 const localLifeAreaId = ref<string | null>(props.addiction?.lifeAreaId ?? null)
 /** Only for create: optional last relapse date. */
 const localLastRelapseDate = ref<Date | null>(null)
@@ -51,7 +54,7 @@ async function onSave() {
     const request = {
       title: localTitle.value.trim(),
       color: localColor.value.trim(),
-      goalId: null as string | null,
+      goalId: localGoalId.value,
       lifeAreaId: localLifeAreaId.value,
       lastRelapseDate: localLastRelapseDate.value ? toDateOnlyString(localLastRelapseDate.value) : undefined
     }
@@ -103,6 +106,12 @@ async function onDelete() {
           :class="{ selected: localColor === color }" :style="{ backgroundColor: color }"
           :aria-pressed="localColor === color" :aria-label="color" @click="localColor = color" />
       </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">{{ t('goals.field') }}</label>
+      <Select v-model="localGoalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id" show-clear
+        :placeholder="t('goals.selectPlaceholder')" />
     </div>
 
     <div class="form-field">

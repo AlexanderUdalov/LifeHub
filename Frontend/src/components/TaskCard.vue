@@ -6,12 +6,14 @@ import type { TaskDTO } from '@/api/TasksAPI'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 
 const props = withDefaults(
   defineProps<{ task: TaskDTO; draggable?: boolean }>(),
   { draggable: false }
 )
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.task.lifeAreaId))
 const cardBorderStyle = computed(() =>
   areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
@@ -59,6 +61,7 @@ const { formatRecurrence } = useRecurrenceFormatter()
 const recurrenceText = computed(() =>
   formatRecurrence(props.task.recurrenceRule, props.task.dueDate)
 )
+const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.title ?? null)
 </script>
 
 
@@ -81,13 +84,18 @@ const recurrenceText = computed(() =>
         {{ props.task.description }}
       </p>
 
-      <div v-if="deadlineText || recurrenceText" class="deadline-row">
-        <span v-if="deadlineText" class="deadline" :class="{ overdue: isOverdue, completed: localCompleted }">
-          {{ deadlineText }}
+      <div v-if="deadlineText || recurrenceText || goalTitle" class="deadline-row">
+        <span class="deadline-row-left">
+          <span v-if="deadlineText" class="deadline" :class="{ overdue: isOverdue, completed: localCompleted }">
+            {{ deadlineText }}
+          </span>
+          <span v-if="recurrenceText" class="recurrence" :class="{ completed: localCompleted }">
+            <i class="pi pi-refresh recurrence-icon" aria-hidden="true"></i>
+            {{ recurrenceText }}
+          </span>
         </span>
-        <span v-if="recurrenceText" class="recurrence" :class="{ completed: localCompleted }">
-          <i class="pi pi-refresh recurrence-icon" aria-hidden="true"></i>
-          {{ recurrenceText }}
+        <span v-if="goalTitle" class="goal-text">
+          {{ goalTitle }}
         </span>
       </div>
     </template>
@@ -172,6 +180,13 @@ const recurrenceText = computed(() =>
   margin: 0;
 }
 
+.deadline-row-left {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .deadline {
   color: var(--p-orange-400);
 }
@@ -197,5 +212,10 @@ const recurrenceText = computed(() =>
 
 .recurrence.completed {
   color: var(--p-gray-400);
+}
+
+.goal-text {
+  color: var(--p-text-muted-color);
+  margin-left: auto;
 }
 </style>

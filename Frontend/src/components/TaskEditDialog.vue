@@ -12,6 +12,7 @@ import { computed, ref } from 'vue'
 import { type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 import DateAndRecurrencePicker from '@/components/DateAndRecurrencePicker.vue'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 
@@ -27,6 +28,7 @@ const apiError = useApiError();
 import { useTasksStore } from '@/stores/tasks'
 const tasksStore = useTasksStore()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 
 const emit = defineEmits<{
     (e: 'close'): void
@@ -155,8 +157,8 @@ async function onDelete() {
                     v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')" size="large" />
             </div>
             <div class="task-edit-close-wrap">
-                <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel" size="small"
-                    @click="emit('close')" />
+                <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel"
+                    size="small" @click="emit('close')" />
             </div>
         </template>
 
@@ -167,28 +169,26 @@ async function onDelete() {
 
         <div class="task-edit-section task-edit-date-and-repeat">
             <label class="task-edit-field-label">{{ $t('tasks.recurrence.dateAndRepeat') }}</label>
-            <Button
-                type="button"
-                :label="dateAndRepeatSummary"
-                icon="pi pi-calendar"
-                class="date-repeat-trigger"
-                @click="(e: Event) => dateRecurrencePopover?.toggle(e)"
-            />
+            <Button type="button" :label="dateAndRepeatSummary" icon="pi pi-calendar" class="date-repeat-trigger"
+                @click="(e: Event) => dateRecurrencePopover?.toggle(e)" />
             <Popover ref="dateRecurrencePopover" append-to="body">
-                <DateAndRecurrencePicker
-                    :date="dueDateAsDate"
-                    :recurrence-rule="localTask.recurrenceRule"
+                <DateAndRecurrencePicker :date="dueDateAsDate" :recurrence-rule="localTask.recurrenceRule"
                     @update:date="(v) => { localTask.dueDate = v?.toISOString() ?? null }"
                     @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }"
-                    @close="dateRecurrencePopover?.hide()"
-                />
+                    @close="dateRecurrencePopover?.hide()" />
             </Popover>
         </div>
 
         <div class="task-edit-section">
             <label class="task-edit-field-label">{{ t('lifeareas.field') }}</label>
-            <Select v-model="localTask.lifeAreaId" class="lifearea-select" :options="lifeAreasStore.lifeAreas" option-label="name"
-                option-value="id" show-clear :placeholder="t('lifeareas.selectPlaceholder')" />
+            <Select v-model="localTask.lifeAreaId" class="lifearea-select" :options="lifeAreasStore.lifeAreas"
+                option-label="name" option-value="id" show-clear :placeholder="t('lifeareas.selectPlaceholder')" />
+        </div>
+
+        <div class="task-edit-section">
+            <label class="task-edit-field-label">{{ t('goals.field') }}</label>
+            <Select v-model="localTask.goalId" class="goal-select" :options="goalsStore.goalsSorted"
+                option-label="title" option-value="id" show-clear :placeholder="t('goals.selectPlaceholder')" />
         </div>
 
         <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
@@ -261,6 +261,10 @@ async function onDelete() {
 }
 
 .task-edit-section .lifearea-select {
+    width: 100%;
+}
+
+.task-edit-section .goal-select {
     width: 100%;
 }
 </style>

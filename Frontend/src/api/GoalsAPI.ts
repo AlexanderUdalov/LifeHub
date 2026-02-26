@@ -1,26 +1,49 @@
-import type { GoalItem } from "@/models/GoalItem";
+import { api } from './API'
 
-const mockGoals: GoalItem[] = [
-    {
-        id: 1,
-        title: 'Healthy body',
-        dueDate: new Date('2026-03-01'),
-        area: {
-            title: 'Health',
-            icon: 'pi pi-heart',
-            color: '#e53935'
-        },
-        progress: 65,
-        tasks: [1, 2],
-        habits: [1],
-        addictions: [1]
-    }
-];
+export interface GoalDTO {
+  id: string
+  title: string
+  description: string | null
+  dueDate: string
+  lifeAreaId: string | null
+}
+
+export interface CreateGoalRequest {
+  title: string
+  description: string | null
+  dueDate: string
+  lifeAreaId: string | null
+}
+
+export interface UpdateGoalRequest {
+  title: string | null
+  description: string | null
+  dueDate: string | null
+  lifeAreaId: string | null
+}
 
 export const goalsApi = {
-    async getGoals(): Promise<GoalItem[]> {
-        return new Promise(resolve => {
-            setTimeout(() => resolve(mockGoals), 300)
-        })
-    },
+  async getGoals(): Promise<GoalDTO[]> {
+    const { data } = await api.get<GoalDTO[]>('/goals')
+    return data ?? []
+  },
+
+  async getGoal(id: string): Promise<GoalDTO> {
+    const { data } = await api.get<GoalDTO>(`/goals/${id}`)
+    return data
+  },
+
+  async createGoal(request: CreateGoalRequest): Promise<GoalDTO> {
+    const { data } = await api.post<GoalDTO>('/goals', request)
+    return data
+  },
+
+  async updateGoal(id: string, request: UpdateGoalRequest): Promise<GoalDTO> {
+    const { data } = await api.put<GoalDTO>(`/goals/${id}`, request)
+    return data
+  },
+
+  async deleteGoal(id: string): Promise<void> {
+    await api.delete(`/goals/${id}`)
+  }
 }

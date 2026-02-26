@@ -11,13 +11,13 @@ import HabitEditDialog from '@/components/HabitEditDialog.vue'
 import AddictionEditDialog from '@/components/AddictionEditDialog.vue'
 import GoalEditDialog from '@/components/GoalEditDialog.vue'
 import LifeAreaEditDialog from '@/components/LifeAreaEditDialog.vue'
-import { goalsApi } from '@/api/GoalsAPI'
 import type { GoalItem } from '@/models/GoalItem'
 import type { HabitDTO } from '@/api/HabitsAPI'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { type TaskDTO } from '@/api/TasksAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
@@ -30,6 +30,7 @@ type EditContext =
 
 const editContext = ref<EditContext>(null)
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 
 const router = useRouter()
 const route = useRoute()
@@ -52,6 +53,7 @@ function onContentScroll() {
 const leftTabs = computed(() => [
     { label: t('tasks.tasks'), icon: 'pi pi-check-square', route: '/tasks' },
     { label: t('habits.habits'), icon: 'pi pi-calendar', route: '/habits' },
+    { label: t('goals.title'), icon: 'pi pi-bullseye', route: '/goals' },
 ])
 const centerTab = { route: '/lifeareas' }
 const rightTabs = computed(() => [
@@ -59,10 +61,11 @@ const rightTabs = computed(() => [
     { label: t('profile'), icon: 'pi pi-user', route: '/profile' },
 ])
 
-const goals = ref<GoalItem[]>([])
 onMounted(async () => {
-    await lifeAreasStore.fetchLifeAreas()
-    goals.value = await goalsApi.getGoals()
+    await Promise.all([
+        lifeAreasStore.fetchLifeAreas(),
+        goalsStore.fetchGoals()
+    ])
 })
 
 const createPrimary = () => {
@@ -76,6 +79,10 @@ const createPrimary = () => {
     }
     if (route.path.startsWith('/lifeareas')) {
         editContext.value = { type: 'lifearea', item: null }
+        return
+    }
+    if (route.path.startsWith('/goals')) {
+        editContext.value = { type: 'goal', item: null }
         return
     }
     editContext.value = { type: 'task', item: null }
@@ -102,16 +109,13 @@ const createPrimary = () => {
 
         <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
 
-        <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" :goals="goals"
-            @close="editContext = null" />
-        <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" :goals="goals"
-            @close="editContext = null" />
+        <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" @close="editContext = null" />
+        <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"
             @close="editContext = null" />
         <LifeAreaEditDialog v-if="editContext && editContext.type === 'lifearea'" :area="editContext.item"
             @close="editContext = null" />
-        <GoalEditDialog v-if="editContext && editContext.type === 'goal'" :goal="editContext.item" :goals="goals"
-            @close="editContext = null" />
+        <GoalEditDialog v-if="editContext && editContext.type === 'goal'" :goal="editContext.item" @close="editContext = null" />
 
         <Tabs :value="route.path" @update:value="(v) => router.push(v as string)">
             <TabList class="tab-list">

@@ -70,7 +70,10 @@ export const useAddictionsStore = defineStore('addictions', () => {
 
   async function createAddiction(request: AddictionUpsertRequest) {
     const created = await addictionsApi.createAddiction(request)
-    addictions.value.push({ addiction: created, resetDates: [], lastResetAt: null })
+    const lastRelapse = request.lastRelapseDate ?? null
+    const resetDates = lastRelapse ? [lastRelapse] : []
+    const lastResetAt = lastRelapse ? new Date(lastRelapse + 'T00:00:00Z').toISOString() : null
+    addictions.value.push({ addiction: created, resetDates, lastResetAt })
   }
 
   async function updateAddiction(id: string, request: AddictionUpsertRequest) {

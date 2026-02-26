@@ -3,13 +3,16 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import DatePicker from 'primevue/datepicker'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 import { useAddictionsStore } from '@/stores/addictions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 import { useApiError } from '@/composables/useApiError'
+import { toDateOnlyString } from '@/utils/dateOnly'
 
 const ADDICTION_COLOR_OPTIONS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'
@@ -26,11 +29,15 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const addictionsStore = useAddictionsStore()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const apiError = useApiError()
 
 const localTitle = ref(props.addiction?.title ?? '')
 const localColor = ref(props.addiction?.color ?? ADDICTION_COLOR_OPTIONS[0] ?? '#ef4444')
+const localGoalId = ref<string | null>(props.addiction?.goalId ?? null)
 const localLifeAreaId = ref<string | null>(props.addiction?.lifeAreaId ?? null)
+/** Only for create: optional last relapse date. */
+const localLastRelapseDate = ref<Date | null>(null)
 
 const isEdit = computed(() => !!props.addiction)
 const canSave = computed(() => localTitle.value.trim().length > 0)
@@ -47,8 +54,9 @@ async function onSave() {
     const request = {
       title: localTitle.value.trim(),
       color: localColor.value.trim(),
-      goalId: null as string | null,
-      lifeAreaId: localLifeAreaId.value
+      goalId: localGoalId.value,
+      lifeAreaId: localLifeAreaId.value,
+      lastRelapseDate: localLastRelapseDate.value ? toDateOnlyString(localLastRelapseDate.value) : undefined
     }
     if (isEdit.value) {
       await addictionsStore.updateAddiction(props.addiction!.id, request)
@@ -101,9 +109,21 @@ async function onDelete() {
     </div>
 
     <div class="form-field">
+      <label class="field-label">{{ t('goals.field') }}</label>
+      <Select v-model="localGoalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id" show-clear
+        :placeholder="t('goals.selectPlaceholder')" />
+    </div>
+
+    <div class="form-field">
       <label class="field-label">{{ t('lifeareas.field') }}</label>
       <Select v-model="localLifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id" show-clear
         :placeholder="t('lifeareas.selectPlaceholder')" />
+    </div>
+
+    <div v-if="!isEdit" class="form-field">
+      <label class="field-label">{{ t('addictions.editdialog.lastRelapseDate') }}</label>
+      <DatePicker v-model="localLastRelapseDate" date-format="dd.mm.yy" :placeholder="t('addictions.editdialog.lastRelapseDatePlaceholder')"
+        show-clear show-button-bar fluid />
     </div>
 
     <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
@@ -140,7 +160,7 @@ async function onDelete() {
 }
 
 .form-field {
-  margin-top: 1rem;
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

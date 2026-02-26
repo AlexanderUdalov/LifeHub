@@ -111,6 +111,8 @@
       "newAddiction": "New addiction",
       "title": "Title",
       "color": "Color",
+      "lastRelapseDate": "Last relapse date",
+      "lastRelapseDatePlaceholder": "Not set",
       "save": "Save",
       "create": "Create",
       "delete": "Delete"
@@ -139,7 +141,17 @@
     }
   },
   "goals": {
-    "title": "Goals"
+    "title": "Goals",
+    "field": "Goal",
+    "selectPlaceholder": "Not selected",
+    "newGoal": "New goal",
+    "dueDate": "Due",
+    "save": "Save",
+    "create": "Create",
+    "delete": "Delete",
+    "tasksCount": "Tasks ({count})",
+    "habitsCount": "Habits ({count})",
+    "addictionsCount": "Addictions ({count})"
   },
   "toasts": {
     "logged-out": "You have logged out",

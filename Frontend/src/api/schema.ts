@@ -1290,6 +1290,8 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            /** Optional. When creating, sets the last relapse date (YYYY-MM-DD). Ignored on update. */
+            lastRelapseDate?: null | string;
         };
         AddictionWithResetsDTO: {
             addiction: components["schemas"]["AddictionDTO"];

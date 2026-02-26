@@ -21,7 +21,9 @@ public record AddictionUpsertRequest(
     string Title,
     string Color,
     Guid? GoalId,
-    Guid? LifeAreaId
+    Guid? LifeAreaId,
+    /// <summary>Optional. When creating, sets the last relapse date (adds one reset on this date). Ignored on update.</summary>
+    DateOnly? LastRelapseDate
 );
 
 public static class AddictionMapping

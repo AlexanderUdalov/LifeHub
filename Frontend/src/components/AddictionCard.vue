@@ -8,13 +8,16 @@ import { getTimeSince, fromDateOnlyString, toDateOnlyString, isSameDateOnly, sta
 import { useI18n } from 'vue-i18n'
 import { useAddictionsStore } from '@/stores/addictions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 
 const props = defineProps<{ addiction: AddictionWithResetsDTO }>()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.addiction.addiction.lifeAreaId))
 const cardBorderStyle = computed(() =>
   areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
 )
+const goalTitle = computed(() => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null)
 
 const emit = defineEmits<{
   (e: 'edit', addiction: AddictionDTO): void
@@ -88,6 +91,9 @@ const timeSinceText = computed(() => {
       <div v-if="timeSinceText" class="time-since">
         {{ timeSinceText }}
       </div>
+      <div v-if="goalTitle" class="goal-text">
+        {{ goalTitle }}
+      </div>
 
       <AddictionDayRow :addiction="addiction" />
     </template>
@@ -124,5 +130,11 @@ const timeSinceText = computed(() => {
 
 .time-since.no-reset {
   font-style: italic;
+}
+
+.goal-text {
+  font-size: 0.875rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 8px;
 }
 </style>

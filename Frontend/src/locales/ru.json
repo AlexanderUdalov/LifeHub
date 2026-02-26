@@ -111,6 +111,8 @@
       "newAddiction": "Новая зависимость",
       "title": "Название",
       "color": "Цвет",
+      "lastRelapseDate": "Дата последнего срыва",
+      "lastRelapseDatePlaceholder": "Не задано",
       "save": "Сохранить",
       "create": "Создать",
       "delete": "Удалить"
@@ -139,7 +141,17 @@
     }
   },
   "goals": {
-    "title": "Цели"
+    "title": "Цели",
+    "field": "Цель",
+    "selectPlaceholder": "Не выбрано",
+    "newGoal": "Новая цель",
+    "dueDate": "Срок",
+    "save": "Сохранить",
+    "create": "Создать",
+    "delete": "Удалить",
+    "tasksCount": "Задачи ({count})",
+    "habitsCount": "Привычки ({count})",
+    "addictionsCount": "Зависимости ({count})"
   },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",

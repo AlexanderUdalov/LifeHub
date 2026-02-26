@@ -1328,6 +1328,8 @@ export interface components {
             title: string;
             color: string;
             recurrenceRule: string;
+            /** @description When set, goal is N times per week (any days); streak = consecutive weeks with at least N completions. */
+            timesPerWeekGoal: null | number;
             /** Format: uuid */
             goalId: null | string;
             /** Format: uuid */
@@ -1337,6 +1339,7 @@ export interface components {
             title: string;
             color: string;
             recurrenceRule: string;
+            timesPerWeekGoal?: null | number;
             /** Format: uuid */
             goalId: null | string;
             /** Format: uuid */

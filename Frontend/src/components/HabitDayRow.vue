@@ -4,7 +4,7 @@ import type { HabitWithHistoryDTO } from '@/api/HabitsAPI'
 import { computed, onMounted, ref } from 'vue'
 import { rrulestr, RRule } from 'rrule'
 import { useHabitsStore } from '@/stores/habits'
-import { toDateOnlyString, startOfDay, isToday } from '@/utils/dateOnly'
+import { toDateOnlyString, startOfDay, isToday, getWeekKey, fromDateOnlyString } from '@/utils/dateOnly'
 
 type HabitCompletion = 'none' | 'skip' | 'full'
 
@@ -63,13 +63,50 @@ function localWeekday(date: Date): number {
   return (date.getDay() + 6) % 7
 }
 
+function isMonday(date: Date): boolean {
+  return localWeekday(date) === 0
+}
+
 const disabledByIndex = computed(() => {
+  if (props.habit.habit.timesPerWeekGoal != null && props.habit.habit.timesPerWeekGoal >= 1 && props.habit.habit.timesPerWeekGoal <= 7) {
+    return days.value.map(() => false)
+  }
   const weekdays = activeWeekdays.value
   if (!weekdays) return days.value.map(() => false)
   return days.value.map(d => !weekdays.has(localWeekday(d)))
 })
 
+/** For times-per-week mode: full completions per week (weekKey -> count). */
+const fullCountByWeek = computed(() => {
+  const goal = props.habit.habit.timesPerWeekGoal
+  if (goal == null || goal < 1 || goal > 7) return new Map<string, number>()
+  const map = new Map<string, number>()
+  for (const h of props.habit.history) {
+    if (h.status?.toLowerCase() !== 'full') continue
+    const weekKey = getWeekKey(fromDateOnlyString(h.date))
+    map.set(weekKey, (map.get(weekKey) ?? 0) + 1)
+  }
+  return map
+})
+
 function streakAtIndex(index: number): number {
+  const goal = props.habit.habit.timesPerWeekGoal
+  if (goal != null && goal >= 1 && goal <= 7) {
+    const dayList = days.value
+    const c = getCompletion(dayList[index]!)
+    if (c !== 'full') return 0
+    let count = 1
+    for (let j = index - 1; j >= 0; j--) {
+      if (getCompletion(dayList[j]!) !== 'full') continue
+      const nextDay = dayList[j + 1]!
+      if (isMonday(nextDay)) {
+        const prevWeekKey = getWeekKey(dayList[j]!)
+        if ((fullCountByWeek.value.get(prevWeekKey) ?? 0) < goal) break
+      }
+      count++
+    }
+    return count
+  }
   let count = 0
   for (let i = index; i >= 0; i--) {
     if (disabledByIndex.value[i]) continue

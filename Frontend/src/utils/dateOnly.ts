@@ -43,6 +43,15 @@ export function endOfDay(date: Date): Date {
   return d
 }
 
+/** Monday of the week (ISO). Returns YYYY-MM-DD for the Monday of the week containing the given date. */
+export function getWeekKey(date: Date): string {
+  const d = startOfDay(date)
+  const day = d.getDay()
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + mondayOffset)
+  return toDateOnlyString(d)
+}
+
 /**
  * Elapsed time since a reference moment. Pass startOfDay(date) for "time since that calendar day", or exact Date for "time since that moment".
  */

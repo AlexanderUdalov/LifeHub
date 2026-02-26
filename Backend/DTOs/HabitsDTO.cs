@@ -7,6 +7,7 @@ public record HabitDTO(
     string Title,
     string Color,
     string RecurrenceRule,
+    int? TimesPerWeekGoal,
     Guid? GoalId,
     Guid? LifeAreaId
 );
@@ -25,6 +26,7 @@ public record HabitUpsertRequest(
     string Title,
     string Color,
     string RecurrenceRule,
+    int? TimesPerWeekGoal,
     Guid? GoalId,
     Guid? LifeAreaId
 );
@@ -39,6 +41,7 @@ public static class HabitMapping
             habit.Title,
             habit.Color,
             habit.RecurrenceRule,
+            habit.TimesPerWeekGoal,
             habit.GoalId,
             habit.LifeAreaId
         );

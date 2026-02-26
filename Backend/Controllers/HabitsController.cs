@@ -69,6 +69,7 @@ public class HabitsController(ApplicationContext context) : ControllerBase
             Title = request.Title.Trim(),
             Color = (request.Color ?? "").Trim().Length > 0 ? request.Color!.Trim() : "#3b82f6",
             RecurrenceRule = request.RecurrenceRule.Trim(),
+            TimesPerWeekGoal = request.TimesPerWeekGoal is > 0 and <= 7 ? request.TimesPerWeekGoal : null,
             GoalId = request.GoalId,
             LifeAreaId = request.LifeAreaId
         };
@@ -120,6 +121,7 @@ public class HabitsController(ApplicationContext context) : ControllerBase
         habit.Title = request.Title.Trim();
         habit.Color = (request.Color ?? "").Trim().Length > 0 ? request.Color!.Trim() : habit.Color;
         habit.RecurrenceRule = request.RecurrenceRule.Trim();
+        habit.TimesPerWeekGoal = request.TimesPerWeekGoal is > 0 and <= 7 ? request.TimesPerWeekGoal : null;
         habit.GoalId = request.GoalId;
         habit.LifeAreaId = request.LifeAreaId;
 

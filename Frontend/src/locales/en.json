@@ -172,5 +172,6 @@
   "change": "Change",
   "current-password": "Current password",
   "new-password": "New password",
+  "journal": { "title": "Journal" },
   "profile": "Profile"
 }

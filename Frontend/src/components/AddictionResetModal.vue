@@ -3,14 +3,14 @@ import { ref } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
-import type { AddictionItem } from '@/models/AddictionItem';
+import type { AddictionDTO } from '@/api/AddictionsAPI';
 
 const props = defineProps<{
-    addiction: AddictionItem
+    addiction: AddictionDTO
     visible: boolean
 }>();
 const emit = defineEmits<{
-    (e: 'confirm', payload: { addiction: AddictionItem; note: string }): void
+    (e: 'confirm', payload: { addiction: AddictionDTO; note: string }): void
     (e: 'close'): void
 }>();
 

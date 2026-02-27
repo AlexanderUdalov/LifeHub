@@ -93,6 +93,7 @@ async function onDelete() {
     isDeleteLoading.value = false
   }
 }
+
 </script>
 
 <template>

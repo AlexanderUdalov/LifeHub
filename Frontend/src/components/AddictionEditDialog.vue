@@ -56,7 +56,7 @@ async function onSave() {
       color: localColor.value.trim(),
       goalId: localGoalId.value,
       lifeAreaId: localLifeAreaId.value,
-      lastRelapseDate: localLastRelapseDate.value ? toDateOnlyString(localLastRelapseDate.value) : undefined
+      lastRelapseDate: localLastRelapseDate.value ? toDateOnlyString(localLastRelapseDate.value) : null
     }
     if (isEdit.value) {
       await addictionsStore.updateAddiction(props.addiction!.id, request)
@@ -84,6 +84,7 @@ async function onDelete() {
     isDeleteLoading.value = false
   }
 }
+
 </script>
 
 <template>

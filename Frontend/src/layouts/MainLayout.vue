@@ -11,7 +11,9 @@ import HabitEditDialog from '@/components/HabitEditDialog.vue'
 import AddictionEditDialog from '@/components/AddictionEditDialog.vue'
 import GoalEditDialog from '@/components/GoalEditDialog.vue'
 import LifeAreaEditDialog from '@/components/LifeAreaEditDialog.vue'
-import type { GoalItem } from '@/models/GoalItem'
+import JournalEntryEditDialog from '@/components/JournalEntryEditDialog.vue'
+import type { GoalDTO } from '@/api/GoalsAPI'
+import type { JournalEntryDTO } from '@/api/JournalAPI'
 import type { HabitDTO } from '@/api/HabitsAPI'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
@@ -22,10 +24,13 @@ import { useGoalsStore } from '@/stores/goals'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
-type ItemType = 'task' | 'habit' | 'addiction' | 'goal' | 'lifearea'
 type EditContext =
-    | { type: ItemType; item: null }
-    | { type: ItemType; item: any }
+    | { type: 'task'; item: TaskDTO | null }
+    | { type: 'habit'; item: HabitDTO | null }
+    | { type: 'addiction'; item: AddictionDTO | null }
+    | { type: 'lifearea'; item: LifeAreaDTO | null }
+    | { type: 'goal'; item: GoalDTO | null }
+    | { type: 'journal'; item: JournalEntryDTO | null }
     | null
 
 const editContext = ref<EditContext>(null)
@@ -57,6 +62,7 @@ const leftTabs = computed(() => [
 ])
 const centerTab = { route: '/lifeareas' }
 const rightTabs = computed(() => [
+    { label: t('journal.title'), icon: 'pi pi-book', route: '/journal' },
     { label: t('addictions.addictions'), icon: 'pi pi-ban', route: '/addictions' },
     { label: t('profile'), icon: 'pi pi-user', route: '/profile' },
 ])
@@ -69,6 +75,10 @@ onMounted(async () => {
 })
 
 const createPrimary = () => {
+    if (route.path.startsWith('/journal')) {
+        editContext.value = { type: 'journal', item: null }
+        return
+    }
     if (route.path.startsWith('/habits')) {
         editContext.value = { type: 'habit', item: null }
         return
@@ -103,19 +113,25 @@ const createPrimary = () => {
                     @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
                     @edit-addiction="(addiction: AddictionDTO) => editContext = { type: 'addiction', item: addiction }"
                     @edit-lifearea="(area: LifeAreaDTO) => editContext = { type: 'lifearea', item: area }"
-                    @edit-goal="(goal: GoalItem) => editContext = { type: 'goal', item: goal }" />
+                    @edit-goal="(goal: GoalDTO) => editContext = { type: 'goal', item: goal }"
+                    @edit-journal="(entry: JournalEntryDTO | null) => editContext = { type: 'journal', item: entry }" />
             </RouterView>
         </main>
 
         <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
 
-        <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item" @close="editContext = null" />
-        <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item" @close="editContext = null" />
+        <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item"
+            @close="editContext = null" />
+        <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item"
+            @close="editContext = null" />
         <AddictionEditDialog v-if="editContext && editContext.type === 'addiction'" :addiction="editContext.item"
             @close="editContext = null" />
         <LifeAreaEditDialog v-if="editContext && editContext.type === 'lifearea'" :area="editContext.item"
             @close="editContext = null" />
-        <GoalEditDialog v-if="editContext && editContext.type === 'goal'" :goal="editContext.item" @close="editContext = null" />
+        <GoalEditDialog v-if="editContext && editContext.type === 'goal'" :goal="editContext.item"
+            @close="editContext = null" />
+        <JournalEntryEditDialog v-if="editContext && editContext.type === 'journal'" :entry="editContext.item"
+            @close="editContext = null" />
 
         <Tabs :value="route.path" @update:value="(v) => router.push(v as string)">
             <TabList class="tab-list">
@@ -151,12 +167,10 @@ const createPrimary = () => {
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    background: linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--p-surface-ground) 92%, transparent) 0%,
-        color-mix(in srgb, var(--p-surface-ground) 50%, transparent) 40%,
-        transparent 100%
-    );
+    background: linear-gradient(to bottom,
+            color-mix(in srgb, var(--p-surface-ground) 92%, transparent) 0%,
+            color-mix(in srgb, var(--p-surface-ground) 50%, transparent) 40%,
+            transparent 100%);
 }
 
 .sticky-header-title {

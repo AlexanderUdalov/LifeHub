@@ -8,7 +8,7 @@ import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -143,6 +143,7 @@ async function onDelete() {
         isDeleteLoading.value = false;
     }
 }
+
 </script>
 
 <template>

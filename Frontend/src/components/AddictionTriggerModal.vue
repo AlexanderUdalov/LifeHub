@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { AddictionItem } from '@/models/AddictionItem';
+import type { AddictionDTO } from '@/api/AddictionsAPI';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Carousel from 'primevue/carousel';
 
 
 const props = defineProps<{
-    addiction: AddictionItem
+    addiction: AddictionDTO
     visible: boolean
 }>();
 const emit = defineEmits<{

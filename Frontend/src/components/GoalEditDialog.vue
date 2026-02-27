@@ -8,13 +8,13 @@ import DatePicker from 'primevue/datepicker'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { GoalItem } from '@/models/GoalItem'
+import type { GoalDTO } from '@/api/GoalsAPI'
 import { useGoalsStore } from '@/stores/goals'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useApiError } from '@/composables/useApiError'
 
 const props = defineProps<{
-  goal: GoalItem | null
+  goal: GoalDTO | null
 }>()
 
 const emit = defineEmits<{
@@ -79,6 +79,7 @@ async function onDelete() {
     isDeleteLoading.value = false
   }
 }
+
 </script>
 
 <template>

@@ -172,5 +172,6 @@
   "current-password": "Текущий пароль",
   "change": "Изменить",
   "new-password": "Новый пароль",
+  "journal": { "title": "Журнал" },
   "profile": "Профиль"
 }

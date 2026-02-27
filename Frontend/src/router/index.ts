@@ -19,7 +19,7 @@ const router = createRouter({
         { path: "addictions", component: () => import("@/views/AddiсtionsView.vue"), meta: { titleKey: "addictions.addictions" } },
         { path: "lifeareas", component: () => import("@/views/LifeAreasView.vue"), meta: { titleKey: "lifeareas.title" } },
         { path: "goals", component: () => import("@/views/GoalsView.vue"), meta: { titleKey: "goals.title" } },
-        { path: "journal", component: () => import("@/views/JournalView.vue") },
+        { path: "journal", component: () => import("@/views/JournalView.vue"), meta: { titleKey: "journal.title" } },
         { path: "profile", component: () => import("@/views/ProfileView.vue") },
       ]
     },

@@ -1,10 +1,10 @@
 import { computed, type Ref } from 'vue'
-import type { AddictionItem } from '@/models/AddictionItem'
+import type { AddictionDTO } from '@/api/AddictionsAPI'
 
 const STAGES_HOURS = [24, 48, 72, 168, 240, 720]
 
-export function useAddictionProgress(addiction: Ref<AddictionItem>) {
-    const lastResetDate = computed(() => new Date(addiction.value.lastReset))
+export function useAddictionProgress(addiction: Ref<AddictionDTO>) {
+    const lastResetDate = computed(() => new Date(addiction.value.createdAt))
 
     const elapsedMs = computed(() => Date.now() - lastResetDate.value.getTime())
     const elapsedHours = computed(() =>

@@ -68,7 +68,8 @@ function isMonday(date: Date): boolean {
 }
 
 const disabledByIndex = computed(() => {
-  if (props.habit.habit.timesPerWeekGoal != null && props.habit.habit.timesPerWeekGoal >= 1 && props.habit.habit.timesPerWeekGoal <= 7) {
+  const goal = props.habit.habit.timesPerWeekGoal
+  if (typeof goal === 'number' && goal >= 1 && goal <= 7) {
     return days.value.map(() => false)
   }
   const weekdays = activeWeekdays.value
@@ -79,7 +80,7 @@ const disabledByIndex = computed(() => {
 /** For times-per-week mode: full completions per week (weekKey -> count). */
 const fullCountByWeek = computed(() => {
   const goal = props.habit.habit.timesPerWeekGoal
-  if (goal == null || goal < 1 || goal > 7) return new Map<string, number>()
+  if (goal == null || typeof goal !== 'number' || goal < 1 || goal > 7) return new Map<string, number>()
   const map = new Map<string, number>()
   for (const h of props.habit.history) {
     if (h.status?.toLowerCase() !== 'full') continue
@@ -91,7 +92,7 @@ const fullCountByWeek = computed(() => {
 
 function streakAtIndex(index: number): number {
   const goal = props.habit.habit.timesPerWeekGoal
-  if (goal != null && goal >= 1 && goal <= 7) {
+  if (typeof goal === 'number' && goal >= 1 && goal <= 7) {
     const dayList = days.value
     const c = getCompletion(dayList[index]!)
     if (c !== 'full') return 0

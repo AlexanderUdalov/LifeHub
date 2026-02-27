@@ -612,6 +612,212 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDTO"][];
+                        "application/json": components["schemas"]["GoalDTO"][];
+                        "text/json": components["schemas"]["GoalDTO"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateGoalRequest"];
+                    "text/json": components["schemas"]["CreateGoalRequest"];
+                    "application/*+json": components["schemas"]["CreateGoalRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDTO"];
+                        "application/json": components["schemas"]["GoalDTO"];
+                        "text/json": components["schemas"]["GoalDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/goals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDTO"];
+                        "application/json": components["schemas"]["GoalDTO"];
+                        "text/json": components["schemas"]["GoalDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateGoalRequest"];
+                    "text/json": components["schemas"]["UpdateGoalRequest"];
+                    "application/*+json": components["schemas"]["UpdateGoalRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDTO"];
+                        "application/json": components["schemas"]["GoalDTO"];
+                        "text/json": components["schemas"]["GoalDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/habits": {
         parameters: {
             query?: never;
@@ -886,6 +1092,250 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/journal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    DateFrom?: string;
+                    DateTo?: string;
+                    TaskItemId?: string;
+                    HabitId?: string;
+                    AddictionId?: string;
+                    GoalId?: string;
+                    LifeAreaId?: string;
+                    Search?: string;
+                    OnlyPinned?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["JournalEntryDTO"][];
+                        "application/json": components["schemas"]["JournalEntryDTO"][];
+                        "text/json": components["schemas"]["JournalEntryDTO"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateJournalEntryRequest"];
+                    "text/json": components["schemas"]["CreateJournalEntryRequest"];
+                    "application/*+json": components["schemas"]["CreateJournalEntryRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["JournalEntryDTO"];
+                        "application/json": components["schemas"]["JournalEntryDTO"];
+                        "text/json": components["schemas"]["JournalEntryDTO"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/journal/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["JournalEntryDTO"];
+                        "application/json": components["schemas"]["JournalEntryDTO"];
+                        "text/json": components["schemas"]["JournalEntryDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateJournalEntryRequest"];
+                    "text/json": components["schemas"]["UpdateJournalEntryRequest"];
+                    "application/*+json": components["schemas"]["UpdateJournalEntryRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["JournalEntryDTO"];
+                        "application/json": components["schemas"]["JournalEntryDTO"];
+                        "text/json": components["schemas"]["JournalEntryDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/journal/{id}/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["JournalEntryDTO"];
+                        "application/json": components["schemas"]["JournalEntryDTO"];
+                        "text/json": components["schemas"]["JournalEntryDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/lifeareas": {
@@ -1290,8 +1740,8 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
-            /** Optional. When creating, sets the last relapse date (YYYY-MM-DD). Ignored on update. */
-            lastRelapseDate?: null | string;
+            /** Format: date */
+            lastRelapseDate: null | string;
         };
         AddictionWithResetsDTO: {
             addiction: components["schemas"]["AddictionDTO"];
@@ -1303,10 +1753,31 @@ export interface components {
             token: string;
             refreshToken: string;
         };
+        CreateGoalRequest: {
+            title: string;
+            description: null | string;
+            /** Format: date-time */
+            dueDate: string;
+            /** Format: uuid */
+            lifeAreaId: null | string;
+        };
+        CreateJournalEntryRequest: {
+            text: string;
+            /** Format: uuid */
+            taskItemId: null | string;
+            /** Format: uuid */
+            habitId: null | string;
+            /** Format: uuid */
+            addictionId: null | string;
+            /** Format: uuid */
+            goalId: null | string;
+            /** Format: uuid */
+            lifeAreaId: null | string;
+        };
         CreateLifeAreaRequest: {
             name: string;
             color: string;
-            emoji?: null | string;
+            emoji: null | string;
         };
         CreateTaskRequest: {
             title: string;
@@ -1316,6 +1787,16 @@ export interface components {
             recurrenceRule: null | string;
             /** Format: uuid */
             goalId: null | string;
+            /** Format: uuid */
+            lifeAreaId: null | string;
+        };
+        GoalDTO: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            description: null | string;
+            /** Format: date-time */
+            dueDate: string;
             /** Format: uuid */
             lifeAreaId: null | string;
         };
@@ -1330,8 +1811,8 @@ export interface components {
             title: string;
             color: string;
             recurrenceRule: string;
-            /** @description When set, goal is N times per week (any days); streak = consecutive weeks with at least N completions. */
-            timesPerWeekGoal: null | number;
+            /** Format: int32 */
+            timesPerWeekGoal: null | number | string;
             /** Format: uuid */
             goalId: null | string;
             /** Format: uuid */
@@ -1341,7 +1822,8 @@ export interface components {
             title: string;
             color: string;
             recurrenceRule: string;
-            timesPerWeekGoal?: null | number;
+            /** Format: int32 */
+            timesPerWeekGoal: null | number | string;
             /** Format: uuid */
             goalId: null | string;
             /** Format: uuid */
@@ -1350,6 +1832,28 @@ export interface components {
         HabitWithHistoryDTO: {
             habit: components["schemas"]["HabitDTO"];
             history: components["schemas"]["HabitDayDTO"][];
+        };
+        JournalEntryDTO: {
+            /** Format: uuid */
+            id: string;
+            text: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: null | string;
+            isPinned: boolean;
+            /** Format: date-time */
+            pinnedAt: null | string;
+            /** Format: uuid */
+            taskItemId: null | string;
+            /** Format: uuid */
+            habitId: null | string;
+            /** Format: uuid */
+            addictionId: null | string;
+            /** Format: uuid */
+            goalId: null | string;
+            /** Format: uuid */
+            lifeAreaId: null | string;
         };
         LifeAreaDTO: {
             /** Format: uuid */
@@ -1398,10 +1902,34 @@ export interface components {
             /** Format: int32 */
             sortOrder: null | number | string;
         };
+        UpdateGoalRequest: {
+            title: null | string;
+            description: null | string;
+            /** Format: date-time */
+            dueDate: null | string;
+            /** Format: uuid */
+            lifeAreaId: null | string;
+        };
+        UpdateJournalEntryRequest: {
+            text: null | string;
+            /** Format: date-time */
+            createdAt: null | string;
+            isPinned: null | boolean;
+            /** Format: uuid */
+            taskItemId: null | string;
+            /** Format: uuid */
+            habitId: null | string;
+            /** Format: uuid */
+            addictionId: null | string;
+            /** Format: uuid */
+            goalId: null | string;
+            /** Format: uuid */
+            lifeAreaId: null | string;
+        };
         UpdateLifeAreaRequest: {
             name: null | string;
             color: null | string;
-            emoji?: null | string;
+            emoji: null | string;
         };
         UpdateRequest: {
             name: null | string;

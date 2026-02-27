@@ -41,14 +41,15 @@ function getInitialHabit(habit: HabitDTO | null): LocalHabit {
       timesPerWeekGoal: null
     }
   }
-  if (habit.timesPerWeekGoal != null && habit.timesPerWeekGoal >= 1 && habit.timesPerWeekGoal <= 7) {
+  const goal = habit.timesPerWeekGoal
+  if (typeof goal === 'number' && goal >= 1 && goal <= 7) {
     return {
       title: habit.title,
       color: habit.color,
       selectedWeekdays: [],
       goalId: habit.goalId,
       lifeAreaId: habit.lifeAreaId,
-      timesPerWeekGoal: habit.timesPerWeekGoal
+      timesPerWeekGoal: goal
     }
   }
   const opt = parseRuleToOptions(habit.recurrenceRule)
@@ -120,7 +121,7 @@ const habitMode = computed({
   get: () => (localHabit.value.timesPerWeekGoal == null ? 'weekdays' : 'timesPerWeek'),
   set: (v: 'weekdays' | 'timesPerWeek') => {
     if (v === 'weekdays') localHabit.value.timesPerWeekGoal = null
-    else localHabit.value.timesPerWeekGoal = localHabit.value.timesPerWeekGoal ?? 3
+    else localHabit.value.timesPerWeekGoal = 3
   }
 })
 
@@ -187,6 +188,7 @@ async function onDelete() {
     isDeleteLoading.value = false
   }
 }
+
 </script>
 
 <template>

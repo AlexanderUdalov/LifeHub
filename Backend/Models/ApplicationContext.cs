@@ -15,6 +15,7 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<AddictionReset> AddictionResets => Set<AddictionReset>();
     public DbSet<LifeArea> LifeAreas => Set<LifeArea>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -131,5 +132,44 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .WithMany(x => x.Days)
             .HasForeignKey(x => x.HabitId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(x => x.TaskItem)
+            .WithMany()
+            .HasForeignKey(x => x.TaskItemId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(x => x.Habit)
+            .WithMany()
+            .HasForeignKey(x => x.HabitId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(x => x.Addiction)
+            .WithMany()
+            .HasForeignKey(x => x.AddictionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(x => x.Goal)
+            .WithMany()
+            .HasForeignKey(x => x.GoalId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(x => x.LifeArea)
+            .WithMany()
+            .HasForeignKey(x => x.LifeAreaId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasIndex(x => new { x.UserId, x.IsPinned, x.CreatedAt });
     }
 }

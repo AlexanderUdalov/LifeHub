@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { GoalItem } from '@/models/GoalItem'
+import type { GoalDTO } from '@/api/GoalsAPI'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import TaskCard from './TaskCard.vue'
@@ -14,14 +14,14 @@ import { useI18n } from 'vue-i18n'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 
 const props = defineProps<{
-  goal: GoalItem
+  goal: GoalDTO
   tasks: TaskDTO[]
   habits: HabitWithHistoryDTO[]
   addictions: AddictionWithResetsDTO[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'edit-goal', goal: GoalItem): void
+  (e: 'edit-goal', goal: GoalDTO): void
 }>()
 
 const { t } = useI18n()

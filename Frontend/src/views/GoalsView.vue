@@ -5,10 +5,10 @@ import { useGoalsStore } from '@/stores/goals'
 import { useTasksStore } from '@/stores/tasks'
 import { useHabitsStore } from '@/stores/habits'
 import { useAddictionsStore } from '@/stores/addictions'
-import type { GoalItem } from '@/models/GoalItem'
+import type { GoalDTO } from '@/api/GoalsAPI'
 
 const emit = defineEmits<{
-  (e: 'edit-goal', goal: GoalItem): void
+  (e: 'edit-goal', goal: GoalDTO): void
 }>()
 
 const goalsStore = useGoalsStore()

@@ -168,8 +168,7 @@ const createPrimary = () => {
     justify-content: center;
     pointer-events: none;
     background: linear-gradient(to bottom,
-            color-mix(in srgb, var(--p-surface-ground) 92%, transparent) 0%,
-            color-mix(in srgb, var(--p-surface-ground) 50%, transparent) 40%,
+            #000000ae 0%,
             transparent 100%);
 }
 

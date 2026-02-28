@@ -15,7 +15,7 @@ import Aura from '@primeuix/themes/aura'
 
 import 'primeicons/primeicons.css'
 import './main.css'
-import { applyTheme, getStoredTheme } from '@/utils/theme'
+import { applyTheme, applyStoredCustomColors, getStoredTheme } from '@/utils/theme'
 
 const storedTheme = getStoredTheme()
 applyTheme(storedTheme ?? 'auto')
@@ -46,5 +46,7 @@ app.use(PrimeVue, {
     },
     locale: primeLocales[initialLocale]
 });
+
+applyStoredCustomColors();
 
 app.mount('#app')

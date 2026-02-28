@@ -1,0 +1,12 @@
+{
+  "name": "lifehub",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"dotnet run --project Backend\" \"npm run dev --prefix Frontend\"",
+    "dev:backend": "dotnet run --project Backend",
+    "dev:frontend": "npm run dev --prefix Frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

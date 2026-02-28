@@ -63,7 +63,34 @@ const submitUserData = async () => {
     }
 }
 
-import { applyTheme, getStoredTheme, setStoredTheme, type ThemeMode } from '@/utils/theme'
+import { applyTheme, getStoredTheme, setStoredTheme, getStoredPrimaryColor, getStoredSurfaceColor, applyPrimaryColor, applySurfaceColor, type ThemeMode } from '@/utils/theme'
+
+const DEFAULT_PRIMARY_HEX = '#10b981'
+const DEFAULT_SURFACE_HEX = '#71717a'
+
+// Preset colors like on https://primevue.org (Primary / Surface)
+const PRIMARY_PRESETS: { name: string; hex: string }[] = [
+    { name: 'Emerald', hex: '#10b981' },
+    { name: 'Green', hex: '#22c55e' },
+    { name: 'Lime', hex: '#84cc16' },
+    { name: 'Yellow', hex: '#eab308' },
+    { name: 'Orange', hex: '#f97316' },
+    { name: 'Red', hex: '#ef4444' },
+    { name: 'Pink', hex: '#ec4899' },
+    { name: 'Purple', hex: '#a855f7' },
+    { name: 'Violet', hex: '#8b5cf6' },
+    { name: 'Indigo', hex: '#6366f1' },
+    { name: 'Blue', hex: '#3b82f6' },
+    { name: 'Sky', hex: '#0ea5e9' }
+]
+
+const SURFACE_PRESETS: { name: string; hex: string }[] = [
+    { name: 'Zinc', hex: '#71717a' },
+    { name: 'Slate', hex: '#64748b' },
+    { name: 'Gray', hex: '#6b7280' },
+    { name: 'Neutral', hex: '#737373' },
+    { name: 'Stone', hex: '#78716c' }
+]
 
 const theme = ref<ThemeMode>(getStoredTheme() ?? 'auto')
 const themeOptions = [
@@ -75,6 +102,35 @@ const themeOptions = [
 function onThemeChange(mode: ThemeMode) {
     setStoredTheme(mode)
     applyTheme(mode)
+}
+
+const primaryColor = ref<string>(getStoredPrimaryColor() ?? DEFAULT_PRIMARY_HEX)
+const surfaceColor = ref<string>(getStoredSurfaceColor() ?? DEFAULT_SURFACE_HEX)
+
+function selectPrimary(hex: string) {
+    primaryColor.value = hex
+    onPrimaryColorChange(hex)
+}
+
+function selectSurface(hex: string) {
+    surfaceColor.value = hex
+    onSurfaceColorChange(hex)
+}
+
+function isPrimarySelected(hex: string) {
+    return primaryColor.value?.toLowerCase() === hex.toLowerCase()
+}
+
+function isSurfaceSelected(hex: string) {
+    return surfaceColor.value?.toLowerCase() === hex.toLowerCase()
+}
+
+function onPrimaryColorChange(hex: string) {
+    applyPrimaryColor(hex)
+}
+
+function onSurfaceColorChange(hex: string) {
+    applySurfaceColor(hex)
 }
 
 
@@ -140,6 +196,8 @@ onMounted(async () => {
         theme.value = savedTheme
         applyTheme(savedTheme)
     }
+    primaryColor.value = getStoredPrimaryColor() ?? DEFAULT_PRIMARY_HEX
+    surfaceColor.value = getStoredSurfaceColor() ?? DEFAULT_SURFACE_HEX
 })
 </script>
 
@@ -174,6 +232,46 @@ onMounted(async () => {
                 </div>
                 <SelectButton v-model="theme" :options="themeOptions" optionLabel="label" optionValue="value"
                     @change="onThemeChange(theme)" />
+            </div>
+
+            <div class="selector color-selector">
+                <div class="selector-label">
+                    <label>{{ $t('profile-view.primary-color') }}</label>
+                </div>
+                <div class="color-swatches" role="listbox" :aria-label="$t('profile-view.primary-color')">
+                    <button
+                        v-for="preset in PRIMARY_PRESETS"
+                        :key="preset.hex"
+                        type="button"
+                        role="option"
+                        :aria-selected="isPrimarySelected(preset.hex)"
+                        :title="preset.name"
+                        class="swatch"
+                        :class="{ 'swatch-selected': isPrimarySelected(preset.hex) }"
+                        :style="{ backgroundColor: preset.hex }"
+                        @click="selectPrimary(preset.hex)"
+                    />
+                </div>
+            </div>
+
+            <div class="selector color-selector">
+                <div class="selector-label">
+                    <label>{{ $t('profile-view.surface-color') }}</label>
+                </div>
+                <div class="color-swatches" role="listbox" :aria-label="$t('profile-view.surface-color')">
+                    <button
+                        v-for="preset in SURFACE_PRESETS"
+                        :key="preset.hex"
+                        type="button"
+                        role="option"
+                        :aria-selected="isSurfaceSelected(preset.hex)"
+                        :title="preset.name"
+                        class="swatch"
+                        :class="{ 'swatch-selected': isSurfaceSelected(preset.hex) }"
+                        :style="{ backgroundColor: preset.hex }"
+                        @click="selectSurface(preset.hex)"
+                    />
+                </div>
             </div>
 
             <Divider />
@@ -234,7 +332,45 @@ onMounted(async () => {
 
 .selector {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.color-selector {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.swatch {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    border: 2px solid var(--p-surface-border);
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.swatch:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.swatch-selected {
+    border: 2px solid var(--p-text-color);
+    box-shadow: 0 0 0 1px var(--p-surface-ground);
+}
+
+.swatch:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 2px;
 }
 
 .submit-button {

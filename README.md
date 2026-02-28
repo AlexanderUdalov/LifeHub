@@ -70,6 +70,20 @@ Modern self-development tools are fragmented: one app for tasks, another for hab
 - **AI Layer:** API-based LLM integration (later models can be swapped)  
 - **Deployment:** Docker + VPS + GitHub Actions  
 
+### Локальная разработка
+
+Из корня репозитория одной командой можно запустить и бэкенд, и фронтенд:
+
+```bash
+npm run dev
+```
+
+Бэкенд (API) и фронтенд (Vite) запустятся параллельно. Остановка — `Ctrl+C` в том же терминале (остановятся оба процесса).
+
+Отдельно:
+- `npm run dev:backend` — только бэкенд
+- `npm run dev:frontend` — только фронтенд
+
 ---
 
 ## 📐 Architecture (draft)

@@ -1,0 +1,16 @@
+# Dependencies (root npm install for dev scripts)
+node_modules/
+
+# Lock file: uncomment to ignore (many teams commit it for reproducible installs)
+# package-lock.json
+
+# Local env and logs at repo root
+.env
+.env.*
+!.env.example
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

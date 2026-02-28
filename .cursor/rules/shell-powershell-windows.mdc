@@ -1,0 +1,28 @@
+---
+description: Use PowerShell-compatible syntax when running shell commands on Windows
+alwaysApply: true
+---
+
+# Shell commands on Windows (PowerShell)
+
+On Windows, the default shell is often **PowerShell 5.x**, where `&&` is **not** a valid statement separator (it was added in PowerShell 7+).
+
+**Wrong (fails in PowerShell 5):**
+```powershell
+cd d:\PetProjects\LifeHub\Frontend && npm run type-check
+```
+
+**Correct options:**
+
+1. Use `;` instead of `&&`:
+   ```powershell
+   cd d:\PetProjects\LifeHub\Frontend; npm run type-check
+   ```
+
+2. Or run the command with `working_directory` so no `cd` is needed:
+   ```powershell
+   npm run type-check
+   ```
+   (with `working_directory: d:\PetProjects\LifeHub\Frontend` in the tool call)
+
+When chaining commands in PowerShell, use `;` rather than `&&`. When running npm/Node commands in a subfolder, prefer setting `working_directory` to that folder.

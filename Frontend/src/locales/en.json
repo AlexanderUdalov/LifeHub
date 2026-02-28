@@ -85,10 +85,12 @@
       "clear": "Clear",
       "confirm": "Done"
     },
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "empty": "Add your first task"
   },
   "habits": {
     "habits": "Habits",
+    "empty": "Add your first habit",
     "editdialog": {
       "newHabit": "New habit",
       "color": "Color",
@@ -105,6 +107,7 @@
   },
   "addictions": {
     "addictions": "Addictions",
+    "empty": "Add your first addiction",
     "timeSince": "{days}d {hours}h {minutes}m",
     "daysCount": "{count} days",
     "editdialog": {
@@ -144,6 +147,7 @@
     "title": "Goals",
     "field": "Goal",
     "selectPlaceholder": "Not selected",
+    "empty": "Add your first goal",
     "newGoal": "New goal",
     "dueDate": "Due",
     "save": "Save",
@@ -175,6 +179,6 @@
   "change": "Change",
   "current-password": "Current password",
   "new-password": "New password",
-  "journal": { "title": "Journal" },
+  "journal": { "title": "Journal", "empty": "Add your first entry" },
   "profile": "Profile"
 }

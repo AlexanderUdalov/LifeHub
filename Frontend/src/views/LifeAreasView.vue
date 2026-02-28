@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Card from 'primevue/card'
+import Skeleton from 'primevue/skeleton'
 import { computed, onMounted } from 'vue'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -57,7 +58,19 @@ function onEditArea(area: LifeAreaDTO) {
   <div class="lifeareas-view">
     <h1 class="view-page-header">{{ $t('lifeareas.title') }}</h1>
 
-    <div class="wheel-wrap">
+    <div v-if="lifeAreasStore.isLoading" class="lifeareas-skeleton">
+      <Skeleton shape="circle" size="170px" class="skeleton-wheel" />
+      <div class="skeleton-legend">
+        <Skeleton v-for="i in 3" :key="i" height="3rem" class="skeleton-legend-card" />
+      </div>
+    </div>
+
+    <div v-else-if="sortedAreas.length === 0" class="empty-placeholder">
+      <p>{{ $t('lifeareas.empty') }}</p>
+    </div>
+
+    <template v-else>
+      <div class="wheel-wrap">
       <div class="wheel" :style="wheelStyle" aria-hidden="true" />
       <div v-if="sortedAreas.length" class="wheel-emojis" aria-hidden="true">
         <span v-for="(area, index) in sortedAreas" v-show="area.emoji" :key="area.id" class="wheel-emoji" :style="{
@@ -75,6 +88,7 @@ function onEditArea(area: LifeAreaDTO) {
         </template>
       </Card>
     </div>
+    </template>
   </div>
 </template>
 
@@ -85,6 +99,37 @@ function onEditArea(area: LifeAreaDTO) {
   gap: 1rem;
   align-items: center;
   padding: 0 1rem 2rem;
+}
+
+.lifeareas-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.skeleton-wheel {
+  width: min(72vw, 170px);
+  max-width: 170px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
+.skeleton-legend {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-legend-card {
+  border-radius: var(--p-border-radius);
+}
+
+.empty-placeholder {
+  text-align: center;
+  color: var(--p-text-muted-color);
 }
 
 .view-page-header {

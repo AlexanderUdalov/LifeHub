@@ -6,6 +6,7 @@ import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
+import Skeleton from 'primevue/skeleton'
 import TaskCard from '@/components/TaskCard.vue'
 import { type TaskDTO } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
@@ -29,6 +30,8 @@ const taskSections = computed(() => [
   { key: 'inbox', title: t('tasks.list.inbox'), tasks: tasksStore.inboxTasks, draggable: true },
   { key: 'completed', title: t('tasks.list.completed'), tasks: tasksStore.completedTasks, draggable: false },
 ])
+
+const hasAnyTasks = computed(() => tasksStore.tasks.length > 0)
 
 function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
@@ -106,7 +109,16 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
 <template>
   <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
-  <Accordion :value="['0']" multiple>
+
+  <div v-if="tasksStore.isLoading" class="tasks-skeleton">
+    <Skeleton v-for="i in 4" :key="i" height="3.5rem" class="skeleton-row" />
+  </div>
+
+  <div v-else-if="!hasAnyTasks" class="empty-placeholder">
+    <p>{{ $t('tasks.empty') }}</p>
+  </div>
+
+  <Accordion v-else :value="['0']" multiple>
     <template v-for="(section, index) in taskSections" :key="section.key">
       <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
         <AccordionHeader>
@@ -144,6 +156,22 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
 
 <style scoped>
+.tasks-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 12px;
+}
+
+.skeleton-row {
+  border-radius: var(--p-border-radius);
+}
+
+.empty-placeholder {
+  text-align: center;
+  color: var(--p-text-muted-color);
+}
+
 .view-page-header {
   font-size: var(--p-card-title-font-size);
   font-weight: 600;

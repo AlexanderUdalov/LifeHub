@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import GoalCard from '@/components/GoalCard.vue'
+import Skeleton from 'primevue/skeleton'
 import { useGoalsStore } from '@/stores/goals'
 import { useTasksStore } from '@/stores/tasks'
 import { useHabitsStore } from '@/stores/habits'
@@ -62,7 +63,21 @@ const addictionsByGoalId = computed(() => {
 <template>
   <div class="goals-view">
     <h1 class="view-page-header">{{ $t('goals.title') }}</h1>
-    <GoalCard v-for="goal in goalsStore.goalsSorted" :key="goal.id" :goal="goal" :tasks="tasksByGoalId[goal.id] ?? []"
+
+    <div v-if="goalsStore.isLoading" class="goals-skeleton">
+      <div v-for="i in 3" :key="i" class="skeleton-card">
+        <Skeleton width="60%" height="1.5rem" class="skeleton-title" />
+        <Skeleton width="100%" height="1rem" />
+        <Skeleton width="90%" height="1rem" />
+        <Skeleton width="70%" height="1rem" />
+      </div>
+    </div>
+
+    <div v-else-if="goalsStore.goals.length === 0" class="empty-placeholder">
+      <p>{{ $t('goals.empty') }}</p>
+    </div>
+
+    <GoalCard v-else v-for="goal in goalsStore.goalsSorted" :key="goal.id" :goal="goal" :tasks="tasksByGoalId[goal.id] ?? []"
       :habits="habitsByGoalId[goal.id] ?? []" :addictions="addictionsByGoalId[goal.id] ?? []"
       @edit-goal="emit('edit-goal', $event)" />
   </div>
@@ -74,6 +89,31 @@ const addictionsByGoalId = computed(() => {
   flex-direction: column;
   gap: 12px;
   padding: 0 12px 12px;
+}
+
+.goals-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: var(--p-border-radius);
+  background: var(--p-card-background);
+  border: 1px solid var(--p-card-border-color);
+}
+
+.skeleton-title {
+  margin-bottom: 0.25rem;
+}
+
+.empty-placeholder {
+  text-align: center;
+  color: var(--p-text-muted-color);
 }
 
 .view-page-header {

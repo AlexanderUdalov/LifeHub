@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import HabitCard from '@/components/HabitCard.vue'
+import Skeleton from 'primevue/skeleton'
 import { onMounted } from 'vue'
 import { useHabitsStore } from '@/stores/habits'
 import type { HabitDTO } from '@/api/HabitsAPI'
@@ -18,7 +19,22 @@ onMounted(async () => {
 <template>
     <div class="habits-view">
         <h1 class="view-page-header">{{ $t('habits.habits') }}</h1>
-        <HabitCard v-for="h in habitsStore.habitsSorted" :key="h.habit.id" :habit="h"
+
+        <div v-if="habitsStore.isLoading" class="habits-skeleton">
+            <div v-for="i in 4" :key="i" class="skeleton-card">
+                <Skeleton shape="circle" size="2.5rem" class="skeleton-avatar" />
+                <div class="skeleton-lines">
+                    <Skeleton width="70%" height="1.25rem" />
+                    <Skeleton width="50%" height="1rem" />
+                </div>
+            </div>
+        </div>
+
+        <div v-else-if="habitsStore.habits.length === 0" class="empty-placeholder">
+            <p>{{ $t('habits.empty') }}</p>
+        </div>
+
+        <HabitCard v-else v-for="h in habitsStore.habitsSorted" :key="h.habit.id" :habit="h"
             @edit="(habit) => emit('edit-habit', habit)" />
     </div>
 </template>
@@ -29,6 +45,38 @@ onMounted(async () => {
     flex-direction: column;
     gap: 12px;
     padding: 0 12px 12px;
+}
+
+.habits-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skeleton-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--p-border-radius);
+    background: var(--p-card-background);
+    border: 1px solid var(--p-card-border-color);
+}
+
+.skeleton-avatar {
+    flex-shrink: 0;
+}
+
+.skeleton-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.empty-placeholder {
+    text-align: center;
+    color: var(--p-text-muted-color);
 }
 
 .view-page-header {

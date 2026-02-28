@@ -85,10 +85,12 @@
       "clear": "Очистить",
       "confirm": "Готово"
     },
-    "tasks": "Задачи"
+    "tasks": "Задачи",
+    "empty": "Добавьте первую задачу"
   },
   "habits": {
     "habits": "Привычки",
+    "empty": "Добавьте первую привычку",
     "editdialog": {
       "newHabit": "Новая привычка",
       "color": "Цвет",
@@ -105,6 +107,7 @@
   },
   "addictions": {
     "addictions": "Зависимости",
+    "empty": "Добавьте первую зависимость",
     "timeSince": "{days} дн {hours} ч {minutes} мин",
     "daysCount": "{count} дн.",
     "editdialog": {
@@ -144,6 +147,7 @@
     "title": "Цели",
     "field": "Цель",
     "selectPlaceholder": "Не выбрано",
+    "empty": "Добавьте первую цель",
     "newGoal": "Новая цель",
     "dueDate": "Срок",
     "save": "Сохранить",
@@ -175,6 +179,6 @@
   "current-password": "Текущий пароль",
   "change": "Изменить",
   "new-password": "Новый пароль",
-  "journal": { "title": "Журнал" },
+  "journal": { "title": "Журнал", "empty": "Добавьте первую запись" },
   "profile": "Профиль"
 }

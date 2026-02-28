@@ -1,0 +1,23 @@
+---
+description: Generate EF migrations via dotnet ef; do not write them manually
+globs: Backend/**/*.cs,Backend/Migrations/*
+alwaysApply: false
+---
+
+# Entity Framework migration generation
+
+When models (entities) or DbContext configuration change in the backend, **generate migrations via .NET CLI** instead of writing them by hand.
+
+**Command (from Backend folder or with project specified):**
+
+```bash
+dotnet ef migrations add MigrationName --project Backend
+```
+
+Requires the `dotnet-ef` tool and the `Microsoft.EntityFrameworkCore.Design` package in the project (already present).
+
+**Do not:**
+- Create migration files manually under `Backend/Migrations/`.
+- Copy and edit existing migrations instead of adding a new one.
+
+If you need to tweak a generated migration, generate it first, then edit carefully if necessary (rare case).

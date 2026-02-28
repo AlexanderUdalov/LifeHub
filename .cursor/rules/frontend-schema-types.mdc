@@ -1,0 +1,19 @@
+---
+description: Use types from the API schema on the frontend; avoid extra interfaces
+globs: Frontend/**/*.ts,Frontend/**/*.vue
+alwaysApply: false
+---
+
+# Frontend types from the API schema
+
+Use types from the generated schema `Frontend/src/api/schema.ts` (the `components["schemas"]` export and types from `paths`).
+
+**Do:**
+- Import types from `@/api/schema` or `../api/schema`.
+- Use `components["schemas"]["SomeDTO"]` and similar for API request/response types.
+
+**Avoid:**
+- Duplicate interfaces or type aliases that repeat API DTO structure.
+- Local types for data that is already defined in the schema.
+
+Types for purely local state/UI that does not match the API contract are fine. For any data coming from or sent to the backend, use only schema types.

@@ -1,0 +1,12 @@
+---
+description: Stop the backend after running it for checks or other tasks
+alwaysApply: true
+---
+
+# Stopping the backend after use
+
+When the backend is started for checks, tests, API generation, or any other purpose, **always stop the process** when done.
+
+- Do not leave the backend running in the background "just in case".
+- After the task is finished (verification, api:gen, debugging, etc.) stop the process explicitly (Ctrl+C in the terminal or kill the process).
+- This avoids lingering processes and port conflicts on the next run.

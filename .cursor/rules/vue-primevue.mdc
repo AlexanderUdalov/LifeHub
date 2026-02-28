@@ -1,0 +1,17 @@
+---
+description: Use PrimeVue components in .vue files
+globs: Frontend/**/*.vue
+alwaysApply: false
+---
+
+# Using PrimeVue in Vue components
+
+In `.vue` files, prefer **PrimeVue** components over native HTML elements or other UI libraries when PrimeVue provides the needed functionality.
+
+- Buttons: `Button` instead of `<button>` when styling/icons are needed.
+- Forms: `InputText`, `InputNumber`, `Textarea`, `Dropdown`, `Calendar`, etc.
+- Lists/tables: `DataTable`, `Listbox`, etc.
+- Overlays: `Dialog`, `Toast`, `OverlayPanel`.
+- Other components: see PrimeVue docs.
+
+Check PrimeVue first for a suitable component; only then customize or wrap if needed.

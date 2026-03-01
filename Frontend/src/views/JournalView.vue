@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import EmptyState from '@/components/EmptyState.vue';
 import JournalCard from '@/components/JournalCard.vue';
 import Skeleton from 'primevue/skeleton';
 import { useJournalStore } from '@/stores/journal';
@@ -31,9 +32,8 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-else-if="!hasEntries" class="empty-placeholder">
-      <p>{{ $t('journal.empty') }}</p>
-    </div>
+    <EmptyState v-else-if="!hasEntries" icon="pi pi-book"
+      :title="$t('journal.empty')" :subtitle="$t('journal.emptySubtitle')" />
 
     <template v-else>
       <div v-if="pinnedItems.length">
@@ -75,8 +75,4 @@ onMounted(async () => {
   margin-bottom: 0.25rem;
 }
 
-.empty-placeholder {
-  text-align: center;
-  color: var(--p-text-muted-color);
-}
 </style>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Card from 'primevue/card'
+import EmptyState from '@/components/EmptyState.vue'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted } from 'vue'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
@@ -65,9 +66,8 @@ function onEditArea(area: LifeAreaDTO) {
       </div>
     </div>
 
-    <div v-else-if="sortedAreas.length === 0" class="empty-placeholder">
-      <p>{{ $t('lifeareas.empty') }}</p>
-    </div>
+    <EmptyState v-else-if="sortedAreas.length === 0" icon="pi pi-chart-pie"
+      :title="$t('lifeareas.empty')" :subtitle="$t('lifeareas.emptySubtitle')" />
 
     <template v-else>
       <div class="wheel-wrap">
@@ -125,11 +125,6 @@ function onEditArea(area: LifeAreaDTO) {
 
 .skeleton-legend-card {
   border-radius: var(--p-border-radius);
-}
-
-.empty-placeholder {
-  text-align: center;
-  color: var(--p-text-muted-color);
 }
 
 .view-page-header {

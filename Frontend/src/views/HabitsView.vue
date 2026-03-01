@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import EmptyState from '@/components/EmptyState.vue'
 import HabitCard from '@/components/HabitCard.vue'
 import Skeleton from 'primevue/skeleton'
 import { onMounted } from 'vue'
@@ -30,9 +31,8 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div v-else-if="habitsStore.habits.length === 0" class="empty-placeholder">
-            <p>{{ $t('habits.empty') }}</p>
-        </div>
+        <EmptyState v-else-if="habitsStore.habits.length === 0" icon="pi pi-sync"
+            :title="$t('habits.empty')" :subtitle="$t('habits.emptySubtitle')" />
 
         <HabitCard v-else v-for="h in habitsStore.habitsSorted" :key="h.habit.id" :habit="h"
             @edit="(habit) => emit('edit-habit', habit)" />
@@ -72,11 +72,6 @@ onMounted(async () => {
     flex-direction: column;
     gap: 0.5rem;
     flex: 1;
-}
-
-.empty-placeholder {
-    text-align: center;
-    color: var(--p-text-muted-color);
 }
 
 .view-page-header {

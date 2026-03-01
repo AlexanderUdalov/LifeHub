@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AddictionCard from '@/components/AddictionCard.vue'
+import EmptyState from '@/components/EmptyState.vue'
 import Skeleton from 'primevue/skeleton'
 import { onMounted } from 'vue'
 import { useAddictionsStore } from '@/stores/addictions'
@@ -30,9 +31,8 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-else-if="addictionsStore.addictions.length === 0" class="empty-placeholder">
-      <p>{{ $t('addictions.empty') }}</p>
-    </div>
+    <EmptyState v-else-if="addictionsStore.addictions.length === 0" icon="pi pi-shield"
+      :title="$t('addictions.empty')" :subtitle="$t('addictions.emptySubtitle')" />
 
     <AddictionCard v-else v-for="a in addictionsStore.addictionsSorted" :key="a.addiction.id" :addiction="a"
       @edit="(addiction) => emit('edit-addiction', addiction)" />
@@ -72,11 +72,6 @@ onMounted(async () => {
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
-}
-
-.empty-placeholder {
-  text-align: center;
-  color: var(--p-text-muted-color);
 }
 
 .view-page-header {

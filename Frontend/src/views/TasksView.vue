@@ -7,6 +7,7 @@ import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
 import Skeleton from 'primevue/skeleton'
+import EmptyState from '@/components/EmptyState.vue'
 import TaskCard from '@/components/TaskCard.vue'
 import { type TaskDTO } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
@@ -114,9 +115,8 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     <Skeleton v-for="i in 4" :key="i" height="3.5rem" class="skeleton-row" />
   </div>
 
-  <div v-else-if="!hasAnyTasks" class="empty-placeholder">
-    <p>{{ $t('tasks.empty') }}</p>
-  </div>
+  <EmptyState v-else-if="!hasAnyTasks" icon="pi pi-list-check" :title="$t('tasks.empty')"
+    :subtitle="$t('tasks.emptySubtitle')" />
 
   <Accordion v-else :value="['0']" multiple>
     <template v-for="(section, index) in taskSections" :key="section.key">
@@ -165,11 +165,6 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
 .skeleton-row {
   border-radius: var(--p-border-radius);
-}
-
-.empty-placeholder {
-  text-align: center;
-  color: var(--p-text-muted-color);
 }
 
 .view-page-header {

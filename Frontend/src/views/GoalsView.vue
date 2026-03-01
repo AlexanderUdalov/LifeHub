@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import EmptyState from '@/components/EmptyState.vue'
 import GoalCard from '@/components/GoalCard.vue'
 import Skeleton from 'primevue/skeleton'
 import { useGoalsStore } from '@/stores/goals'
@@ -73,9 +74,8 @@ const addictionsByGoalId = computed(() => {
       </div>
     </div>
 
-    <div v-else-if="goalsStore.goals.length === 0" class="empty-placeholder">
-      <p>{{ $t('goals.empty') }}</p>
-    </div>
+    <EmptyState v-else-if="goalsStore.goals.length === 0" icon="pi pi-flag"
+      :title="$t('goals.empty')" :subtitle="$t('goals.emptySubtitle')" />
 
     <GoalCard v-else v-for="goal in goalsStore.goalsSorted" :key="goal.id" :goal="goal" :tasks="tasksByGoalId[goal.id] ?? []"
       :habits="habitsByGoalId[goal.id] ?? []" :addictions="addictionsByGoalId[goal.id] ?? []"
@@ -109,11 +109,6 @@ const addictionsByGoalId = computed(() => {
 
 .skeleton-title {
   margin-bottom: 0.25rem;
-}
-
-.empty-placeholder {
-  text-align: center;
-  color: var(--p-text-muted-color);
 }
 
 .view-page-header {

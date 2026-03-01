@@ -86,11 +86,13 @@
       "confirm": "Done"
     },
     "tasks": "Tasks",
-    "empty": "Add your first task"
+    "empty": "No tasks yet",
+    "emptySubtitle": "Create a task to start planning your day"
   },
   "habits": {
     "habits": "Habits",
-    "empty": "Add your first habit",
+    "empty": "No habits yet",
+    "emptySubtitle": "Add a habit to track your daily progress",
     "editdialog": {
       "newHabit": "New habit",
       "color": "Color",
@@ -107,7 +109,8 @@
   },
   "addictions": {
     "addictions": "Addictions",
-    "empty": "Add your first addiction",
+    "empty": "No addictions tracked",
+    "emptySubtitle": "Add an addiction to start tracking your streak",
     "timeSince": "{days}d {hours}h {minutes}m",
     "daysCount": "{count} days",
     "editdialog": {
@@ -128,7 +131,8 @@
     "title": "Life Areas",
     "field": "Life area",
     "selectPlaceholder": "No area",
-    "empty": "Add your first life area",
+    "empty": "No life areas yet",
+    "emptySubtitle": "Add a life area to visualize your life balance",
     "addFirst": "Add life area",
     "add": "Add life area",
     "editdialog": {
@@ -147,7 +151,8 @@
     "title": "Goals",
     "field": "Goal",
     "selectPlaceholder": "Not selected",
-    "empty": "Add your first goal",
+    "empty": "No goals yet",
+    "emptySubtitle": "Set a goal and link tasks to achieve it",
     "newGoal": "New goal",
     "dueDate": "Due",
     "save": "Save",
@@ -179,6 +184,6 @@
   "change": "Change",
   "current-password": "Current password",
   "new-password": "New password",
-  "journal": { "title": "Journal", "empty": "Add your first entry" },
+  "journal": { "title": "Journal", "empty": "No entries yet", "emptySubtitle": "Create an entry to start your journal" },
   "profile": "Profile"
 }

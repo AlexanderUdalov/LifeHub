@@ -192,7 +192,7 @@ const createPrimary = () => {
 .content {
     flex: 1;
     overflow-y: auto;
-    max-height: calc(100dvh - 72px);
+    max-height: calc(100dvh - 62px);
 }
 
 .tab-list {
@@ -255,7 +255,9 @@ const createPrimary = () => {
     right: 0;
     width: 100%;
     overflow: hidden;
-    box-shadow: 2px 2px 10px 2px rgba(255, 255, 255, 0.08);
+    border-top: 1px;
+    border-top-style: solid;
+    border-color: var(--p-content-border-color);
 }
 
 :deep(.p-tablist) {

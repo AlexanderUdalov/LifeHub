@@ -184,6 +184,18 @@
   "change": "Change",
   "current-password": "Current password",
   "new-password": "New password",
-  "journal": { "title": "Journal", "empty": "No entries yet", "emptySubtitle": "Create an entry to start your journal" },
+  "journal": {
+    "title": "Journal",
+    "empty": "No entries yet",
+    "emptySubtitle": "Create an entry to start your journal",
+    "newNote": "New note",
+    "editNote": "Edit note",
+    "placeholder": "What's on your mind?",
+    "save": "Save",
+    "create": "Create",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this note?",
+    "pin": "Pin"
+  },
   "profile": "Profile"
 }

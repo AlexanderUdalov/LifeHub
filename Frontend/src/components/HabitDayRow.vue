@@ -5,8 +5,7 @@ import { computed, onMounted, ref } from 'vue'
 import { rrulestr, RRule } from 'rrule'
 import { useHabitsStore } from '@/stores/habits'
 import { toDateOnlyString, startOfDay, isToday, getWeekKey, fromDateOnlyString } from '@/utils/dateOnly'
-
-type HabitCompletion = 'none' | 'skip' | 'full'
+import { calcTimesPerWeekStreak, calcFixedDaysStreak, type HabitCompletion } from '@/utils/habitStreak'
 
 const props = defineProps<{
   habit: HabitWithHistoryDTO
@@ -93,33 +92,9 @@ const fullCountByWeek = computed(() => {
 function streakAtIndex(index: number): number {
   const goal = props.habit.habit.timesPerWeekGoal
   if (typeof goal === 'number' && goal >= 1 && goal <= 7) {
-    const dayList = days.value
-    const c = getCompletion(dayList[index]!)
-    if (c !== 'full') return 0
-    let count = 1
-    for (let j = index - 1; j >= 0; j--) {
-      if (getCompletion(dayList[j]!) !== 'full') continue
-      const nextDay = dayList[j + 1]!
-      if (isMonday(nextDay)) {
-        const prevWeekKey = getWeekKey(dayList[j]!)
-        if ((fullCountByWeek.value.get(prevWeekKey) ?? 0) < goal) break
-      }
-      count++
-    }
-    return count
+    return calcTimesPerWeekStreak(days.value, index, goal, getCompletion, fullCountByWeek.value)
   }
-  let count = 0
-  for (let i = index; i >= 0; i--) {
-    if (disabledByIndex.value[i]) continue
-    const c = getCompletion(days.value[i]!)
-    if (c === 'full') {
-      count++
-      continue
-    }
-    if (c === 'skip') continue
-    break
-  }
-  return count
+  return calcFixedDaysStreak(days.value, index, getCompletion, disabledByIndex.value)
 }
 
 const streaks = computed(() => days.value.map((_, idx) => streakAtIndex(idx)))

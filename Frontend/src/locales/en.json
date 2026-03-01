@@ -195,7 +195,10 @@
     "create": "Create",
     "delete": "Delete",
     "deleteConfirm": "Delete this note?",
-    "pin": "Pin"
+    "pin": "Pin",
+    "pinned": "Pinned",
+    "pinnedEntry": "Pinned",
+    "edited": "edited"
   },
   "profile": "Profile"
 }

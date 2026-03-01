@@ -26,24 +26,32 @@ onMounted(async () => {
     <h1 class="view-page-header">{{ $t('journal.title') }}</h1>
 
     <div v-if="journalStore.isLoading" class="journal-skeleton">
-      <div v-for="i in 3" :key="i" class="skeleton-block">
-        <Skeleton width="50%" height="1.25rem" class="skeleton-title" />
-        <Skeleton width="100%" height="3rem" />
+      <div v-for="i in 3" :key="i" class="skeleton-card">
+        <Skeleton width="100%" height="4.5rem" borderRadius="16px" />
       </div>
     </div>
 
-    <EmptyState v-else-if="!hasEntries" icon="pi pi-book"
-      :title="$t('journal.empty')" :subtitle="$t('journal.emptySubtitle')" />
+    <EmptyState v-else-if="!hasEntries" icon="pi pi-book" :title="$t('journal.empty')"
+      :subtitle="$t('journal.emptySubtitle')" />
 
     <template v-else>
-      <div v-if="pinnedItems.length">
-        <h3>Pinned</h3>
-        <JournalCard v-for="item in pinnedItems" :key="item.id" :item="item" @edit-journal="(entry) => emit('edit-journal', entry)" />
-      </div>
+      <section v-if="pinnedItems.length" class="journal-section">
+        <div class="journal-section__header">
+          <i class="pi pi-thumbtack journal-section__icon" />
+          <span>{{ $t('journal.pinned') }}</span>
+        </div>
+        <div class="journal-cards">
+          <JournalCard v-for="item in pinnedItems" :key="item.id" :item="item"
+            @edit-journal="(entry) => emit('edit-journal', entry)" />
+        </div>
+      </section>
 
-      <div>
-        <JournalCard v-for="item in regularItems" :key="item.id" :item="item" @edit-journal="(entry) => emit('edit-journal', entry)" />
-      </div>
+      <section class="journal-section">
+        <div class="journal-cards">
+          <JournalCard v-for="item in regularItems" :key="item.id" :item="item"
+            @edit-journal="(entry) => emit('edit-journal', entry)" />
+        </div>
+      </section>
     </template>
   </div>
 </template>
@@ -62,17 +70,32 @@ onMounted(async () => {
 .journal-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
-.skeleton-block {
+.journal-section {
+  margin-bottom: 0.5rem;
+}
+
+.journal-section__header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.25rem 0.5rem;
+}
+
+.journal-section__icon {
+  font-size: 0.6875rem;
+}
+
+.journal-cards {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
-
-.skeleton-title {
-  margin-bottom: 0.25rem;
-}
-
 </style>

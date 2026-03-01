@@ -34,9 +34,7 @@ const isEdit = computed(() => !!props.entry)
 const canSave = computed(() => localText.value.trim().length > 0)
 
 const isSaveLoading = ref(false)
-const isDeleteLoading = ref(false)
 const errorText = ref('')
-const showDeleteConfirm = ref(false)
 
 const textareaWrap = ref<HTMLElement | null>(null)
 
@@ -78,22 +76,6 @@ async function onSave() {
   }
 }
 
-async function onDelete() {
-  if (!isEdit.value || !props.entry) return
-
-  errorText.value = ''
-  isDeleteLoading.value = true
-
-  try {
-    await journalStore.removeEntry(props.entry.id)
-    emit('close')
-  } catch (e) {
-    errorText.value = apiError.resolveMessage(e)
-  } finally {
-    isDeleteLoading.value = false
-  }
-}
-
 const formattedDate = computed(() => {
   if (!props.entry) return ''
   return new Date(props.entry.createdAt).toLocaleDateString(locale.value, {
@@ -118,8 +100,9 @@ const formattedDate = computed(() => {
     </div>
 
     <div v-if="isEdit" class="journal-drawer-meta">
-      <Button icon="pi pi-thumbtack" :label="t('journal.pin')" :severity="localPinned ? undefined : 'secondary'"
-        :variant="localPinned ? 'outlined' : 'text'" size="small" @click="localPinned = !localPinned" />
+      <Button icon="pi pi-thumbtack" :label="localPinned ? t('journal.pinnedEntry') : t('journal.pin')"
+        :severity="localPinned ? undefined : 'secondary'" :variant="localPinned ? 'outlined' : 'text'" size="small"
+        @click="localPinned = !localPinned" />
       <span class="journal-drawer-date">
         <i class="pi pi-calendar" />
         {{ formattedDate }}
@@ -131,23 +114,11 @@ const formattedDate = computed(() => {
     </Message>
 
     <template #footer>
-      <Transition name="journal-fade" mode="out-in">
-        <div v-if="showDeleteConfirm" key="confirm" class="journal-drawer-actions journal-drawer-actions--confirm">
-          <span class="journal-drawer-confirm-label">{{ t('journal.deleteConfirm') }}</span>
-          <div class="journal-drawer-confirm-btns">
-            <Button :label="t('cancel')" severity="secondary" variant="text" @click="showDeleteConfirm = false" />
-            <Button :label="t('journal.delete')" severity="danger" :loading="isDeleteLoading" @click="onDelete" />
-          </div>
-        </div>
-
-        <div v-else key="actions" class="journal-drawer-actions">
-          <Button v-if="isEdit" icon="pi pi-trash" :label="t('journal.delete')" severity="danger" variant="text"
-            @click="showDeleteConfirm = true" />
-          <span v-else />
-          <Button :label="isEdit ? t('journal.save') : t('journal.create')" :disabled="!canSave"
-            :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
-        </div>
-      </Transition>
+      <div class="journal-drawer-actions">
+        <span />
+        <Button :label="isEdit ? t('journal.save') : t('journal.create')" :disabled="!canSave" :loading="isSaveLoading"
+          icon="pi pi-check" @click="onSave" />
+      </div>
     </template>
   </Drawer>
 </template>
@@ -185,6 +156,7 @@ const formattedDate = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  padding-bottom: 0.25rem;
 }
 
 .journal-drawer-textarea.p-textarea {
@@ -225,34 +197,5 @@ const formattedDate = computed(() => {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-}
-
-.journal-drawer-actions--confirm {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
-}
-
-.journal-drawer-confirm-label {
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--p-text-color);
-  text-align: center;
-}
-
-.journal-drawer-confirm-btns {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.journal-fade-enter-active,
-.journal-fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-
-.journal-fade-enter-from,
-.journal-fade-leave-to {
-  opacity: 0;
 }
 </style>

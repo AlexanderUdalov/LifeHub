@@ -21,13 +21,14 @@ public class JournalController(ApplicationContext context) : ControllerBase
         var items = await context.JournalEntries
             .AsNoTracking()
             .Where(e => e.UserId == userId)
-            .OrderByDescending(e => e.IsPinned)
-            .ThenByDescending(e => e.PinnedAt ?? e.CreatedAt)
-            .ThenByDescending(e => e.CreatedAt)
             .Select(e => e.ToDTO())
             .ToListAsync();
 
-        return items;
+        return items
+            .OrderByDescending(e => e.IsPinned)
+            .ThenByDescending(e => e.PinnedAt ?? e.CreatedAt)
+            .ThenByDescending(e => e.CreatedAt)
+            .ToList();
     }
 
     [HttpGet("{id:guid}")]

@@ -243,7 +243,7 @@ async function onDelete() {
 
 .addiction-drawer-colors {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
 }
 
 .addiction-color-chip {

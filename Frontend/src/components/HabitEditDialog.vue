@@ -366,7 +366,7 @@ async function onDelete() {
 
 .habit-drawer-colors {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
 }
 
 .habit-color-chip {

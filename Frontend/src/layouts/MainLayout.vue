@@ -142,7 +142,7 @@ const createPrimary = () => {
                     </Tab>
                 </div>
                 <Tab :value="centerTab.route" class="tab tab-center">
-                    <img src="/favicon.ico" class="tab-logo" :alt="t('lifeareas.title')" />
+                    <img src="/Frontend/public/favicon.svg" class="tab-logo" :alt="t('lifeareas.title')" />
                 </Tab>
                 <div class="tab-group tab-group-right">
                     <Tab v-for="tab in rightTabs" :key="tab.route" :value="tab.route" class="tab">

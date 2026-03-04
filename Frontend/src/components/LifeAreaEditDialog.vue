@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import Dialog from 'primevue/dialog'
+import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import ColorPicker from 'primevue/colorpicker'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -26,6 +26,11 @@ const { t } = useI18n()
 const lifeAreasStore = useLifeAreasStore()
 const apiError = useApiError()
 
+const visible = ref(true)
+watch(visible, (v) => {
+  if (!v) emit('close')
+})
+
 const localName = ref(props.area?.name ?? '')
 const localColor = ref(props.area?.color ?? DEFAULT_COLOR)
 const localEmoji = ref(props.area?.emoji ?? null)
@@ -39,6 +44,14 @@ onMounted(() => {
 
 const isEdit = computed(() => !!props.area)
 const canSave = computed(() => localName.value.trim().length > 0 && localColor.value.trim().length > 0)
+
+const titleWrap = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  setTimeout(() => {
+    titleWrap.value?.querySelector('input')?.focus()
+  }, 300)
+})
 
 const isSaveLoading = ref(false)
 const isDeleteLoading = ref(false)
@@ -93,117 +106,139 @@ async function onDelete() {
     isDeleteLoading.value = false
   }
 }
-
 </script>
 
 <template>
-  <Dialog modal :visible="true" :closable="false" :draggable="false" class="lifearea-edit-dialog" :pt="{
-    root: { class: 'lifearea-edit-dialog-root' },
-    header: { class: 'lifearea-edit-header' },
-    content: { class: 'lifearea-edit-content' }
-  }" @hide="emit('close')">
+  <Drawer v-model:visible="visible" position="bottom" class="lifearea-drawer" style="height: auto; max-height: 85vh">
     <template #header>
-      <div class="lifearea-edit-header-left">
-        <InputText id="lifearea-name" class="lifearea-edit-title" v-model="localName"
-          :placeholder="t('lifeareas.editdialog.newLifeArea')" size="large" />
-      </div>
-      <div class="lifearea-edit-close-wrap">
-        <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Close" size="small"
-          @click="emit('close')" />
+      <div class="lifearea-drawer-header" ref="titleWrap">
+        <span v-if="localEmoji" class="lifearea-drawer-emoji">{{ localEmoji }}</span>
+        <InputText v-model="localName" :placeholder="t('lifeareas.editdialog.newLifeArea')"
+          class="lifearea-drawer-title-input" />
       </div>
     </template>
 
-    <div class="lifearea-edit-section">
-      <label class="lifearea-edit-field-label" for="lifearea-color">{{ t('lifeareas.editdialog.color') }}</label>
-      <ColorPicker id="lifearea-color" v-model="localColor" format="hex" inline class="color-picker" />
+    <div class="lifearea-drawer-section">
+      <label class="lifearea-drawer-label">{{ t('lifeareas.editdialog.color') }}</label>
+      <ColorPicker v-model="localColor" format="hex" inline class="lifearea-drawer-color-picker" />
     </div>
 
-    <div class="lifearea-edit-section">
-      <div class="lifearea-edit-field-header">
-        <span class="lifearea-edit-field-label">{{ t('lifeareas.editdialog.emoji') }}</span>
-        <span v-if="localEmoji" class="lifearea-edit-emoji-preview">{{ localEmoji }}</span>
+    <div class="lifearea-drawer-section">
+      <div class="lifearea-drawer-emoji-header">
+        <span class="lifearea-drawer-label">{{ t('lifeareas.editdialog.emoji') }}</span>
+        <span v-if="localEmoji" class="lifearea-drawer-emoji-preview">{{ localEmoji }}</span>
       </div>
       <EmojiPicker :native="false" :theme="emojiTheme" :disable-skin-tones="true"
         @select="(e: { i: string }) => { localEmoji = e.i }" />
     </div>
 
-    <Message v-if="errorText.length" severity="error" :life="3000">
+    <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
       {{ errorText }}
     </Message>
 
     <template #footer>
-      <Button v-if="isEdit" :label="t('lifeareas.editdialog.delete')" severity="danger" :loading="isDeleteLoading"
-        @click="onDelete" />
-      <Button :label="isEdit ? t('lifeareas.editdialog.save') : t('lifeareas.editdialog.create')" :disabled="!canSave"
-        :loading="isSaveLoading" @click="onSave" />
+      <div class="lifearea-drawer-actions">
+        <Button v-if="isEdit" icon="pi pi-trash" :label="t('lifeareas.editdialog.delete')" severity="danger"
+          variant="text" size="small" :loading="isDeleteLoading" @click="onDelete" />
+        <span v-else />
+        <Button :label="isEdit ? t('lifeareas.editdialog.save') : t('lifeareas.editdialog.create')"
+          :disabled="!canSave" :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
+      </div>
     </template>
-  </Dialog>
+  </Drawer>
 </template>
 
-<style scoped>
-.lifearea-edit-dialog-root {
-  width: 80%;
-  max-width: 400px;
-  border-radius: 16px;
-  overflow: hidden;
+<style>
+.p-drawer.lifearea-drawer {
+  border-radius: 1rem 1rem 0 0;
 }
 
-:deep(.p-dialog-header.lifearea-edit-header) {
-  display: flex;
-  align-items: center;
+.lifearea-drawer .p-drawer-header {
   position: relative;
-  padding: 1rem;
-  padding-right: 3rem;
+  padding: 0.75rem 1.25rem;
+  padding-top: 1.5rem;
 }
 
-.lifearea-edit-header-left {
+.lifearea-drawer .p-drawer-header::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.5rem;
+  height: 0.25rem;
+  background: var(--p-content-border-color);
+  border-radius: 999px;
+}
+
+.lifearea-drawer-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  min-width: 0;
   flex: 1;
+  min-width: 0;
 }
 
-.lifearea-edit-title {
+.lifearea-drawer-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.p-inputtext.lifearea-drawer-title-input {
   flex: 1;
   min-width: 0;
   border: none;
-  box-shadow: none;
-  background-color: transparent;
+  box-shadow: none !important;
+  background: transparent;
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
 }
 
-.lifearea-edit-close-wrap {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-}
-
-:deep(.p-dialog-content.lifearea-edit-content) {
-  padding-top: 0.25rem;
-}
-
-.lifearea-edit-section {
-  margin-bottom: 1rem;
-}
-
-.lifearea-edit-field-header {
+.lifearea-drawer .p-drawer-content {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+.lifearea-drawer-section {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
 }
 
-.lifearea-edit-field-label {
-  font-size: 0.875rem;
+.lifearea-drawer-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-.color-picker {
+.lifearea-drawer-color-picker {
   width: 100%;
   min-width: 0;
 }
 
-.lifearea-edit-emoji-preview {
+.lifearea-drawer-emoji-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lifearea-drawer-emoji-preview {
   font-size: 1.5rem;
+}
+
+.lifearea-drawer .p-drawer-footer {
+  border-top: 1px solid var(--p-content-border-color);
+}
+
+.lifearea-drawer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 </style>

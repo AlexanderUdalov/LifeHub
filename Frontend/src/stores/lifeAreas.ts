@@ -7,7 +7,7 @@ import {
   type UpdateLifeAreaRequest
 } from '@/api/LifeAreasAPI'
 
-const LIFE_AREA_LIMIT = 10
+const LIFE_AREA_LIMIT = 8
 
 export const useLifeAreasStore = defineStore('lifeAreas', () => {
   const lifeAreas = ref<LifeAreaDTO[]>([])

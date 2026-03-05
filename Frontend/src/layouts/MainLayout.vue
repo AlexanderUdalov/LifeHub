@@ -74,6 +74,10 @@ onMounted(async () => {
     ])
 })
 
+const hideFab = computed(() =>
+    route.path.startsWith('/lifeareas') && lifeAreasStore.isLimitReached
+)
+
 const createPrimary = () => {
     if (route.path.startsWith('/journal')) {
         editContext.value = { type: 'journal', item: null }
@@ -118,7 +122,7 @@ const createPrimary = () => {
             </RouterView>
         </main>
 
-        <Button class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
+        <Button v-if="!hideFab" class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item"
             @close="editContext = null" />
@@ -274,5 +278,8 @@ const createPrimary = () => {
     position: fixed;
     right: 1rem;
     bottom: 7rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.25rem;
 }
 </style>

@@ -194,6 +194,10 @@ function onEditArea(area: LifeAreaDTO) {
   flex-direction: row;
 }
 
+.legend-card :deep(.p-card-title) {
+  font-size: 0.9rem;
+}
+
 .legend-card:hover {
   background: var(--p-content-hover-background);
   border-color: var(--p-content-hover-border-color);

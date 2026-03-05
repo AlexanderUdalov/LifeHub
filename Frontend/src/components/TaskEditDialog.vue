@@ -202,7 +202,7 @@ async function onDelete() {
         :class="{ 'task-chip-select--active': hasLifeArea }">
         <template #value>
           <span class="task-chip-select-value">
-            <i class="pi pi-objects-column" />
+            <i class="pi pi-chart-pie" />
             {{ lifeAreaChipLabel }}
           </span>
         </template>

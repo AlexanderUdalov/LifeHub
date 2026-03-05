@@ -4,6 +4,7 @@ import Button from 'primevue/button'
 import { computed, ref } from 'vue'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useJournalStore } from '@/stores/journal'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ item: JournalEntryDTO }>()
@@ -14,6 +15,12 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n()
 const journalStore = useJournalStore()
+const lifeAreasStore = useLifeAreasStore()
+
+const lifeArea = computed(() => {
+  if (!props.item.lifeAreaId) return null
+  return lifeAreasStore.lifeAreas.find(a => a.id === props.item.lifeAreaId) ?? null
+})
 
 const isExpanded = ref(false)
 const showDeleteConfirm = ref(false)
@@ -101,6 +108,11 @@ async function onConfirmDelete() {
         >
           {{ item.text }}
         </p>
+      </div>
+
+      <div v-if="lifeArea" class="journal-card__life-area">
+        <i class="pi pi-chart-pie" />
+        <span>{{ lifeArea.name }}</span>
       </div>
 
       <Transition name="journal-card-slide">
@@ -210,6 +222,19 @@ async function onConfirmDelete() {
 .journal-card__action-btn {
   width: 2rem;
   height: 2rem;
+}
+
+.journal-card__life-area {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  padding: 0.25rem 0;
+}
+
+.journal-card__life-area i {
+  font-size: 0.625rem;
 }
 
 .journal-card__confirm {

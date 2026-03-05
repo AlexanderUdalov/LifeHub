@@ -3,7 +3,7 @@ import EmptyState from '@/components/EmptyState.vue';
 import JournalCard from '@/components/JournalCard.vue';
 import Skeleton from 'primevue/skeleton';
 import { useJournalStore } from '@/stores/journal';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, nextTick } from 'vue';
 import type { JournalEntryDTO } from '@/api/JournalAPI';
 
 const journalStore = useJournalStore();
@@ -40,17 +40,17 @@ onMounted(async () => {
           <i class="pi pi-thumbtack journal-section__icon" />
           <span>{{ $t('journal.pinned') }}</span>
         </div>
-        <div class="journal-cards">
+        <TransitionGroup name="journal-list" tag="div" class="journal-cards">
           <JournalCard v-for="item in pinnedItems" :key="item.id" :item="item"
             @edit-journal="(entry) => emit('edit-journal', entry)" />
-        </div>
+        </TransitionGroup>
       </section>
 
       <section class="journal-section">
-        <div class="journal-cards">
+        <TransitionGroup name="journal-list" tag="div" class="journal-cards">
           <JournalCard v-for="item in regularItems" :key="item.id" :item="item"
             @edit-journal="(entry) => emit('edit-journal', entry)" />
-        </div>
+        </TransitionGroup>
       </section>
     </template>
   </div>
@@ -75,6 +75,7 @@ onMounted(async () => {
 
 .journal-section {
   margin-bottom: 0.5rem;
+  position: relative;
 }
 
 .journal-section__header {
@@ -97,5 +98,29 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
+}
+
+.journal-list-move {
+  transition: transform 0.4s ease;
+}
+
+.journal-list-enter-active {
+  transition: all 0.35s ease;
+}
+
+.journal-list-leave-active {
+  transition: all 0.3s ease;
+  position: absolute;
+  width: 100%;
+}
+
+.journal-list-enter-from {
+  opacity: 0;
+  transform: translateY(-16px);
+}
+
+.journal-list-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
 }
 </style>

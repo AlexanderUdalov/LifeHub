@@ -2,9 +2,11 @@
 import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
+import Select from 'primevue/select'
 import Message from 'primevue/message'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useJournalStore } from '@/stores/journal'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useApiError } from '@/composables/useApiError'
 import { useI18n } from 'vue-i18n'
@@ -20,6 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const journalStore = useJournalStore()
+const lifeAreasStore = useLifeAreasStore()
 const apiError = useApiError()
 
 const visible = ref(true)
@@ -29,6 +32,15 @@ watch(visible, (v) => {
 
 const localText = ref(props.entry?.text ?? '')
 const localPinned = ref(props.entry?.isPinned ?? false)
+const localLifeAreaId = ref<string | null>(props.entry?.lifeAreaId ?? null)
+
+const lifeAreaChipLabel = computed(() => {
+  if (!localLifeAreaId.value) return t('lifeareas.field')
+  const area = lifeAreasStore.lifeAreas.find(a => a.id === localLifeAreaId.value)
+  return area?.name ?? t('lifeareas.field')
+})
+
+const hasLifeArea = computed(() => !!localLifeAreaId.value)
 
 const isEdit = computed(() => !!props.entry)
 const canSave = computed(() => localText.value.trim().length > 0)
@@ -55,7 +67,8 @@ async function onSave() {
       await journalStore.editEntry(props.entry.id, {
         text: localText.value,
         createdAt: props.entry.createdAt,
-        isPinned: localPinned.value
+        isPinned: localPinned.value,
+        lifeAreaId: localLifeAreaId.value
       })
     } else {
       await journalStore.createEntry({
@@ -64,7 +77,7 @@ async function onSave() {
         habitId: null,
         addictionId: null,
         goalId: null,
-        lifeAreaId: null
+        lifeAreaId: localLifeAreaId.value
       })
     }
 
@@ -97,6 +110,19 @@ const formattedDate = computed(() => {
     <div ref="textareaWrap">
       <Textarea v-model="localText" :placeholder="t('journal.placeholder')" autoResize class="journal-drawer-textarea"
         :rows="6" fluid />
+    </div>
+
+    <div class="journal-drawer-chips">
+      <Select v-model="localLifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
+        show-clear :placeholder="t('lifeareas.field')" class="journal-chip-select"
+        :class="{ 'journal-chip-select--active': hasLifeArea }">
+        <template #value>
+          <span class="journal-chip-select-value">
+            <i class="pi pi-chart-pie" />
+            {{ lifeAreaChipLabel }}
+          </span>
+        </template>
+      </Select>
     </div>
 
     <div v-if="isEdit" class="journal-drawer-meta">
@@ -166,6 +192,55 @@ const formattedDate = computed(() => {
   font-size: 1rem;
   line-height: 1.6;
   padding: 0.5rem 0;
+}
+
+.journal-drawer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--p-content-border-color);
+}
+
+.journal-chip-select.p-select {
+  border-radius: 999px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.8125rem;
+  height: auto;
+  padding-right: 0.5rem;
+}
+
+.journal-chip-select.p-select .p-select-label {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--p-text-muted-color);
+}
+
+.journal-chip-select.p-select .p-select-dropdown {
+  display: none;
+}
+
+.journal-chip-select--active.p-select {
+  border-color: var(--p-primary-color);
+}
+
+.journal-chip-select--active.p-select .p-select-label {
+  color: var(--p-primary-color);
+}
+
+.journal-chip-select-value {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.journal-chip-select-value i {
+  font-size: 0.75rem;
 }
 
 .journal-drawer-meta {

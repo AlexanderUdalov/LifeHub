@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import Dialog from 'primevue/dialog'
+import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Message from 'primevue/message'
-import ListBox from 'primevue/listbox'
+import SelectButton from 'primevue/selectbutton'
 import InputNumber from 'primevue/inputnumber'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RRule } from 'rrule'
 
@@ -78,6 +78,11 @@ const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
 const apiError = useApiError()
 
+const visible = ref(true)
+watch(visible, (v) => {
+  if (!v) emit('close')
+})
+
 const localHabit = ref<LocalHabit>(getInitialHabit(props.habit))
 
 const isEdit = computed(() => !!props.habit)
@@ -143,6 +148,30 @@ const recurrenceRule = computed<string>(() => {
   )
 })
 
+const lifeAreaChipLabel = computed(() => {
+  if (!localHabit.value.lifeAreaId) return t('lifeareas.field')
+  const area = lifeAreasStore.lifeAreas.find(a => a.id === localHabit.value.lifeAreaId)
+  return area?.name ?? t('lifeareas.field')
+})
+
+const hasLifeArea = computed(() => !!localHabit.value.lifeAreaId)
+
+const goalChipLabel = computed(() => {
+  if (!localHabit.value.goalId) return t('goals.field')
+  const goal = goalsStore.goalsSorted.find(g => g.id === localHabit.value.goalId)
+  return goal?.title ?? t('goals.field')
+})
+
+const hasGoal = computed(() => !!localHabit.value.goalId)
+
+const titleWrap = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  setTimeout(() => {
+    titleWrap.value?.querySelector('input')?.focus()
+  }, 300)
+})
+
 const isSaveLoading = ref(false)
 const isDeleteLoading = ref(false)
 const errorText = ref('')
@@ -188,67 +217,72 @@ async function onDelete() {
     isDeleteLoading.value = false
   }
 }
-
 </script>
 
 <template>
-  <Dialog modal :visible="true" :closable="false" :draggable="false" @hide="emit('close')">
+  <Drawer v-model:visible="visible" position="bottom" class="habit-drawer" style="height: auto; max-height: 85vh">
     <template #header>
-      <div class="habit-edit-header">
-        <InputText id="habit-title" v-model="localHabit.title" class="habit-edit-title"
-          :placeholder="isEdit ? '' : t('habits.editdialog.newHabit')" size="large" />
-        <Button icon="pi pi-times" severity="secondary" rounded variant="outlined" aria-label="Cancel" size="small"
-          @click="emit('close')" />
+      <div class="habit-drawer-header" ref="titleWrap">
+        <InputText v-model="localHabit.title" :placeholder="t('habits.editdialog.newHabit')"
+          class="habit-drawer-title-input" />
       </div>
     </template>
 
-    <div class="form-field">
-      <label class="field-label">{{ t('habits.editdialog.color') }}</label>
-      <div class="color-chips">
-        <button v-for="color in HABIT_COLOR_OPTIONS" :key="color" type="button" class="color-chip"
+    <div class="habit-drawer-section">
+      <label class="habit-drawer-label">{{ t('habits.editdialog.color') }}</label>
+      <div class="habit-drawer-colors">
+        <button v-for="color in HABIT_COLOR_OPTIONS" :key="color" type="button" class="habit-color-chip"
           :class="{ selected: localHabit.color === color }" :style="{ backgroundColor: color }"
           :aria-pressed="localHabit.color === color" :aria-label="color" @click="localHabit.color = color" />
       </div>
     </div>
 
-    <div class="form-field">
-      <label class="field-label">{{ t('goals.field') }}</label>
-      <Select v-model="localHabit.goalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id" show-clear
-        :placeholder="t('goals.selectPlaceholder')" />
-    </div>
-
-    <div class="form-field">
-      <label class="field-label">{{ t('lifeareas.field') }}</label>
-      <Select v-model="localHabit.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.selectPlaceholder')" />
-    </div>
-
-    <div class="form-field">
-      <label class="field-label">{{ t('habits.editdialog.days') }}</label>
-      <ListBox v-model="habitMode" :options="habitModeOptions" option-label="label" option-value="value"
-        class="habit-mode-listbox" />
+    <div class="habit-drawer-section">
+      <label class="habit-drawer-label">{{ t('habits.editdialog.days') }}</label>
+      <SelectButton v-model="habitMode" :options="habitModeOptions" option-label="label" option-value="value"
+        :allow-empty="false" class="habit-drawer-mode-select" />
 
       <template v-if="localHabit.timesPerWeekGoal == null">
-        <div class="weekday-pills">
-          <button v-for="wd in weekdayOptions" :key="wd.value" type="button" class="weekday-pill"
+        <div class="habit-drawer-weekdays">
+          <button v-for="wd in weekdayOptions" :key="wd.value" type="button" class="habit-wd-btn"
             :class="{ selected: isWeekdaySelected(wd.value) }" :aria-pressed="isWeekdaySelected(wd.value)"
             @click="toggleWeekday(wd.value)">
             {{ wd.label }}
           </button>
         </div>
-        <div class="hint">{{ localHabit.selectedWeekdays.length && localHabit.selectedWeekdays.length < 7 ?
-          t('habits.editdialog.weekly') : t('habits.editdialog.everyDay') }}</div>
       </template>
 
       <template v-else>
-        <div class="times-per-week-row">
-          <label class="times-per-week-label" for="habit-times-per-week">
-            {{ t('habits.editdialog.timesPerWeekLabel') }}
-          </label>
-          <InputNumber id="habit-times-per-week" v-model="localHabit.timesPerWeekGoal" buttonLayout="vertical" :min="1"
-            :max="7" show-buttons class="times-per-week-input" />
+        <div class="habit-drawer-times-row">
+          <span class="habit-drawer-times-label">{{ t('habits.editdialog.timesPerWeekLabel') }}</span>
+          <InputNumber v-model="localHabit.timesPerWeekGoal" buttonLayout="horizontal"
+            :min="1" :max="7" show-buttons class="habit-drawer-times-input" />
         </div>
       </template>
+    </div>
+
+    <div class="habit-drawer-chips">
+      <Select v-model="localHabit.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
+        show-clear :placeholder="t('lifeareas.field')" class="habit-chip-select"
+        :class="{ 'habit-chip-select--active': hasLifeArea }">
+        <template #value>
+          <span class="habit-chip-select-value">
+            <i class="pi pi-objects-column" />
+            {{ lifeAreaChipLabel }}
+          </span>
+        </template>
+      </Select>
+
+      <Select v-model="localHabit.goalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id"
+        show-clear :placeholder="t('goals.field')" class="habit-chip-select"
+        :class="{ 'habit-chip-select--active': hasGoal }">
+        <template #value>
+          <span class="habit-chip-select-value">
+            <i class="pi pi-bullseye" />
+            {{ goalChipLabel }}
+          </span>
+        </template>
+      </Select>
     </div>
 
     <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
@@ -256,52 +290,86 @@ async function onDelete() {
     </Message>
 
     <template #footer>
-      <Button v-if="isEdit" :label="t('habits.editdialog.delete')" severity="danger" @click="onDelete"
-        :loading="isDeleteLoading" />
-      <Button :label="isEdit ? t('habits.editdialog.save') : t('habits.editdialog.create')" :disabled="!canSave"
-        @click="onSave" :loading="isSaveLoading" />
+      <div class="habit-drawer-actions">
+        <Button v-if="isEdit" icon="pi pi-trash" :label="t('habits.editdialog.delete')" severity="danger" variant="text"
+          size="small" :loading="isDeleteLoading" @click="onDelete" />
+        <span v-else />
+        <Button :label="isEdit ? t('habits.editdialog.save') : t('habits.editdialog.create')" :disabled="!canSave"
+          :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
+      </div>
     </template>
-  </Dialog>
+  </Drawer>
 </template>
 
-<style scoped>
-.habit-edit-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
+<style>
+.p-drawer.habit-drawer {
+  border-radius: 1rem 1rem 0 0;
 }
 
-.habit-edit-title {
+.habit-drawer .p-drawer-header {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  padding-top: 1.5rem;
+}
+
+.habit-drawer .p-drawer-header::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.5rem;
+  height: 0.25rem;
+  background: var(--p-content-border-color);
+  border-radius: 999px;
+}
+
+.habit-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.p-inputtext.habit-drawer-title-input {
   flex: 1;
   min-width: 0;
   border: none;
-  box-shadow: none;
-  background-color: transparent;
+  box-shadow: none !important;
+  background: transparent;
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
 }
 
-.form-field {
-  margin-top: 1rem;
+.habit-drawer .p-drawer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+.habit-drawer-section {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: 100%;
 }
 
-.field-label {
-  font-size: 0.875rem;
+.habit-drawer-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-.color-chips {
+.habit-drawer-colors {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.5rem;
-  width: 100%;
 }
 
-.color-chip {
+.habit-color-chip {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
@@ -311,70 +379,145 @@ async function onDelete() {
   transition: border-color 0.15s, transform 0.1s;
 }
 
-.color-chip:hover {
+.habit-color-chip:hover {
   transform: scale(1.1);
 }
 
-.color-chip.selected {
+.habit-color-chip.selected {
   border-color: var(--p-text-color);
   box-shadow: 0 0 0 1px var(--p-content-border-color);
 }
 
-.habit-mode-listbox {
+.habit-drawer-mode-select {
   width: 100%;
 }
 
-.times-per-week-row {
+.habit-drawer-mode-select .p-selectbutton-option {
+  flex: 1;
+  justify-content: center;
+  font-size: 0.8125rem;
+}
+
+.habit-drawer-weekdays {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-border-radius);
+  overflow: hidden;
+}
+
+.habit-wd-btn {
+  flex: 1;
+  padding: 0.5rem 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: center;
+  border: none;
+  border-right: 1px solid var(--p-content-border-color);
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.habit-wd-btn:last-child {
+  border-right: none;
+}
+
+.habit-wd-btn:hover {
+  background: var(--p-content-hover-background);
+}
+
+.habit-wd-btn.selected {
+  background: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
+}
+
+.habit-drawer-hint {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+}
+
+.habit-drawer-times-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
 }
 
-.times-per-week-label {
+.habit-drawer-times-label {
   flex: 1;
   min-width: 0;
   font-size: 0.875rem;
   color: var(--p-text-muted-color);
 }
 
-.times-per-week-input {
-  width: 3rem;
+.habit-drawer-times-input {
+  flex-shrink: 0;
 }
 
-.weekday-pills {
+.habit-drawer-times-input .p-inputnumber-input {
+  text-align: center;
+  width: 2.5rem;
+  padding: 0.4rem 0;
+}
+
+.habit-drawer-chips {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.35rem;
-  width: 100%;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--p-content-border-color);
 }
 
-.weekday-pill {
-  min-width: 2.25rem;
-  padding: 0.35rem 0.5rem;
+.habit-chip-select.p-select {
+  border-radius: 999px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
   font-size: 0.8125rem;
-  border-radius: var(--p-border-radius);
-  border: 1px solid var(--p-content-border-color);
-  background: var(--p-content-background);
-  color: var(--p-text-color);
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
+  height: auto;
+  padding-right: 0.5rem;
 }
 
-.weekday-pill:hover {
-  background: var(--p-content-hover-background);
-  border-color: var(--p-content-hover-border-color);
-}
-
-.weekday-pill.selected {
-  background: var(--p-primary-color);
-  border-color: var(--p-primary-color);
-  color: var(--p-primary-contrast-color);
-}
-
-.hint {
-  font-size: 0.8rem;
+.habit-chip-select.p-select .p-select-label {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
+}
+
+.habit-chip-select.p-select .p-select-dropdown {
+  display: none;
+}
+
+.habit-chip-select--active.p-select {
+  border-color: var(--p-primary-color);
+}
+
+.habit-chip-select--active.p-select .p-select-label {
+  color: var(--p-primary-color);
+}
+
+.habit-chip-select-value {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.habit-chip-select-value i {
+  font-size: 0.75rem;
+}
+
+.habit-drawer .p-drawer-footer {
+  border-top: 1px solid var(--p-content-border-color);
+}
+
+.habit-drawer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 </style>

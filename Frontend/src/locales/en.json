@@ -141,6 +141,7 @@
       "nameLabel": "Name",
       "color": "Color",
       "emoji": "Emoji",
+      "emojiPlaceholder": "e.g. 🏃",
       "save": "Save",
       "create": "Create",
       "delete": "Delete",

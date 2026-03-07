@@ -55,6 +55,13 @@ function getSectorCenterAngle(index: number): number {
   return (index + 0.5) * segmentSize.value
 }
 
+/** Текст на сегменте круга: иконка или первая буква названия. */
+function getSegmentLabel(area: LifeAreaDTO): string {
+  if (area.emoji?.trim()) return area.emoji.trim()
+  const name = area.name.trim()
+  return name ? name.charAt(0).toUpperCase() : '?'
+}
+
 function onEditArea(area: LifeAreaDTO) {
   emit('edit-lifearea', area)
 }
@@ -79,9 +86,9 @@ function onEditArea(area: LifeAreaDTO) {
       <div class="wheel-wrap">
       <div class="wheel" :style="wheelStyle" aria-hidden="true" />
       <div v-if="sortedAreas.length" class="wheel-emojis" aria-hidden="true">
-        <span v-for="(area, index) in sortedAreas" v-show="area.emoji" :key="area.id" class="wheel-emoji" :style="{
+        <span v-for="(area, index) in sortedAreas" :key="area.id" class="wheel-emoji" :class="{ 'wheel-emoji--text': !area.emoji?.trim() }" :style="{
           transform: `rotate(${getSectorCenterAngle(index)}deg) translate(0, -150%) rotate(${-getSectorCenterAngle(index)}deg)`
-        }">{{ area.emoji }}</span>
+        }">{{ getSegmentLabel(area) }}</span>
       </div>
     </div>
 
@@ -89,7 +96,8 @@ function onEditArea(area: LifeAreaDTO) {
       <Card v-for="area in sortedAreas" :key="area.id" class="legend-card" :style="{ borderLeftColor: area.color }"
         @click="onEditArea(area)">
         <template #title>
-          <span v-if="area.emoji">{{ area.emoji }}</span>
+          <span v-if="area.emoji?.trim()" class="legend-icon">{{ area.emoji }}</span>
+          <span v-else class="legend-initial">{{ getSegmentLabel(area) }}</span>
           {{ area.name }}
         </template>
       </Card>
@@ -178,6 +186,13 @@ function onEditArea(area: LifeAreaDTO) {
   line-height: 1;
 }
 
+.wheel-emoji--text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  text-shadow: 0 0 1px var(--p-content-background), 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
 .legend {
   width: 100%;
   max-width: 400px;
@@ -202,6 +217,16 @@ function onEditArea(area: LifeAreaDTO) {
 
 .legend-card :deep(.p-card-title) {
   font-size: 0.9rem;
+}
+
+.legend-icon,
+.legend-initial {
+  margin-right: 0.35em;
+}
+
+.legend-initial {
+  font-weight: 700;
+  opacity: 0.9;
 }
 
 .legend-card:hover {

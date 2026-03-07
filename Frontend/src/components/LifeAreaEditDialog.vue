@@ -3,8 +3,6 @@ import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
-import EmojiPicker from 'vue3-emoji-picker'
-import 'vue3-emoji-picker/css'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
@@ -41,14 +39,7 @@ function getInitialColor(): string {
 
 const localName = ref(props.area?.name ?? '')
 const localColor = ref(getInitialColor())
-const localEmoji = ref(props.area?.emoji ?? null)
-
-const emojiTheme = ref<'light' | 'dark' | 'auto'>('auto')
-
-onMounted(() => {
-  const isDark = document.documentElement.classList.contains('p-dark')
-  emojiTheme.value = isDark ? 'dark' : 'light'
-})
+const localEmoji = ref(props.area?.emoji ?? '')
 
 const isEdit = computed(() => !!props.area)
 const canSave = computed(() => localName.value.trim().length > 0 && localColor.value.trim().length > 0)
@@ -146,12 +137,9 @@ async function onDelete() {
     </div>
 
     <div class="lifearea-drawer-section">
-      <div class="lifearea-drawer-emoji-header">
-        <span class="lifearea-drawer-label">{{ t('lifeareas.editdialog.emoji') }}</span>
-        <span v-if="localEmoji" class="lifearea-drawer-emoji-preview">{{ localEmoji }}</span>
-      </div>
-      <EmojiPicker :native="false" :theme="emojiTheme" :disable-skin-tones="true"
-        @select="(e: { i: string }) => { localEmoji = e.i }" />
+      <label class="lifearea-drawer-label">{{ t('lifeareas.editdialog.emoji') }}</label>
+      <InputText v-model="localEmoji" :placeholder="t('lifeareas.editdialog.emojiPlaceholder')"
+        class="lifearea-drawer-emoji-input" />
     </div>
 
     <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
@@ -264,14 +252,8 @@ async function onDelete() {
   box-shadow: 0 0 0 1px var(--p-content-border-color);
 }
 
-.lifearea-drawer-emoji-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.lifearea-drawer-emoji-preview {
-  font-size: 1.5rem;
+.lifearea-drawer-emoji-input {
+  width: 100%;
 }
 
 .lifearea-drawer .p-drawer-footer {

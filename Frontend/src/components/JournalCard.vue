@@ -16,6 +16,10 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 const journalStore = useJournalStore()
 const lifeAreasStore = useLifeAreasStore()
+const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.item.lifeAreaId))
+const cardBorderStyle = computed(() =>
+  areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
+)
 
 const lifeArea = computed(() => {
   if (!props.item.lifeAreaId) return null
@@ -60,7 +64,7 @@ async function onConfirmDelete() {
 </script>
 
 <template>
-  <Card class="journal-card" :class="{ 'journal-card--pinned': item.isPinned }">
+  <Card class="journal-card" :style="cardBorderStyle">
     <template #content>
       <div class="journal-card__header">
         <div class="journal-card__meta">
@@ -138,10 +142,6 @@ async function onConfirmDelete() {
 
 .journal-card:active {
   transform: scale(0.985);
-}
-
-.journal-card--pinned {
-  border-left: 3px solid var(--p-primary-color);
 }
 
 :deep(.p-card-body) {

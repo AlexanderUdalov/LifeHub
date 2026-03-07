@@ -7,6 +7,7 @@ import Message from 'primevue/message'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useJournalStore } from '@/stores/journal'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useApiError } from '@/composables/useApiError'
 import { useI18n } from 'vue-i18n'
@@ -23,6 +24,7 @@ const emit = defineEmits<{
 
 const journalStore = useJournalStore()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const apiError = useApiError()
 
 const visible = ref(true)
@@ -33,6 +35,7 @@ watch(visible, (v) => {
 const localText = ref(props.entry?.text ?? '')
 const localPinned = ref(props.entry?.isPinned ?? false)
 const localLifeAreaId = ref<string | null>(props.entry?.lifeAreaId ?? null)
+const localGoalId = ref<string | null>(props.entry?.goalId ?? null)
 
 const lifeAreaChipLabel = computed(() => {
   if (!localLifeAreaId.value) return t('lifeareas.field')
@@ -40,7 +43,14 @@ const lifeAreaChipLabel = computed(() => {
   return area?.name ?? t('lifeareas.field')
 })
 
+const goalChipLabel = computed(() => {
+  if (!localGoalId.value) return t('goals.field')
+  const g = goalsStore.getGoalById(localGoalId.value)
+  return g?.title ?? t('goals.field')
+})
+
 const hasLifeArea = computed(() => !!localLifeAreaId.value)
+const hasGoal = computed(() => !!localGoalId.value)
 
 const isEdit = computed(() => !!props.entry)
 const canSave = computed(() => localText.value.trim().length > 0)
@@ -68,7 +78,8 @@ async function onSave() {
         text: localText.value,
         createdAt: props.entry.createdAt,
         isPinned: localPinned.value,
-        lifeAreaId: localLifeAreaId.value
+        lifeAreaId: localLifeAreaId.value,
+        goalId: localGoalId.value
       })
     } else {
       await journalStore.createEntry({
@@ -76,7 +87,7 @@ async function onSave() {
         taskItemId: null,
         habitId: null,
         addictionId: null,
-        goalId: null,
+        goalId: localGoalId.value,
         lifeAreaId: localLifeAreaId.value
       })
     }
@@ -120,6 +131,16 @@ const formattedDate = computed(() => {
           <span class="journal-chip-select-value">
             <i class="pi pi-chart-pie" />
             {{ lifeAreaChipLabel }}
+          </span>
+        </template>
+      </Select>
+      <Select v-model="localGoalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id"
+        show-clear :placeholder="t('goals.field')" class="journal-chip-select"
+        :class="{ 'journal-chip-select--active': hasGoal }">
+        <template #value>
+          <span class="journal-chip-select-value">
+            <i class="pi pi-bullseye" />
+            {{ goalChipLabel }}
           </span>
         </template>
       </Select>
@@ -226,6 +247,7 @@ const formattedDate = computed(() => {
 
 .journal-chip-select--active.p-select {
   border-color: var(--p-primary-color);
+  --p-select-clear-icon-color: var(--p-primary-color);
 }
 
 .journal-chip-select--active.p-select .p-select-label {

@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useJournalStore } from '@/stores/journal'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ item: JournalEntryDTO }>()
@@ -16,6 +17,7 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 const journalStore = useJournalStore()
 const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.item.lifeAreaId))
 const cardBorderStyle = computed(() =>
   areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
@@ -25,6 +27,10 @@ const lifeArea = computed(() => {
   if (!props.item.lifeAreaId) return null
   return lifeAreasStore.lifeAreas.find(a => a.id === props.item.lifeAreaId) ?? null
 })
+
+const goal = computed(() => goalsStore.getGoalById(props.item.goalId))
+
+const hasLifeAreaOrGoal = computed(() => !!lifeArea.value || !!goal.value)
 
 const isExpanded = ref(false)
 const showDeleteConfirm = ref(false)
@@ -114,9 +120,16 @@ async function onConfirmDelete() {
         </p>
       </div>
 
-      <div v-if="lifeArea" class="journal-card__life-area">
-        <i class="pi pi-chart-pie" />
-        <span>{{ lifeArea.name }}</span>
+      <div v-if="hasLifeAreaOrGoal" class="journal-card__footer">
+        <span v-if="lifeArea" class="journal-card__life-area">
+          <i class="pi pi-chart-pie" />
+          {{ lifeArea.name }}
+        </span>
+        <span v-else />
+        <span v-if="goal" class="journal-card__goal">
+          <i class="pi pi-bullseye" />
+          {{ goal.title }}
+        </span>
       </div>
 
       <Transition name="journal-card-slide">
@@ -234,6 +247,27 @@ async function onConfirmDelete() {
 }
 
 .journal-card__life-area i {
+  font-size: 0.625rem;
+}
+
+.journal-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.journal-card__goal {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  margin-left: auto;
+}
+
+.journal-card__goal i {
   font-size: 0.625rem;
 }
 

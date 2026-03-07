@@ -131,15 +131,8 @@ public class JournalController(ApplicationContext context) : ControllerBase
             entry.AddictionId = request.AddictionId;
         }
 
-        if (request.GoalId.HasValue)
-        {
-            entry.GoalId = request.GoalId;
-        }
-
-        if (request.LifeAreaId.HasValue)
-        {
-            entry.LifeAreaId = request.LifeAreaId;
-        }
+        entry.GoalId = request.GoalId;
+        entry.LifeAreaId = request.LifeAreaId;
 
         entry.UpdatedAt = DateTimeOffset.UtcNow;
 

@@ -297,6 +297,7 @@ async function onDelete() {
 
 .addiction-chip-select--active.p-select {
   border-color: var(--p-primary-color);
+  --p-select-clear-icon-color: var(--p-primary-color);
 }
 
 .addiction-chip-select--active.p-select .p-select-label {

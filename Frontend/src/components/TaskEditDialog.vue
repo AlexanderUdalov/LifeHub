@@ -336,6 +336,7 @@ async function onDelete() {
 
 .task-chip-select--active.p-select {
   border-color: var(--p-primary-color);
+  --p-select-clear-icon-color: var(--p-primary-color);
 }
 
 .task-chip-select--active.p-select .p-select-label {

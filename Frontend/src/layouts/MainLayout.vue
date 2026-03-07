@@ -266,6 +266,7 @@ const createPrimary = () => {
 
 :deep(.p-tablist) {
     overflow: hidden;
+    height: 80px;
 }
 
 @media (max-width: 420px) {

@@ -166,7 +166,7 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
 }
 
 .description.expanded {
-  white-space: normal;
+  white-space: pre-line;
   overflow: visible;
   text-overflow: unset;
 }

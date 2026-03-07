@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'GoalsView' })
 import { computed, onMounted } from 'vue'
 import EmptyState from '@/components/EmptyState.vue'
 import GoalCard from '@/components/GoalCard.vue'

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'HabitsView' })
 import EmptyState from '@/components/EmptyState.vue'
 import HabitCard from '@/components/HabitCard.vue'
 import Skeleton from 'primevue/skeleton'

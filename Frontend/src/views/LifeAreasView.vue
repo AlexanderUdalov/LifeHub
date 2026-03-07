@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'LifeAreasView' })
 import Card from 'primevue/card'
 import EmptyState from '@/components/EmptyState.vue'
 import Skeleton from 'primevue/skeleton'

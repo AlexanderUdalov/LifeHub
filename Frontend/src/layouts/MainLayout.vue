@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch, nextTick } from 'vue'
 import Tabs from 'primevue/tabs'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
@@ -43,6 +43,33 @@ const route = useRoute()
 const contentRef = ref<HTMLElement | null>(null)
 const contentScrollTop = ref(0)
 const SCROLL_THRESHOLD = 8
+
+const tabViewNames: string[] = [
+  'TasksView',
+  'HabitsView',
+  'GoalsView',
+  'LifeAreasView',
+  'JournalView',
+  'AddictionsView',
+  'ProfileView',
+]
+
+const TAB_PATHS = ['/tasks', '/habits', '/goals', '/lifeareas', '/journal', '/addictions', '/profile']
+const slideDirection = ref<'left' | 'right'>('left')
+
+const scrollByPath: Record<string, number> = {}
+watch(
+  () => route.path,
+  (newPath, oldPath) => {
+    if (oldPath) scrollByPath[oldPath] = contentRef.value?.scrollTop ?? 0
+    const oldIdx = TAB_PATHS.indexOf(oldPath ?? '')
+    const newIdx = TAB_PATHS.indexOf(newPath)
+    slideDirection.value = newIdx > oldIdx ? 'left' : 'right'
+    nextTick(() => {
+      if (contentRef.value) contentRef.value.scrollTop = scrollByPath[newPath] ?? 0
+    })
+  }
+)
 
 const currentTitle = computed(() => {
     const key = (route.meta as { titleKey?: string }).titleKey
@@ -113,12 +140,17 @@ const createPrimary = () => {
         </Transition>
         <main ref="contentRef" class="content" @scroll="onContentScroll">
             <RouterView v-slot="{ Component }">
-                <component :is="Component" @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
-                    @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
-                    @edit-addiction="(addiction: AddictionDTO) => editContext = { type: 'addiction', item: addiction }"
-                    @edit-lifearea="(area: LifeAreaDTO) => editContext = { type: 'lifearea', item: area }"
-                    @edit-goal="(goal: GoalDTO) => editContext = { type: 'goal', item: goal }"
-                    @edit-journal="(entry: JournalEntryDTO | null) => editContext = { type: 'journal', item: entry }" />
+                <KeepAlive :include="tabViewNames">
+                    <Transition :name="'tab-slide-' + slideDirection" mode="out-in">
+                        <component :is="Component" :key="route.path"
+                            @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
+                            @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
+                            @edit-addiction="(addiction: AddictionDTO) => editContext = { type: 'addiction', item: addiction }"
+                            @edit-lifearea="(area: LifeAreaDTO) => editContext = { type: 'lifearea', item: area }"
+                            @edit-goal="(goal: GoalDTO) => editContext = { type: 'goal', item: goal }"
+                            @edit-journal="(entry: JournalEntryDTO | null) => editContext = { type: 'journal', item: entry }" />
+                    </Transition>
+                </KeepAlive>
             </RouterView>
         </main>
 
@@ -193,8 +225,35 @@ const createPrimary = () => {
     opacity: 0;
 }
 
+.tab-slide-left-enter-active,
+.tab-slide-left-leave-active {
+    transition: transform 0.1s ease;
+}
+
+.tab-slide-left-enter-from {
+    transform: translateX(100%);
+}
+
+.tab-slide-left-leave-to {
+    transform: translateX(-100%);
+}
+
+.tab-slide-right-enter-active,
+.tab-slide-right-leave-active {
+    transition: transform 0.1s ease;
+}
+
+.tab-slide-right-enter-from {
+    transform: translateX(-100%);
+}
+
+.tab-slide-right-leave-to {
+    transform: translateX(100%);
+}
+
 .content {
     flex: 1;
+    overflow-x: hidden;
     overflow-y: auto;
     max-height: calc(100dvh - 62px);
 }

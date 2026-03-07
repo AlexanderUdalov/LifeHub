@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'ProfileView' })
 import { ref, reactive, onMounted, computed } from 'vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'

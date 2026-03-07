@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'JournalView' })
 import EmptyState from '@/components/EmptyState.vue';
 import JournalCard from '@/components/JournalCard.vue';
 import Skeleton from 'primevue/skeleton';

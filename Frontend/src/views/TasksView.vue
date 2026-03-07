@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'TasksView' })
 import { onMounted, computed, ref } from 'vue'
 
 import Accordion from 'primevue/accordion'
@@ -109,53 +110,59 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 </script>
 
 <template>
-  <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
+  <div class="tasks-view-root">
+    <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
 
-  <div v-if="tasksStore.isLoading" class="tasks-skeleton">
-    <Skeleton v-for="i in 4" :key="i" height="3.5rem" class="skeleton-row" />
-  </div>
+    <div v-if="tasksStore.isLoading" class="tasks-skeleton">
+      <Skeleton v-for="i in 4" :key="i" height="3.5rem" class="skeleton-row" />
+    </div>
 
-  <EmptyState v-else-if="!hasAnyTasks" icon="pi pi-list-check" :title="$t('tasks.empty')"
-    :subtitle="$t('tasks.emptySubtitle')" />
+    <EmptyState v-else-if="!hasAnyTasks" icon="pi pi-list-check" :title="$t('tasks.empty')"
+      :subtitle="$t('tasks.emptySubtitle')" />
 
-  <Accordion v-else :value="['0']" multiple>
-    <template v-for="(section, index) in taskSections" :key="section.key">
-      <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
-        <AccordionHeader>
-          <div class="tasks-list-header">
-            <span>{{ section.title }}</span>
-            <Badge>{{ section.tasks.length }}</Badge>
-          </div>
-        </AccordionHeader>
+    <Accordion v-else :value="['0']" multiple>
+      <template v-for="(section, index) in taskSections" :key="section.key">
+        <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
+          <AccordionHeader>
+            <div class="tasks-list-header">
+              <span>{{ section.title }}</span>
+              <Badge>{{ section.tasks.length }}</Badge>
+            </div>
+          </AccordionHeader>
 
-        <AccordionContent>
-          <TransitionGroup name="task-list">
-            <template v-if="section.draggable">
-              <div data-draggable-list>
-                <div v-for="(task, taskIndex) in section.tasks" :key="task.id" data-task-row>
-                  <div class="drop-indicator"
-                    :class="{ active: dropSectionKey === section.key && dropIndex === taskIndex }" />
-                  <TaskCard class="task-card" :task="task" :draggable="true"
-                    @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask"
-                    @drag-start="(e) => onDragStart(section.key, taskIndex, e)" />
+          <AccordionContent>
+            <TransitionGroup name="task-list">
+              <template v-if="section.draggable">
+                <div data-draggable-list>
+                  <div v-for="(task, taskIndex) in section.tasks" :key="task.id" data-task-row>
+                    <div class="drop-indicator"
+                      :class="{ active: dropSectionKey === section.key && dropIndex === taskIndex }" />
+                    <TaskCard class="task-card" :task="task" :draggable="true"
+                      @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask"
+                      @drag-start="(e) => onDragStart(section.key, taskIndex, e)" />
+                  </div>
+                  <div class="drop-indicator drop-indicator-last"
+                    :class="{ active: dropSectionKey === section.key && dropIndex === section.tasks.length }" />
                 </div>
-                <div class="drop-indicator drop-indicator-last"
-                  :class="{ active: dropSectionKey === section.key && dropIndex === section.tasks.length }" />
-              </div>
-            </template>
-            <template v-else>
-              <TaskCard v-for="task in section.tasks" :key="task.id" :task="task"
-                @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask" />
-            </template>
-          </TransitionGroup>
-        </AccordionContent>
-      </AccordionPanel>
-    </template>
-  </Accordion>
+              </template>
+              <template v-else>
+                <TaskCard v-for="task in section.tasks" :key="task.id" :task="task"
+                  @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask" />
+              </template>
+            </TransitionGroup>
+          </AccordionContent>
+        </AccordionPanel>
+      </template>
+    </Accordion>
+  </div>
 </template>
 
 
 <style scoped>
+.tasks-view-root {
+  width: 100%;
+}
+
 .tasks-skeleton {
   display: flex;
   flex-direction: column;

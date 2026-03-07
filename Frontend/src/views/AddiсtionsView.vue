@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'AddictionsView' })
 import AddictionCard from '@/components/AddictionCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import Skeleton from 'primevue/skeleton'

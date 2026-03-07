@@ -3,7 +3,6 @@ import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
-import ColorPicker from 'primevue/colorpicker'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -11,8 +10,7 @@ import { useI18n } from 'vue-i18n'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useApiError } from '@/composables/useApiError'
-
-const DEFAULT_COLOR = '#3b82f6'
+import { LOGO_COLORS, isLogoColor, normalizeHex } from '@/constants/logoColors'
 
 const props = defineProps<{
   area: LifeAreaDTO | null
@@ -31,8 +29,18 @@ watch(visible, (v) => {
   if (!v) emit('close')
 })
 
+function getInitialColor(): string {
+  const areaColor = props.area?.color
+  if (areaColor && isLogoColor(areaColor)) return normalizeHex(areaColor)
+  const used = new Set(
+    lifeAreasStore.lifeAreas.map((a) => normalizeHex(a.color))
+  )
+  const first = LOGO_COLORS.find((c) => !used.has(c))
+  return first ?? LOGO_COLORS[0]
+}
+
 const localName = ref(props.area?.name ?? '')
-const localColor = ref(props.area?.color ?? DEFAULT_COLOR)
+const localColor = ref(getInitialColor())
 const localEmoji = ref(props.area?.emoji ?? null)
 
 const emojiTheme = ref<'light' | 'dark' | 'auto'>('auto')
@@ -44,6 +52,16 @@ onMounted(() => {
 
 const isEdit = computed(() => !!props.area)
 const canSave = computed(() => localName.value.trim().length > 0 && localColor.value.trim().length > 0)
+
+/** Logo colors not used by other life areas (current area keeps its color). */
+const availableColors = computed(() => {
+  const usedByOthers = new Set(
+    lifeAreasStore.lifeAreas
+      .filter((a) => !props.area || a.id !== props.area.id)
+      .map((a) => normalizeHex(a.color))
+  )
+  return LOGO_COLORS.filter((c) => !usedByOthers.has(c))
+})
 
 const titleWrap = ref<HTMLElement | null>(null)
 
@@ -120,7 +138,11 @@ async function onDelete() {
 
     <div class="lifearea-drawer-section">
       <label class="lifearea-drawer-label">{{ t('lifeareas.editdialog.color') }}</label>
-      <ColorPicker v-model="localColor" format="hex" inline class="lifearea-drawer-color-picker" />
+      <div class="lifearea-drawer-colors" role="listbox" :aria-label="t('lifeareas.editdialog.color')">
+        <button v-for="color in availableColors" :key="color" type="button" class="lifearea-color-chip"
+          :class="{ selected: normalizeHex(localColor) === color }" :style="{ backgroundColor: color }"
+          :aria-pressed="normalizeHex(localColor) === color" :aria-label="color" @click="localColor = color" />
+      </div>
     </div>
 
     <div class="lifearea-drawer-section">
@@ -141,8 +163,8 @@ async function onDelete() {
         <Button v-if="isEdit" icon="pi pi-trash" :label="t('lifeareas.editdialog.delete')" severity="danger"
           variant="text" size="small" :loading="isDeleteLoading" @click="onDelete" />
         <span v-else />
-        <Button :label="isEdit ? t('lifeareas.editdialog.save') : t('lifeareas.editdialog.create')"
-          :disabled="!canSave" :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
+        <Button :label="isEdit ? t('lifeareas.editdialog.save') : t('lifeareas.editdialog.create')" :disabled="!canSave"
+          :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
       </div>
     </template>
   </Drawer>
@@ -216,9 +238,30 @@ async function onDelete() {
   letter-spacing: 0.03em;
 }
 
-.lifearea-drawer-color-picker {
-  width: 100%;
-  min-width: 0;
+.lifearea-drawer-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lifearea-color-chip {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.lifearea-color-chip:hover {
+  transform: scale(1.08);
+}
+
+.lifearea-color-chip.selected {
+  border-color: var(--p-text-color);
+  box-shadow: 0 0 0 1px var(--p-content-border-color);
 }
 
 .lifearea-drawer-emoji-header {

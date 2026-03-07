@@ -6,6 +6,7 @@ import { computed, onMounted } from 'vue'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useI18n } from 'vue-i18n'
+import { getLogoColorIndex } from '@/constants/logoColors'
 
 const emit = defineEmits<{
   (e: 'edit-lifearea', area: LifeAreaDTO | null): void
@@ -21,7 +22,12 @@ onMounted(async () => {
 })
 
 const sortedAreas = computed(() =>
-  [...lifeAreasStore.lifeAreas].sort((a, b) => a.name.localeCompare(b.name))
+  [...lifeAreasStore.lifeAreas].sort((a, b) => {
+    const orderA = getLogoColorIndex(a.color)
+    const orderB = getLogoColorIndex(b.color)
+    if (orderA !== orderB) return orderA - orderB
+    return a.name.localeCompare(b.name)
+  })
 )
 
 const segmentSize = computed(() =>

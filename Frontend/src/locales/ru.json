@@ -192,6 +192,7 @@
     "newNote": "Новая запись",
     "editNote": "Редактирование",
     "placeholder": "О чём вы думаете?",
+    "markdownHint": "Поддерживается Markdown",
     "save": "Сохранить",
     "create": "Создать",
     "delete": "Удалить",

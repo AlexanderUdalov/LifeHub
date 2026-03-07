@@ -7,6 +7,7 @@ import { useJournalStore } from '@/stores/journal'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 import { useI18n } from 'vue-i18n'
+import { renderMarkdown } from '@/composables/useMarkdown'
 
 const props = defineProps<{ item: JournalEntryDTO }>()
 
@@ -58,6 +59,8 @@ const formattedDate = computed(() => {
 })
 
 const wasEdited = computed(() => !!props.item.updatedAt)
+
+const renderedText = computed(() => renderMarkdown(props.item.text))
 
 async function onTogglePin() {
   await journalStore.togglePin(props.item.id)
@@ -111,13 +114,13 @@ async function onConfirmDelete() {
       </div>
 
       <div class="journal-card__body" @click="emit('edit-journal', item)">
-        <p
+        <div
           class="journal-card__text"
           :class="{ 'journal-card__text--expanded': isExpanded }"
           @click.stop="isExpanded = !isExpanded"
         >
-          {{ item.text }}
-        </p>
+          <div class="journal-card__text-inner" v-html="renderedText" />
+        </div>
       </div>
 
       <div v-if="hasLifeAreaOrGoal" class="journal-card__footer">
@@ -176,7 +179,6 @@ async function onConfirmDelete() {
   font-size: 0.9375rem;
   line-height: 1.65;
   color: var(--p-text-color);
-  white-space: pre-wrap;
   word-break: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 5;
@@ -187,6 +189,72 @@ async function onConfirmDelete() {
 .journal-card__text--expanded {
   -webkit-line-clamp: unset;
   overflow: visible;
+}
+
+.journal-card__text-inner :deep(p) {
+  margin: 0 0 0.5em;
+}
+
+.journal-card__text-inner :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.journal-card__text-inner :deep(ul),
+.journal-card__text-inner :deep(ol) {
+  margin: 0.25em 0 0.5em;
+  padding-left: 1.25em;
+}
+
+.journal-card__text-inner :deep(li) {
+  margin: 0.15em 0;
+}
+
+.journal-card__text-inner :deep(code) {
+  font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.35em;
+  background: var(--p-surface-100);
+  border-radius: 4px;
+}
+
+.journal-card__text-inner :deep(pre) {
+  margin: 0.5em 0;
+  padding: 0.75em;
+  overflow-x: auto;
+  background: var(--p-surface-100);
+  border-radius: 8px;
+}
+
+.journal-card__text-inner :deep(pre code) {
+  padding: 0;
+  background: none;
+}
+
+.journal-card__text-inner :deep(blockquote) {
+  margin: 0.5em 0;
+  padding-left: 1em;
+  border-left: 3px solid var(--p-content-border-color);
+  color: var(--p-text-muted-color);
+}
+
+.journal-card__text-inner :deep(h1),
+.journal-card__text-inner :deep(h2),
+.journal-card__text-inner :deep(h3) {
+  margin: 0.5em 0 0.25em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.journal-card__text-inner :deep(h1) {
+  font-size: 1.15em;
+}
+
+.journal-card__text-inner :deep(h2) {
+  font-size: 1.05em;
+}
+
+.journal-card__text-inner :deep(h3) {
+  font-size: 1em;
 }
 
 .journal-card__header {

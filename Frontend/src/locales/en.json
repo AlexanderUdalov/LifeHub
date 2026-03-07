@@ -192,6 +192,7 @@
     "newNote": "New note",
     "editNote": "Edit note",
     "placeholder": "What's on your mind?",
+    "markdownHint": "Markdown supported",
     "save": "Save",
     "create": "Create",
     "delete": "Delete",

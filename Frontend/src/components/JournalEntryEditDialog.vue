@@ -4,7 +4,7 @@ import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import Message from 'primevue/message'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, nextTick } from 'vue'
 import { useJournalStore } from '@/stores/journal'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
@@ -60,7 +60,23 @@ const errorText = ref('')
 
 const textareaWrap = ref<HTMLElement | null>(null)
 
+const MIN_ROWS = 6
+
+function resizeTextarea() {
+  nextTick(() => {
+    const el = textareaWrap.value?.querySelector?.('textarea')
+    if (!el) return
+    el.style.height = '0'
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 22
+    const minHeight = MIN_ROWS * lineHeight
+    el.style.height = `${Math.max(minHeight, el.scrollHeight)}px`
+  })
+}
+
+watch(localText, () => resizeTextarea(), { flush: 'post' })
+
 onMounted(() => {
+  resizeTextarea()
   setTimeout(() => {
     textareaWrap.value?.querySelector('textarea')?.focus()
   }, 300)
@@ -119,8 +135,15 @@ const formattedDate = computed(() => {
     </template>
 
     <div ref="textareaWrap">
-      <Textarea v-model="localText" :placeholder="t('journal.placeholder')" autoResize class="journal-drawer-textarea"
-        :rows="6" fluid />
+      <Textarea
+        v-model="localText"
+        :placeholder="t('journal.placeholder')"
+        autoResize
+        class="journal-drawer-textarea"
+        :rows="MIN_ROWS"
+        fluid
+      />
+      <span class="journal-drawer-markdown-hint">{{ t('journal.markdownHint') }}</span>
     </div>
 
     <div class="journal-drawer-chips">
@@ -213,6 +236,13 @@ const formattedDate = computed(() => {
   font-size: 1rem;
   line-height: 1.6;
   padding: 0.5rem 0;
+}
+
+.journal-drawer-markdown-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  margin-top: 0.25rem;
 }
 
 .journal-drawer-chips {

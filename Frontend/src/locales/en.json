@@ -200,7 +200,16 @@
     "pin": "Pin",
     "pinned": "Pinned",
     "pinnedEntry": "Pinned",
-    "edited": "edited"
+    "edited": "edited",
+    "search": "Search",
+    "searchPlaceholder": "Search entries…",
+    "filter": "Filter",
+    "filterByLifeArea": "Life area",
+    "filterByGoal": "Goal",
+    "filterAll": "All",
+    "clearFilters": "Clear",
+    "noResults": "No results",
+    "noResultsHint": "Try changing your search or filters"
   },
   "profile": "Profile"
 }

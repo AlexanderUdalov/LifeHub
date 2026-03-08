@@ -200,7 +200,16 @@
     "pin": "Закрепить",
     "pinned": "Закреплённые",
     "pinnedEntry": "Закреплено",
-    "edited": "изм."
+    "edited": "изм.",
+    "search": "Поиск",
+    "searchPlaceholder": "Поиск по записям…",
+    "filter": "Фильтр",
+    "filterByLifeArea": "Сфера жизни",
+    "filterByGoal": "Цель",
+    "filterAll": "Все",
+    "clearFilters": "Сбросить",
+    "noResults": "Ничего не найдено",
+    "noResultsHint": "Попробуйте изменить запрос или фильтры"
   },
   "profile": "Профиль"
 }

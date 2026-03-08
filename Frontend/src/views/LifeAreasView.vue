@@ -73,7 +73,7 @@ function onEditArea(area: LifeAreaDTO) {
   <div class="lifeareas-view">
     <h1 class="view-page-header">{{ $t('lifeareas.title') }}</h1>
 
-    <div v-if="lifeAreasStore.isLoading" class="lifeareas-skeleton">
+    <div v-if="lifeAreasStore.isLoading && lifeAreasStore.lifeAreas.length === 0" class="lifeareas-skeleton">
       <Skeleton shape="circle" size="170px" class="skeleton-wheel" />
       <div class="skeleton-legend">
         <Skeleton v-for="i in 3" :key="i" height="3rem" class="skeleton-legend-card" />

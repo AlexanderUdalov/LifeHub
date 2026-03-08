@@ -66,7 +66,7 @@ const addictionsByGoalId = computed(() => {
   <div class="goals-view">
     <h1 class="view-page-header">{{ $t('goals.title') }}</h1>
 
-    <div v-if="goalsStore.isLoading" class="goals-skeleton">
+    <div v-if="goalsStore.isLoading && goalsStore.goals.length === 0" class="goals-skeleton">
       <div v-for="i in 3" :key="i" class="skeleton-card">
         <Skeleton width="60%" height="1.5rem" class="skeleton-title" />
         <Skeleton width="100%" height="1rem" />

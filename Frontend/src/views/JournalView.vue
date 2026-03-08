@@ -120,7 +120,7 @@ onMounted(async () => {
       </div>
     </Transition>
 
-    <div v-if="journalStore.isLoading" class="journal-skeleton">
+    <div v-if="journalStore.isLoading && journalStore.entries.length === 0" class="journal-skeleton">
       <div v-for="i in 3" :key="i" class="skeleton-card">
         <Skeleton width="100%" height="4.5rem" borderRadius="16px" />
       </div>

@@ -131,7 +131,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   <div class="tasks-view-root">
     <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
 
-    <div v-if="tasksStore.isLoading" class="tasks-skeleton">
+    <div v-if="tasksStore.isLoading && tasksStore.tasks.length === 0" class="tasks-skeleton">
       <Skeleton v-for="i in 4" :key="i" height="3.5rem" class="skeleton-row" />
     </div>
 

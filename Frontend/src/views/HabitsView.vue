@@ -22,7 +22,7 @@ onMounted(async () => {
     <div class="habits-view">
         <h1 class="view-page-header">{{ $t('habits.habits') }}</h1>
 
-        <div v-if="habitsStore.isLoading" class="habits-skeleton">
+        <div v-if="habitsStore.isLoading && habitsStore.habits.length === 0" class="habits-skeleton">
             <div v-for="i in 4" :key="i" class="skeleton-card">
                 <Skeleton shape="circle" size="2.5rem" class="skeleton-avatar" />
                 <div class="skeleton-lines">

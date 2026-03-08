@@ -81,7 +81,15 @@ export const useTasksStore = defineStore('tasks', () => {
         return list.sort((a, b) => sortByOrder(a.sortOrder as number, b.sortOrder as number))
     })
     const overdueTasks = computed(() => tasks.value.filter(t => !t.completionDate && t.dueDate && new Date(t.dueDate) < new Date() && !todayTasks.value.includes(t)))
-    const weekTasks = computed(() => tasks.value.filter(t => !t.completionDate && t.dueDate && isThisWeek(new Date(t.dueDate)) && !overdueTasks.value.includes(t) && !todayTasks.value.includes(t)))
+    const weekTasks = computed(() => {
+        const list = tasks.value.filter(t => !t.completionDate && t.dueDate && isThisWeek(new Date(t.dueDate)) && !overdueTasks.value.includes(t) && !todayTasks.value.includes(t))
+        return list.sort((a, b) => {
+            const dateA = new Date(a.dueDate!).getTime()
+            const dateB = new Date(b.dueDate!).getTime()
+            if (dateA !== dateB) return dateA - dateB
+            return sortByOrder(a.sortOrder as number, b.sortOrder as number)
+        })
+    })
     const completedTasks = computed(() => {
         const list = tasks.value.filter(t => t.completionDate)
         return list.sort((a, b) => (new Date(b.completionDate!).getTime()) - (new Date(a.completionDate!).getTime()))

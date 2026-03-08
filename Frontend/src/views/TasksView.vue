@@ -28,7 +28,7 @@ onMounted(() => {
 const taskSections = computed(() => [
   { key: 'overdue', title: t('tasks.list.overdue'), tasks: tasksStore.overdueTasks, draggable: false },
   { key: 'today', title: t('tasks.list.today'), tasks: tasksStore.todayTasks, draggable: true },
-  { key: 'thisweek', title: t('tasks.list.thisweek'), tasks: tasksStore.weekTasks, draggable: false },
+  { key: 'thisweek', title: t('tasks.list.thisweek'), tasks: tasksStore.weekTasks, draggable: true },
   { key: 'inbox', title: t('tasks.list.inbox'), tasks: tasksStore.inboxTasks, draggable: true },
   { key: 'completed', title: t('tasks.list.completed'), tasks: tasksStore.completedTasks, draggable: false },
 ])
@@ -79,7 +79,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     document.body.style.touchAction = ''
   }
 
-  function onPointerUp(e: PointerEvent) {
+  async function onPointerUp(e: PointerEvent) {
     cleanup()
 
     const toIndex = getTargetIndex(e.clientY)
@@ -96,7 +96,25 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     }
     const insertIndex = fromIndex < toIndex ? toIndex - 1 : toIndex
     newOrder.splice(insertIndex, 0, removed)
-    tasksStore.reorderTasksInList(newOrder)
+
+    if (sectionKey === 'thisweek') {
+      const reference = insertIndex > 0 ? newOrder[insertIndex - 1] : newOrder[insertIndex + 1]
+      const refDate = reference?.dueDate ?? null
+      if (refDate != null && refDate !== removed.dueDate) {
+        await tasksStore.editTask(removed.id, {
+          title: removed.title,
+          description: removed.description,
+          dueDate: refDate,
+          completionDate: removed.completionDate,
+          recurrenceRule: removed.recurrenceRule,
+          goalId: removed.goalId,
+          lifeAreaId: removed.lifeAreaId,
+          sortOrder: removed.sortOrder
+        })
+      }
+    }
+
+    await tasksStore.reorderTasksInList(newOrder)
     dropSectionKey.value = null
   }
 

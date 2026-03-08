@@ -203,119 +203,109 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Card>
-        <template #title>{{ $t('profile-view.profile') }}</template>
+    <div class="profile-view-root">
+        <Card>
+            <template #title>{{ $t('profile-view.profile') }}</template>
 
-        <template #content>
-            <IftaLabel>
-                <InputText id="name" v-model="updateForm.name" fluid />
-                <label for="name">{{ $t('profile-view.name') }}</label>
-            </IftaLabel>
+            <template #content>
+                <IftaLabel>
+                    <InputText id="name" v-model="updateForm.name" fluid />
+                    <label for="name">{{ $t('profile-view.name') }}</label>
+                </IftaLabel>
 
-            <IftaLabel>
-                <InputText id="email" v-model="updateForm.email" fluid />
-                <label for="email">{{ $t('profile-view.email') }}</label>
-            </IftaLabel>
+                <IftaLabel>
+                    <InputText id="email" v-model="updateForm.email" fluid />
+                    <label for="email">{{ $t('profile-view.email') }}</label>
+                </IftaLabel>
 
-            <div class="submit-button">
-                <Button v-if="isDirty" label="Submit" :loading="isLoading" @click="submitUserData" />
-            </div>
-
-            <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
-                {{ errorText }}
-            </Message>
-
-            <Divider />
-
-            <div class="selector">
-                <div class="selector-label">
-                    <label>{{ $t('profile-view.theme') }}</label>
+                <div class="submit-button">
+                    <Button v-if="isDirty" label="Submit" :loading="isLoading" @click="submitUserData" />
                 </div>
-                <SelectButton v-model="theme" :options="themeOptions" optionLabel="label" optionValue="value"
-                    @change="onThemeChange(theme)" />
-            </div>
 
-            <div class="selector color-selector">
-                <div class="selector-label">
-                    <label>{{ $t('profile-view.primary-color') }}</label>
+                <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
+                    {{ errorText }}
+                </Message>
+
+                <Divider />
+
+                <div class="selector">
+                    <div class="selector-label">
+                        <label>{{ $t('profile-view.theme') }}</label>
+                    </div>
+                    <SelectButton v-model="theme" :options="themeOptions" optionLabel="label" optionValue="value"
+                        @change="onThemeChange(theme)" />
                 </div>
-                <div class="color-swatches" role="listbox" :aria-label="$t('profile-view.primary-color')">
-                    <button
-                        v-for="preset in PRIMARY_PRESETS"
-                        :key="preset.hex"
-                        type="button"
-                        role="option"
-                        :aria-selected="isPrimarySelected(preset.hex)"
-                        :title="preset.name"
-                        class="swatch"
-                        :class="{ 'swatch-selected': isPrimarySelected(preset.hex) }"
-                        :style="{ backgroundColor: preset.hex }"
-                        @click="selectPrimary(preset.hex)"
-                    />
+
+                <div class="selector color-selector">
+                    <div class="selector-label">
+                        <label>{{ $t('profile-view.primary-color') }}</label>
+                    </div>
+                    <div class="color-swatches" role="listbox" :aria-label="$t('profile-view.primary-color')">
+                        <button v-for="preset in PRIMARY_PRESETS" :key="preset.hex" type="button" role="option"
+                            :aria-selected="isPrimarySelected(preset.hex)" :title="preset.name" class="swatch"
+                            :class="{ 'swatch-selected': isPrimarySelected(preset.hex) }"
+                            :style="{ backgroundColor: preset.hex }" @click="selectPrimary(preset.hex)" />
+                    </div>
                 </div>
-            </div>
 
-            <div class="selector color-selector">
-                <div class="selector-label">
-                    <label>{{ $t('profile-view.surface-color') }}</label>
+                <div class="selector color-selector">
+                    <div class="selector-label">
+                        <label>{{ $t('profile-view.surface-color') }}</label>
+                    </div>
+                    <div class="color-swatches" role="listbox" :aria-label="$t('profile-view.surface-color')">
+                        <button v-for="preset in SURFACE_PRESETS" :key="preset.hex" type="button" role="option"
+                            :aria-selected="isSurfaceSelected(preset.hex)" :title="preset.name" class="swatch"
+                            :class="{ 'swatch-selected': isSurfaceSelected(preset.hex) }"
+                            :style="{ backgroundColor: preset.hex }" @click="selectSurface(preset.hex)" />
+                    </div>
                 </div>
-                <div class="color-swatches" role="listbox" :aria-label="$t('profile-view.surface-color')">
-                    <button
-                        v-for="preset in SURFACE_PRESETS"
-                        :key="preset.hex"
-                        type="button"
-                        role="option"
-                        :aria-selected="isSurfaceSelected(preset.hex)"
-                        :title="preset.name"
-                        class="swatch"
-                        :class="{ 'swatch-selected': isSurfaceSelected(preset.hex) }"
-                        :style="{ backgroundColor: preset.hex }"
-                        @click="selectSurface(preset.hex)"
-                    />
+
+                <Divider />
+
+                <div class="selector">
+                    <div class="selector-label">
+                        <label>{{ $t('profile-view.language') }}</label>
+                    </div>
+                    <SelectButton v-model="language" :options="languageOptions" optionLabel="label" optionValue="value"
+                        @change="applyLanguage(language)" />
                 </div>
-            </div>
 
-            <Divider />
+                <Divider />
 
-            <div class="selector">
-                <div class="selector-label">
-                    <label>{{ $t('profile-view.language') }}</label>
+                <div class="actions">
+                    <Button :label="t('profile-view.change-password')" severity="secondary"
+                        @click="isPasswordDialogVisible = true" />
+                    <Button :label="t('profile-view.logout')" severity="secondary" @click="logout" />
+                    <Button :label="t('profile-view.delete-account')" severity="danger" outlined
+                        @click="isDeleteDialogVisible = true" />
                 </div>
-                <SelectButton v-model="language" :options="languageOptions" optionLabel="label" optionValue="value"
-                    @change="applyLanguage(language)" />
-            </div>
+            </template>
+        </Card>
 
-            <Divider />
+        <Dialog v-model:visible="isPasswordDialogVisible" :header="t('profile-view.change-password')" modal>
+            <Password v-model="updateForm.currentPassword" :placeholder="t('current-password')" toggleMask fluid />
+            <Password v-model="updateForm.newPassword" :placeholder="t('new-password')" toggleMask fluid />
+            <template #footer>
+                <Button :label="t('cancel')" text @click="isPasswordDialogVisible = false" />
+                <Button :label="t('change')" :loading="isPasswordLoading" @click="changePassword" />
+            </template>
+        </Dialog>
 
-            <div class="actions">
-                <Button :label="t('profile-view.change-password')" severity="secondary"
-                    @click="isPasswordDialogVisible = true" />
-                <Button :label="t('profile-view.logout')" severity="secondary" @click="logout" />
-                <Button :label="t('profile-view.delete-account')" severity="danger" outlined
-                    @click="isDeleteDialogVisible = true" />
-            </div>
-        </template>
-    </Card>
-
-    <Dialog v-model:visible="isPasswordDialogVisible" :header="t('profile-view.change-password')" modal>
-        <Password v-model="updateForm.currentPassword" :placeholder="t('current-password')" toggleMask fluid />
-        <Password v-model="updateForm.newPassword" :placeholder="t('new-password')" toggleMask fluid />
-        <template #footer>
-            <Button :label="t('cancel')" text @click="isPasswordDialogVisible = false" />
-            <Button :label="t('change')" :loading="isPasswordLoading" @click="changePassword" />
-        </template>
-    </Dialog>
-
-    <Dialog v-model:visible="isDeleteDialogVisible" :header="t('profile-view.delete-account')" modal>
-        <p>{{ $t('profile-view.delete-confirmation') }}</p>
-        <template #footer>
-            <Button :label="t('cancel')" text @click="isDeleteDialogVisible = false" />
-            <Button :label="t('tasks.editdialog.delete')" severity="danger" @click="deleteAccount" />
-        </template>
-    </Dialog>
+        <Dialog v-model:visible="isDeleteDialogVisible" :header="t('profile-view.delete-account')" modal>
+            <p>{{ $t('profile-view.delete-confirmation') }}</p>
+            <template #footer>
+                <Button :label="t('cancel')" text @click="isDeleteDialogVisible = false" />
+                <Button :label="t('tasks.editdialog.delete')" severity="danger" @click="deleteAccount" />
+            </template>
+        </Dialog>
+    </div>
 </template>
 
 <style scoped>
+.profile-view-root {
+    width: 100%;
+}
+
 :deep(.p-iftalabel) {
     margin-top: 0.5rem;
 }

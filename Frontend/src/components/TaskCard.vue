@@ -9,15 +9,16 @@ import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 
 const props = withDefaults(
-  defineProps<{ task: TaskDTO; draggable?: boolean }>(),
-  { draggable: false }
+  defineProps<{ task: TaskDTO; draggable?: boolean; noBorder?: boolean }>(),
+  { draggable: false, noBorder: false }
 )
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.task.lifeAreaId))
-const cardBorderStyle = computed(() =>
-  areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
-)
+const cardBorderStyle = computed(() => {
+  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
+  return areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
+})
 const emit = defineEmits<{
   (e: 'edit', task: TaskDTO): void
   (e: 'completion-change', taskId: string, value: boolean): void
@@ -66,7 +67,7 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
 
 
 <template>
-  <Card class="task-card" :style="cardBorderStyle">
+  <Card class="task-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
     <template #title>
       <div class="task-card-title-row" @click="onHeaderClick">
         <Checkbox v-model="localCompleted" name="completed" binary @click.stop />
@@ -110,6 +111,16 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+}
+
+.task-card.no-border {
+  border: none;
+  border-left-width: 0;
+}
+
+.task-card.no-border :deep(.p-card) {
+  border: none;
+  box-shadow: none;
 }
 
 :deep(.p-card-body) {

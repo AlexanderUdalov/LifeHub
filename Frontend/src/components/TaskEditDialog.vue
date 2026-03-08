@@ -110,6 +110,18 @@ const goalChipLabel = computed(() => {
 
 const hasGoal = computed(() => !!localTask.value.goalId)
 
+watch(
+  () => localTask.value.goalId,
+  (goalId) => {
+    if (!goalId) return
+    const goal = goalsStore.goalsSorted.find(g => g.id === goalId)
+    if (goal && localTask.value.lifeAreaId !== goal.lifeAreaId) {
+      localTask.value.lifeAreaId = goal.lifeAreaId
+    }
+  },
+  { immediate: true }
+)
+
 const dateRecurrencePopover = ref<InstanceType<typeof Popover> | null>(null)
 
 const titleWrap = ref<HTMLElement | null>(null)
@@ -197,7 +209,7 @@ async function onDelete() {
           @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }" @close="dateRecurrencePopover?.hide()" />
       </Popover>
 
-      <Select v-model="localTask.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
+      <Select v-if="!hasGoal" v-model="localTask.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
         show-clear :placeholder="t('lifeareas.field')" class="task-chip-select"
         :class="{ 'task-chip-select--active': hasLifeArea }">
         <template #value>

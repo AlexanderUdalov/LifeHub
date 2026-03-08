@@ -97,7 +97,7 @@ function toggle() {
       <div v-if="expanded" class="goal-expanded">
         <div v-if="tasks.length">
           <h4>{{ t('tasks.tasks') }}</h4>
-          <TaskCard v-for="task in tasks" :key="task.id" :task="task" />
+          <TaskCard v-for="task in tasks" :key="task.id" :task="task" no-border />
         </div>
 
         <div v-if="habits.length">

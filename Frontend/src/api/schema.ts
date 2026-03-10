@@ -1103,17 +1103,7 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    DateFrom?: string;
-                    DateTo?: string;
-                    TaskItemId?: string;
-                    HabitId?: string;
-                    AddictionId?: string;
-                    GoalId?: string;
-                    LifeAreaId?: string;
-                    Search?: string;
-                    OnlyPinned?: boolean;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1286,56 +1276,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/api/journal/{id}/pin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["JournalEntryDTO"];
-                        "application/json": components["schemas"]["JournalEntryDTO"];
-                        "text/json": components["schemas"]["JournalEntryDTO"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
         trace?: never;
     };
     "/api/lifeareas": {
@@ -1748,6 +1688,8 @@ export interface components {
             resetDates: string[];
             /** Format: date-time */
             lastResetAt: null | string;
+            /** Format: int32 */
+            currentStreakDays: number | string;
         };
         AuthResponse: {
             token: string;
@@ -1832,6 +1774,8 @@ export interface components {
         HabitWithHistoryDTO: {
             habit: components["schemas"]["HabitDTO"];
             history: components["schemas"]["HabitDayDTO"][];
+            /** Format: int32 */
+            currentStreak: number | string;
         };
         JournalEntryDTO: {
             /** Format: uuid */

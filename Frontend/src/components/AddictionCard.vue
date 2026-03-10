@@ -10,13 +10,17 @@ import { useAddictionsStore } from '@/stores/addictions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 
-const props = defineProps<{ addiction: AddictionWithResetsDTO }>()
+const props = withDefaults(
+  defineProps<{ addiction: AddictionWithResetsDTO; noBorder?: boolean }>(),
+  { noBorder: false }
+)
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.addiction.addiction.lifeAreaId))
-const cardBorderStyle = computed(() =>
-  areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
-)
+const cardBorderStyle = computed(() => {
+  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
+  return areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
+})
 const goalTitle = computed(() => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null)
 
 const emit = defineEmits<{
@@ -77,7 +81,7 @@ const timeSinceText = computed(() => {
 </script>
 
 <template>
-  <Card class="addiction-card" :style="cardBorderStyle">
+  <Card class="addiction-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
     <template #title>
       <div class="addiction-card-header">
         <div class="addiction-title" @click="emit('edit', addiction.addiction)">
@@ -105,6 +109,16 @@ const timeSinceText = computed(() => {
   border-radius: 16px;
   border-left-width: 4px;
   border-left-style: solid;
+}
+
+.addiction-card.no-border {
+  border: none;
+  border-left-width: 0;
+}
+
+.addiction-card.no-border :deep(.p-card) {
+  border: none;
+  box-shadow: none;
 }
 
 .addiction-card-header {

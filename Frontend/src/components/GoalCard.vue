@@ -6,8 +6,8 @@ import Button from 'primevue/button'
 import TaskCard from './TaskCard.vue'
 import HabitCard from './HabitCard.vue'
 import AddictionCard from './AddictionCard.vue'
-import type { HabitWithHistoryDTO } from '@/api/HabitsAPI'
-import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
+import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
+import type { AddictionDTO, AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import type { TaskDTO } from '@/api/TasksAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useI18n } from 'vue-i18n'
@@ -22,6 +22,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'edit-goal', goal: GoalDTO): void
+  (e: 'edit-task', task: TaskDTO): void
+  (e: 'edit-habit', habit: HabitDTO): void
+  (e: 'edit-addiction', addiction: AddictionDTO): void
+  (e: 'completion-change', taskId: string, value: boolean): void
 }>()
 
 const { t } = useI18n()
@@ -59,7 +63,15 @@ const hasEntities = computed(
   () => props.tasks.length > 0 || props.habits.length > 0 || props.addictions.length > 0
 )
 
+const activeTasks = computed(() => props.tasks.filter(t => !t.completionDate))
+const completedTasks = computed(() =>
+  props.tasks.filter(t => t.completionDate).sort(
+    (a, b) => new Date(b.completionDate!).getTime() - new Date(a.completionDate!).getTime()
+  )
+)
+
 const expanded = ref(false)
+const completedExpanded = ref(false)
 
 function toggle() {
   if (!hasEntities.value) return
@@ -97,17 +109,31 @@ function toggle() {
       <div v-if="expanded" class="goal-expanded">
         <div v-if="tasks.length">
           <h4>{{ t('tasks.tasks') }}</h4>
-          <TaskCard v-for="task in tasks" :key="task.id" :task="task" no-border />
+          <TaskCard v-for="task in activeTasks" :key="task.id" :task="task" no-border @edit="emit('edit-task', task)"
+            @completion-change="(id, val) => emit('completion-change', id, val)" />
+          <div v-if="completedTasks.length" class="completed-tasks-section">
+            <Button v-if="!completedExpanded" class="show-completed-btn p-button-text"
+              :label="t('goals.showCompleted', { count: completedTasks.length })" icon="pi pi-chevron-down"
+              @click="completedExpanded = true" />
+            <template v-else>
+              <Button class="hide-completed-btn p-button-text" :label="t('goals.hideCompleted')" icon="pi pi-chevron-up"
+                @click="completedExpanded = false" />
+              <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" no-border
+                @edit="emit('edit-task', task)" @completion-change="(id, val) => emit('completion-change', id, val)" />
+            </template>
+          </div>
         </div>
 
         <div v-if="habits.length">
           <h4>{{ t('habits.habits') }}</h4>
-          <HabitCard v-for="habit in habits" :key="habit.habit.id" :habit="habit" />
+          <HabitCard v-for="habit in habits" :key="habit.habit.id" :habit="habit" no-border
+            @edit="emit('edit-habit', $event)" />
         </div>
 
         <div v-if="addictions.length">
           <h4>{{ t('addictions.addictions') }}</h4>
-          <AddictionCard v-for="addiction in addictions" :key="addiction.addiction.id" :addiction="addiction" />
+          <AddictionCard v-for="addiction in addictions" :key="addiction.addiction.id" :addiction="addiction" no-border
+            @edit="emit('edit-addiction', $event)" />
         </div>
       </div>
     </template>
@@ -188,6 +214,16 @@ function toggle() {
 .goal-expanded h4 {
   margin: 12px 0 6px;
   font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+}
+
+.completed-tasks-section {
+  margin-top: 8px;
+}
+
+.show-completed-btn,
+.hide-completed-btn {
+  justify-content: flex-start;
   color: var(--p-text-muted-color);
 }
 </style>

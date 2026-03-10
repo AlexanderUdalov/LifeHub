@@ -9,9 +9,15 @@ import { useTasksStore } from '@/stores/tasks'
 import { useHabitsStore } from '@/stores/habits'
 import { useAddictionsStore } from '@/stores/addictions'
 import type { GoalDTO } from '@/api/GoalsAPI'
+import type { TaskDTO } from '@/api/TasksAPI'
+import type { HabitDTO } from '@/api/HabitsAPI'
+import type { AddictionDTO } from '@/api/AddictionsAPI'
 
 const emit = defineEmits<{
   (e: 'edit-goal', goal: GoalDTO): void
+  (e: 'edit-task', task: TaskDTO): void
+  (e: 'edit-habit', habit: HabitDTO): void
+  (e: 'edit-addiction', addiction: AddictionDTO): void
 }>()
 
 const goalsStore = useGoalsStore()
@@ -75,12 +81,14 @@ const addictionsByGoalId = computed(() => {
       </div>
     </div>
 
-    <EmptyState v-else-if="goalsStore.goals.length === 0" icon="pi pi-flag"
-      :title="$t('goals.empty')" :subtitle="$t('goals.emptySubtitle')" />
+    <EmptyState v-else-if="goalsStore.goals.length === 0" icon="pi pi-flag" :title="$t('goals.empty')"
+      :subtitle="$t('goals.emptySubtitle')" />
 
-    <GoalCard v-else v-for="goal in goalsStore.goalsSorted" :key="goal.id" :goal="goal" :tasks="tasksByGoalId[goal.id] ?? []"
-      :habits="habitsByGoalId[goal.id] ?? []" :addictions="addictionsByGoalId[goal.id] ?? []"
-      @edit-goal="emit('edit-goal', $event)" />
+    <GoalCard v-else v-for="goal in goalsStore.goalsSorted" :key="goal.id" :goal="goal"
+      :tasks="tasksByGoalId[goal.id] ?? []" :habits="habitsByGoalId[goal.id] ?? []"
+      :addictions="addictionsByGoalId[goal.id] ?? []" @edit-goal="emit('edit-goal', $event)"
+      @edit-task="emit('edit-task', $event)" @edit-habit="emit('edit-habit', $event)"
+      @edit-addiction="emit('edit-addiction', $event)" @completion-change="tasksStore.toggleTaskCompletion" />
   </div>
 </template>
 

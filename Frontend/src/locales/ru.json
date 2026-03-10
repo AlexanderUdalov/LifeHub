@@ -161,7 +161,9 @@
     "delete": "Удалить",
     "tasksCount": "Задачи ({count})",
     "habitsCount": "Привычки ({count})",
-    "addictionsCount": "Зависимости ({count})"
+    "addictionsCount": "Зависимости ({count})",
+    "showCompleted": "Показать выполненные ({count})",
+    "hideCompleted": "Скрыть выполненные"
   },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",

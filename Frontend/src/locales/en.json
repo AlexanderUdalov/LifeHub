@@ -161,7 +161,9 @@
     "delete": "Delete",
     "tasksCount": "Tasks ({count})",
     "habitsCount": "Habits ({count})",
-    "addictionsCount": "Addictions ({count})"
+    "addictionsCount": "Addictions ({count})",
+    "showCompleted": "Show completed ({count})",
+    "hideCompleted": "Hide completed"
   },
   "toasts": {
     "logged-out": "You have logged out",

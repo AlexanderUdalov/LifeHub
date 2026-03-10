@@ -8,8 +8,10 @@ declare module "axios" {
     }
 }
 
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? "/api";
+
 export const api = axios.create({
-    baseURL: "/api"
+    baseURL: apiBaseUrl
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {

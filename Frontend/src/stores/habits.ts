@@ -51,7 +51,11 @@ export const useHabitsStore = defineStore('habits', () => {
 
   async function createHabit(request: HabitUpsertRequest) {
     const created = await habitsApi.createHabit(request)
-    habits.value.push({ habit: created, history: [] })
+    habits.value.push({
+      habit: created,
+      history: [],
+      currentStreak: 0
+    })
   }
 
   async function updateHabit(id: string, request: HabitUpsertRequest) {

@@ -49,7 +49,11 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
             new AddictionWithResetsDTO(
                 a.ToDTO(),
                 resetsByAddiction.GetValueOrDefault(a.Id, []),
-                lastResetByAddiction.GetValueOrDefault(a.Id)
+                lastResetByAddiction.GetValueOrDefault(a.Id),
+                AddictionMapping.CalculateCurrentStreakDays(
+                    a,
+                    lastResetByAddiction.GetValueOrDefault(a.Id)
+                )
             ));
 
         return Ok(result);

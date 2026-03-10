@@ -56,7 +56,18 @@ function streakAtIndex(index: number): number {
   return count
 }
 
-const streaks = computed(() => days.value.map((_, idx) => streakAtIndex(idx)))
+const streaks = computed(() => {
+  const base = days.value.map((_, idx) => streakAtIndex(idx))
+  const lastIndex = base.length - 1
+  if (lastIndex >= 0) {
+    const raw = props.addiction.currentStreakDays
+    const backend = typeof raw === 'number' ? raw : Number(raw ?? 0)
+    if (Number.isFinite(backend) && backend >= 0) {
+      base[lastIndex] = backend
+    }
+  }
+  return base
+})
 
 /** Strength fades with long streak: high when streak 0, low when streak 10+. */
 function strengthPercent(streak: number): string {

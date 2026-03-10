@@ -37,10 +37,24 @@ public class HabitsController(ApplicationContext context) : ControllerBase
             .GroupBy(d => d.HabitId)
             .ToDictionary(g => g.Key, g => g.Select(d => d.ToDTO()).ToList() as IReadOnlyList<HabitDayDTO>);
 
+        // Full history for correct streak calculation (not limited by the visible window).
+        var allHabitDays = await context.HabitDays
+            .AsNoTracking()
+            .Where(d => habitIds.Contains(d.HabitId))
+            .ToListAsync();
+
+        var allDaysByHabit = allHabitDays
+            .GroupBy(d => d.HabitId)
+            .ToDictionary(g => g.Key, g => g.ToList() as IReadOnlyList<HabitDay>);
+
         var result = habits.Select(h =>
             new HabitWithHistoryDTO(
                 h.ToDTO(),
-                historyByHabit.GetValueOrDefault(h.Id, [])
+                historyByHabit.GetValueOrDefault(h.Id, []),
+                HabitStreakCalculator.CalculateCurrentStreak(
+                    h,
+                    allDaysByHabit.GetValueOrDefault(h.Id, [])
+                )
             ));
 
         return Ok(result);

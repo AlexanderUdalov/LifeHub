@@ -40,6 +40,8 @@ export const useAddictionsStore = defineStore('addictions', () => {
       if (toDateOnlyString(date) === toDateOnlyString(new Date())) {
         a.lastResetAt = new Date().toISOString()
       }
+      // Обновляем список, чтобы currentStreakDays пересчитался на бэке.
+      await fetchAddictions(rangeDays.value)
     } catch (e) {
       a.resetDates = prev
       throw e
@@ -62,6 +64,8 @@ export const useAddictionsStore = defineStore('addictions', () => {
       if (toDateOnlyString(date) === toDateOnlyString(new Date())) {
         a.lastResetAt = null
       }
+      // Обновляем список, чтобы currentStreakDays пересчитался на бэке.
+      await fetchAddictions(rangeDays.value)
     } catch (e) {
       a.resetDates = prev
       throw e

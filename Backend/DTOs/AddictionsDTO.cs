@@ -14,7 +14,8 @@ public record AddictionDTO(
 public record AddictionWithResetsDTO(
     AddictionDTO Addiction,
     IReadOnlyList<DateOnly> ResetDates,
-    DateTime? LastResetAt
+    DateTime? LastResetAt,
+    int CurrentStreakDays
 );
 
 public record AddictionUpsertRequest(
@@ -37,4 +38,20 @@ public static class AddictionMapping
             addiction.GoalId,
             addiction.LifeAreaId
         );
+
+    public static int CalculateCurrentStreakDays(Addiction addiction, DateTime? lastResetAtUtc)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        if (lastResetAtUtc is { } lastResetAt)
+        {
+            var resetDate = DateOnly.FromDateTime(lastResetAt.ToUniversalTime());
+            var diff = today.DayNumber - resetDate.DayNumber;
+            return Math.Max(0, diff);
+        }
+
+        var createdDate = DateOnly.FromDateTime(addiction.CreatedAt.ToUniversalTime());
+        var createdDiff = today.DayNumber - createdDate.DayNumber;
+        return Math.Max(0, createdDiff);
+    }
 }

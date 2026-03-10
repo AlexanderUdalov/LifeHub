@@ -23,6 +23,13 @@ const cardBorderStyle = computed(() => {
 })
 const goalTitle = computed(() => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null)
 
+const cleanStreak = computed(() => {
+  const raw = props.addiction.currentStreakDays
+  const n = typeof raw === 'number' ? raw : Number(raw ?? 0)
+  if (!Number.isFinite(n) || n <= 0) return null
+  return n
+})
+
 const emit = defineEmits<{
   (e: 'edit', addiction: AddictionDTO): void
 }>()
@@ -84,8 +91,13 @@ const timeSinceText = computed(() => {
   <Card class="addiction-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
     <template #title>
       <div class="addiction-card-header">
-        <div class="addiction-title" @click="emit('edit', addiction.addiction)">
-          {{ addiction.addiction.title }}
+        <div class="addiction-title-wrap">
+          <div class="addiction-title" @click="emit('edit', addiction.addiction)">
+            {{ addiction.addiction.title }}
+          </div>
+          <div v-if="cleanStreak" class="addiction-streak-chip">
+            {{ t('addictions.currentStreakLabel', { count: cleanStreak }) }}
+          </div>
         </div>
         <Button :label="t('addictions.reset')" icon="pi pi-undo" severity="danger" size="small" @click="onReset" />
       </div>
@@ -129,11 +141,28 @@ const timeSinceText = computed(() => {
   width: 100%;
 }
 
+.addiction-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
 .addiction-title {
   cursor: pointer;
   user-select: none;
   flex: 1;
   min-width: 0;
+}
+
+.addiction-streak-chip {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background-color: var(--p-primary-100);
+  color: var(--p-primary-700);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .time-since {

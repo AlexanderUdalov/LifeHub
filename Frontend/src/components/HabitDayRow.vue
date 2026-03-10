@@ -97,7 +97,18 @@ function streakAtIndex(index: number): number {
   return calcFixedDaysStreak(days.value, index, getCompletion, disabledByIndex.value)
 }
 
-const streaks = computed(() => days.value.map((_, idx) => streakAtIndex(idx)))
+const streaks = computed(() => {
+  const base = days.value.map((_, idx) => streakAtIndex(idx))
+  const lastIndex = base.length - 1
+  if (lastIndex >= 0) {
+    const raw = props.habit.currentStreak
+    const backend = typeof raw === 'number' ? raw : Number(raw ?? 0)
+    if (Number.isFinite(backend) && backend >= 0) {
+      base[lastIndex] = backend
+    }
+  }
+  return base
+})
 
 function strengthPercent(streak: number): string {
   if (streak <= 0) return '0%'

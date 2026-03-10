@@ -40,6 +40,9 @@ export const useHabitsStore = defineStore('habits', () => {
 
     try {
       await habitsApi.setDayStatus(habitId, date, status)
+      // После успешного обновления перезагружаем привычки,
+      // чтобы currentStreak и history были синхронизированы с бэком.
+      await fetchHabits(rangeDays.value)
     } catch (e) {
       h.history = prev
       throw e

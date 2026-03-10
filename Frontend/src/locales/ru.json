@@ -93,6 +93,7 @@
     "habits": "Привычки",
     "empty": "Привычек пока нет",
     "emptySubtitle": "Добавьте привычку и отслеживайте свой прогресс",
+    "currentStreakLabel": "Текущий серия: {count}",
     "editdialog": {
       "newHabit": "Новая привычка",
       "color": "Цвет",
@@ -113,6 +114,7 @@
     "emptySubtitle": "Добавьте зависимость, чтобы отслеживать дни без срывов",
     "timeSince": "{days} дн {hours} ч {minutes} мин",
     "daysCount": "{count} дн.",
+    "currentStreakLabel": "Текущий серия: {count}",
     "editdialog": {
       "newAddiction": "Новая зависимость",
       "title": "Название",

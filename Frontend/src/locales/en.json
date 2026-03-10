@@ -93,6 +93,7 @@
     "habits": "Habits",
     "empty": "No habits yet",
     "emptySubtitle": "Add a habit to track your daily progress",
+    "currentStreakLabel": "Current streak: {count}",
     "editdialog": {
       "newHabit": "New habit",
       "color": "Color",
@@ -113,6 +114,7 @@
     "emptySubtitle": "Add an addiction to start tracking your streak",
     "timeSince": "{days}d {hours}h {minutes}m",
     "daysCount": "{count} days",
+    "currentStreakLabel": "Current streak: {count}",
     "editdialog": {
       "newAddiction": "New addiction",
       "title": "Title",

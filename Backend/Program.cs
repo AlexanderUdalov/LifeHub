@@ -41,10 +41,18 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
-
-builder.Services.AddOpenApi();
 builder.Services
+    .AddAuthorization()
+    .AddOpenApi()
+    .AddCors(options =>
+{
+    options.AddPolicy("LifeHubCors", policy =>
+    {
+        policy.WithOrigins("http://tauri.localhost")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+})
     .AddControllers()
     .AddJsonOptions(options =>
     {
@@ -55,6 +63,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseCors("LifeHubCors");
 app.UseAuthentication();
 app.UseAuthorization();
 

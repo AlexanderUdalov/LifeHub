@@ -172,6 +172,7 @@ async function onConfirmDelete() {
 
 .journal-card__body {
   cursor: pointer;
+  min-height: 0;
 }
 
 .journal-card__text {
@@ -187,7 +188,9 @@ async function onConfirmDelete() {
 }
 
 .journal-card__text--expanded {
+  display: block;
   -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
   overflow: visible;
 }
 

@@ -19,6 +19,39 @@ const cardBorderStyle = computed(() => {
   if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
   return areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
 })
+
+type DescriptionPart =
+  | { type: 'text'; value: string }
+  | { type: 'link'; value: string }
+
+const descriptionParts = computed<DescriptionPart[]>(() => {
+  const source = props.task.description ?? ''
+  if (!source) return []
+
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const parts: DescriptionPart[] = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = urlRegex.exec(source)) !== null) {
+    const [url] = match
+    const start = match.index
+
+    if (start > lastIndex) {
+      parts.push({ type: 'text', value: source.slice(lastIndex, start) })
+    }
+
+    parts.push({ type: 'link', value: url })
+    lastIndex = start + url.length
+  }
+
+  if (lastIndex < source.length) {
+    parts.push({ type: 'text', value: source.slice(lastIndex) })
+  }
+
+  return parts
+})
+
 const emit = defineEmits<{
   (e: 'edit', task: TaskDTO): void
   (e: 'completion-change', taskId: string, value: boolean): void
@@ -82,7 +115,18 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
     <template #content>
       <p v-if="props.task.description" class="description" :class="{ completed: localCompleted, expanded: isExpanded }"
         @click="onContentClick">
-        {{ props.task.description }}
+        <template v-if="!isExpanded">
+          {{ props.task.description }}
+        </template>
+        <template v-else>
+          <template v-for="(part, index) in descriptionParts" :key="index">
+            <a v-if="part.type === 'link'" :href="part.value" target="_blank" rel="noopener noreferrer"
+              class="description-link" @click.stop>
+              {{ part.value }}
+            </a>
+            <span v-else>{{ part.value }}</span>
+          </template>
+        </template>
       </p>
 
       <div v-if="deadlineText || recurrenceText || goalTitle" class="deadline-row">
@@ -180,6 +224,13 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
   white-space: pre-line;
   overflow: visible;
   text-overflow: unset;
+}
+
+.description-link {
+  color: var(--p-primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+  word-break: break-all;
 }
 
 .deadline-row {

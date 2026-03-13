@@ -7,12 +7,15 @@ import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
+import DatePicker from 'primevue/datepicker'
 import Skeleton from 'primevue/skeleton'
 import EmptyState from '@/components/EmptyState.vue'
 import TaskCard from '@/components/TaskCard.vue'
 import { type TaskDTO } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 import { useTasksStore } from '@/stores/tasks'
+import { getStoredTaskViewMode, type TaskViewMode } from '@/utils/taskViewMode'
+import { isToday, isSameDateOnly, startOfDay, toDateOnlyString } from '@/utils/dateOnly'
 
 const { t } = useI18n()
 const emit = defineEmits<{
@@ -24,6 +27,8 @@ const tasksStore = useTasksStore()
 onMounted(() => {
   tasksStore.fetchTasks()
 })
+
+const taskViewMode = ref<TaskViewMode>(getStoredTaskViewMode() ?? 'standard')
 
 const taskSections = computed(() => [
   { key: 'overdue', title: t('tasks.list.overdue'), tasks: tasksStore.overdueTasks, draggable: false },
@@ -37,6 +42,45 @@ const hasAnyTasks = computed(() => tasksStore.tasks.length > 0)
 
 function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
+}
+
+const selectedDate = ref<Date>(startOfDay(new Date()))
+
+const calendarTaskDateKeys = computed(() => {
+  const keys = new Set<string>()
+  for (const task of tasksStore.tasks) {
+    if (task.completionDate) continue
+    if (task.dueDate) keys.add(toDateOnlyString(new Date(task.dueDate)))
+  }
+  if (tasksStore.inboxTasks.length) keys.add(toDateOnlyString(new Date()))
+  return keys
+})
+
+const calendarTasksForSelectedDay = computed(() => {
+  const selected = startOfDay(selectedDate.value)
+  const includeUndated = isToday(selected)
+
+  const list = tasksStore.tasks.filter(t => {
+    if (t.completionDate) return false
+    if (!t.dueDate) return includeUndated
+    return isSameDateOnly(new Date(t.dueDate), selected)
+  })
+
+  return list.sort((a, b) => {
+    const aHasDate = a.dueDate != null
+    const bHasDate = b.dueDate != null
+    if (aHasDate !== bHasDate) return aHasDate ? -1 : 1
+    const ao = a.sortOrder as number | null | undefined
+    const bo = b.sortOrder as number | null | undefined
+    if (ao == null && bo == null) return 0
+    if (ao == null) return 1
+    if (bo == null) return -1
+    return ao - bo
+  })
+})
+
+function calendarCellKey(date: { year: number; month: number; day: number }): string {
+  return `${date.year}-${String(date.month + 1).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`
 }
 
 const dropSectionKey = ref<string | null>(null)
@@ -138,7 +182,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     <EmptyState v-else-if="!hasAnyTasks" icon="pi pi-list-check" :title="$t('tasks.empty')"
       :subtitle="$t('tasks.emptySubtitle')" />
 
-    <Accordion v-else :value="['0']" multiple>
+    <Accordion v-else-if="taskViewMode === 'standard'" :value="['0']" multiple>
       <template v-for="(section, index) in taskSections" :key="section.key">
         <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
           <AccordionHeader>
@@ -172,6 +216,67 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
         </AccordionPanel>
       </template>
     </Accordion>
+
+    <Accordion v-else-if="taskViewMode === 'compact'" :value="['0']" multiple>
+      <template v-for="(section, index) in taskSections" :key="section.key">
+        <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
+          <AccordionHeader>
+            <div class="tasks-list-header">
+              <span>{{ section.title }}</span>
+              <Badge>{{ section.tasks.length }}</Badge>
+            </div>
+          </AccordionHeader>
+
+          <AccordionContent>
+            <TransitionGroup name="task-list">
+              <template v-if="section.draggable">
+                <div data-draggable-list>
+                  <div v-for="(task, taskIndex) in section.tasks" :key="task.id" data-task-row>
+                    <div class="drop-indicator"
+                      :class="{ active: dropSectionKey === section.key && dropIndex === taskIndex }" />
+                    <TaskCard class="task-card" :task="task" :draggable="true" :compact="true"
+                      :hide-deadline="section.key === 'today'" :hide-goal="true"
+                      @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask"
+                      @drag-start="(e) => onDragStart(section.key, taskIndex, e)" />
+                  </div>
+                  <div class="drop-indicator drop-indicator-last"
+                    :class="{ active: dropSectionKey === section.key && dropIndex === section.tasks.length }" />
+                </div>
+              </template>
+              <template v-else>
+                <TaskCard v-for="task in section.tasks" :key="task.id" :task="task" :compact="true"
+                  :hide-deadline="section.key === 'today'" :hide-goal="true"
+                  @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask" />
+              </template>
+            </TransitionGroup>
+          </AccordionContent>
+        </AccordionPanel>
+      </template>
+    </Accordion>
+
+    <div v-else-if="taskViewMode === 'calendar'" class="calendar-view">
+      <div class="calendar-view-top">
+        <DatePicker v-model="selectedDate" inline class="calendar-picker">
+          <template #date="{ date }">
+            <span class="calendar-day" :class="{ 'has-tasks': calendarTaskDateKeys.has(calendarCellKey(date)) }">
+              {{ date.day }}
+            </span>
+          </template>
+        </DatePicker>
+      </div>
+
+      <div class="calendar-view-bottom">
+        <div class="calendar-day-header">
+          <span>{{ selectedDate.toLocaleDateString() }}</span>
+          <Badge>{{ calendarTasksForSelectedDay.length }}</Badge>
+        </div>
+
+        <TransitionGroup name="task-list">
+          <TaskCard v-for="task in calendarTasksForSelectedDay" :key="task.id" :task="task"
+            @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask" />
+        </TransitionGroup>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -243,5 +348,54 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
 .task-list-enter-from {
   opacity: 0;
+}
+
+.calendar-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 12px;
+}
+
+.calendar-view-top,
+.calendar-view-bottom {
+  flex: 1;
+}
+
+.calendar-picker {
+  width: 100%;
+}
+
+.calendar-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.calendar-day.has-tasks {
+  position: relative;
+  font-weight: 600;
+}
+
+.calendar-day.has-tasks::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--p-primary-color);
+}
+
+.calendar-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: large;
 }
 </style>

@@ -9,8 +9,15 @@ import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 
 const props = withDefaults(
-  defineProps<{ task: TaskDTO; draggable?: boolean; noBorder?: boolean }>(),
-  { draggable: false, noBorder: false }
+  defineProps<{
+    task: TaskDTO
+    draggable?: boolean
+    noBorder?: boolean
+    compact?: boolean
+    hideDeadline?: boolean
+    hideGoal?: boolean
+  }>(),
+  { draggable: false, noBorder: false, compact: false, hideDeadline: false, hideGoal: false }
 )
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
@@ -100,21 +107,23 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
 
 
 <template>
-  <Card class="task-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
+  <Card class="task-card" :class="{ 'no-border': noBorder, compact: props.compact }" :style="cardBorderStyle">
     <template #title>
       <div class="task-card-title-row" @click="onHeaderClick">
         <Checkbox v-model="localCompleted" name="completed" binary @click.stop />
         <label for="completed" class="title title-clickable" :class="{ completed: localCompleted }">
           {{ task.title }}
         </label>
+        <i v-if="props.compact && props.task.description" class="pi pi-align-left description-indicator"
+          aria-hidden="true" />
         <div v-if="draggable" class="drag-handle" @pointerdown.prevent.stop="emit('drag-start', $event)">
           <i class="pi pi-bars" />
         </div>
       </div>
     </template>
     <template #content>
-      <p v-if="props.task.description" class="description" :class="{ completed: localCompleted, expanded: isExpanded }"
-        @click="onContentClick">
+      <p v-if="!props.compact && props.task.description" class="description"
+        :class="{ completed: localCompleted, expanded: isExpanded }" @click="onContentClick">
         <template v-if="!isExpanded">
           {{ props.task.description }}
         </template>
@@ -129,9 +138,11 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
         </template>
       </p>
 
-      <div v-if="deadlineText || recurrenceText || goalTitle" class="deadline-row">
+      <div v-if="(!props.hideDeadline && deadlineText) || recurrenceText || (!props.hideGoal && goalTitle)"
+        class="deadline-row">
         <span class="deadline-row-left">
-          <span v-if="deadlineText" class="deadline" :class="{ overdue: isOverdue, completed: localCompleted }">
+          <span v-if="!props.hideDeadline && deadlineText" class="deadline"
+            :class="{ overdue: isOverdue, completed: localCompleted }">
             {{ deadlineText }}
           </span>
           <span v-if="recurrenceText" class="recurrence" :class="{ completed: localCompleted }">
@@ -139,7 +150,7 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
             {{ recurrenceText }}
           </span>
         </span>
-        <span v-if="goalTitle" class="goal-text">
+        <span v-if="!props.hideGoal && goalTitle" class="goal-text">
           {{ goalTitle }}
         </span>
       </div>
@@ -171,6 +182,10 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
   padding: 1rem;
 }
 
+.task-card.compact :deep(.p-card-body) {
+  padding: 0.5rem 0.75rem;
+}
+
 .task-card-title-row {
   display: flex;
   align-items: center;
@@ -188,8 +203,19 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
   font-size: 1.25rem;
 }
 
+.task-card.compact .title {
+  font-size: 1rem;
+  padding-left: 0.75rem;
+}
+
 .title-clickable {
   cursor: pointer;
+}
+
+.description-indicator {
+  flex-shrink: 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.95em;
 }
 
 .drag-handle {

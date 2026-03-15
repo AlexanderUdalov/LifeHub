@@ -227,5 +227,20 @@
     "noResults": "No results",
     "noResultsHint": "Try changing your search or filters"
   },
-  "profile": "Profile"
+  "profile": "Profile",
+  "reflection": {
+    "title": "Reflection",
+    "selectPeriod": "What period to reflect on?",
+    "period7": "Week",
+    "period14": "2 weeks",
+    "period30": "Month",
+    "loading": "Loading...",
+    "thinking": "Thinking...",
+    "inputPlaceholder": "Your answer...",
+    "send": "Send",
+    "saveToJournal": "Save to journal",
+    "complete": "Reflection complete",
+    "noSummary": "No summary to save. Complete the reflection first.",
+    "error": "Could not get a response"
+  }
 }

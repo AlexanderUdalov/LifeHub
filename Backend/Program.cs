@@ -1,7 +1,10 @@
 using LifeHub.Models;
+using LifeHub.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.AI;
 using Microsoft.IdentityModel.Tokens;
+using OpenAI;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
@@ -40,6 +43,18 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
+
+var aiApiKey = builder.Configuration["Ai:ApiKey"] ?? "";
+var aiModel = builder.Configuration["Ai:Model"] ?? "gpt-4o-mini";
+
+if (!string.IsNullOrWhiteSpace(aiApiKey))
+{
+    builder.Services.AddChatClient(
+        new OpenAIClient(aiApiKey).GetChatClient(aiModel).AsIChatClient());
+}
+
+builder.Services.AddScoped<ReflectionContextService>();
+builder.Services.AddScoped<AiChatService>();
 
 builder.Services
     .AddAuthorization()

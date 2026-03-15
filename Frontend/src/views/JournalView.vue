@@ -2,6 +2,7 @@
 defineOptions({ name: 'JournalView' })
 import EmptyState from '@/components/EmptyState.vue';
 import JournalCard from '@/components/JournalCard.vue';
+import ReflectionDialog from '@/components/ReflectionDialog.vue';
 import Skeleton from 'primevue/skeleton';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
@@ -76,6 +77,8 @@ function clearFilters() {
   filterGoalId.value = null;
 }
 
+const showReflection = ref(false);
+
 const emit = defineEmits<{
   (e: 'edit-journal', entry: JournalEntryDTO | null): void
 }>();
@@ -90,6 +93,9 @@ onMounted(async () => {
     <header class="journal-view__header">
       <h1 class="view-page-header">{{ $t('journal.title') }}</h1>
       <div class="journal-view__actions">
+        <Button icon="pi pi-sparkles" variant="text" rounded size="small"
+          class="journal-view__action-btn"
+          :aria-label="$t('reflection.title')" @click="showReflection = true" />
         <Button icon="pi pi-search" variant="text" rounded size="small"
           :severity="showSearchBar ? 'secondary' : undefined" class="journal-view__action-btn"
           :aria-label="$t('journal.search')" @click="toggleSearchBar" />
@@ -151,6 +157,8 @@ onMounted(async () => {
         </TransitionGroup>
       </section>
     </template>
+
+    <ReflectionDialog v-if="showReflection" @close="showReflection = false" />
   </div>
 </template>
 

@@ -290,6 +290,114 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/reflection/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["StartReflectionRequest"];
+                    "text/json": components["schemas"]["StartReflectionRequest"];
+                    "application/*+json": components["schemas"]["StartReflectionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["StartReflectionResponse"];
+                        "application/json": components["schemas"]["StartReflectionResponse"];
+                        "text/json": components["schemas"]["StartReflectionResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/reflection/message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SendReflectionMessageRequest"];
+                    "text/json": components["schemas"]["SendReflectionMessageRequest"];
+                    "application/*+json": components["schemas"]["SendReflectionMessageRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReflectionMessageResponse"];
+                        "application/json": components["schemas"]["ReflectionMessageResponse"];
+                        "text/json": components["schemas"]["ReflectionMessageResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/register": {
         parameters: {
             query?: never;
@@ -1548,6 +1656,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/completed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number | string;
+                    offset?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CompletedTasksPageResponse"];
+                        "application/json": components["schemas"]["CompletedTasksPageResponse"];
+                        "text/json": components["schemas"]["CompletedTasksPageResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tasks/{id}": {
         parameters: {
             query?: never;
@@ -1695,6 +1843,15 @@ export interface components {
             token: string;
             refreshToken: string;
         };
+        ChatMessageDTO: {
+            role: string;
+            content: string;
+        };
+        CompletedTasksPageResponse: {
+            items: components["schemas"]["TaskDTO"][];
+            /** Format: int32 */
+            total: number | string;
+        };
         CreateGoalRequest: {
             title: string;
             description: null | string;
@@ -1818,6 +1975,11 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        ReflectionMessageResponse: {
+            message: string;
+            isComplete: boolean;
+            journalSummary?: null | string;
+        };
         RefreshRequest: {
             refreshToken: string;
         };
@@ -1826,8 +1988,23 @@ export interface components {
             email: string;
             password: string;
         };
+        SendReflectionMessageRequest: {
+            /** Format: uuid */
+            contextId: string;
+            messages: components["schemas"]["ChatMessageDTO"][];
+        };
         SetDayStatusRequest: {
             status: string;
+        };
+        StartReflectionRequest: {
+            /** Format: int32 */
+            periodDays: number | string;
+        };
+        StartReflectionResponse: {
+            /** Format: uuid */
+            contextId: string;
+            contextSummary: string;
+            message: string;
         };
         TaskDTO: {
             /** Format: uuid */

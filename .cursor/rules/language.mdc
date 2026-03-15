@@ -1,0 +1,28 @@
+---
+description: Language policy — plans and responses in Russian, code and comments in English
+alwaysApply: true
+---
+
+# Language: plans/responses vs code
+
+## Plans and model responses
+
+- **Plans**, explanations, solution descriptions, and any text in replies to the user — **in Russian**.
+- Questions to the user, hints, and summaries — also in Russian.
+
+## Code and comments in code
+
+- **Source code** (variable, function, and class names; string literals in code) — **in English**.
+- **Comments in code** — in English.
+- Log messages and user-facing strings in the UI (when localization is not required) — may be in English; if the project already uses Russian strings or localization, follow existing practice.
+
+## Examples
+
+**Model response (Russian):**  
+«Добавлю валидацию: проверю длину имени и наличие обязательных полей.»
+
+**In code (English):**
+```ts
+// Validate name length and required fields before submit
+const isValid = name.length >= 2 && requiredFields.every(Boolean);
+```

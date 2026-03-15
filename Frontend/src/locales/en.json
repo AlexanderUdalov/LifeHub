@@ -170,6 +170,7 @@
     "tasksCount": "Tasks ({count})",
     "habitsCount": "Habits ({count})",
     "addictionsCount": "Addictions ({count})",
+    "journalCount": "Notes ({count})",
     "showCompleted": "Show completed ({count})",
     "hideCompleted": "Hide completed"
   },
@@ -201,6 +202,7 @@
   "new-password": "New password",
   "journal": {
     "title": "Journal",
+    "entries": "Journal entries",
     "empty": "No entries yet",
     "emptySubtitle": "Create an entry to start your journal",
     "newNote": "New note",

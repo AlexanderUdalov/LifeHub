@@ -9,7 +9,10 @@ import { useGoalsStore } from '@/stores/goals'
 import { useI18n } from 'vue-i18n'
 import { renderMarkdown } from '@/composables/useMarkdown'
 
-const props = defineProps<{ item: JournalEntryDTO }>()
+const props = withDefaults(
+  defineProps<{ item: JournalEntryDTO; noBorder?: boolean }>(),
+  { noBorder: false }
+)
 
 const emit = defineEmits<{
   (e: 'edit-journal', entry: JournalEntryDTO): void
@@ -20,9 +23,12 @@ const journalStore = useJournalStore()
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.item.lifeAreaId))
-const cardBorderStyle = computed(() =>
-  areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
-)
+const cardBorderStyle = computed(() => {
+  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
+  return areaColor.value
+    ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value }
+    : { borderLeftWidth: 0 }
+})
 
 const lifeArea = computed(() => {
   if (!props.item.lifeAreaId) return null
@@ -73,7 +79,7 @@ async function onConfirmDelete() {
 </script>
 
 <template>
-  <Card class="journal-card" :style="cardBorderStyle">
+  <Card class="journal-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
     <template #content>
       <div class="journal-card__header">
         <div class="journal-card__meta">
@@ -158,6 +164,15 @@ async function onConfirmDelete() {
 
 .journal-card:active {
   transform: scale(0.985);
+}
+
+.journal-card.no-border {
+  box-shadow: none;
+}
+
+.journal-card.no-border :deep(.p-card) {
+  border: none;
+  background: transparent;
 }
 
 :deep(.p-card-body) {

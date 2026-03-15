@@ -8,7 +8,9 @@ import { useGoalsStore } from '@/stores/goals'
 import { useTasksStore } from '@/stores/tasks'
 import { useHabitsStore } from '@/stores/habits'
 import { useAddictionsStore } from '@/stores/addictions'
+import { useJournalStore } from '@/stores/journal'
 import type { GoalDTO } from '@/api/GoalsAPI'
+import type { JournalEntryDTO } from '@/api/JournalAPI'
 import type { TaskDTO } from '@/api/TasksAPI'
 import type { HabitDTO } from '@/api/HabitsAPI'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
@@ -18,19 +20,22 @@ const emit = defineEmits<{
   (e: 'edit-task', task: TaskDTO): void
   (e: 'edit-habit', habit: HabitDTO): void
   (e: 'edit-addiction', addiction: AddictionDTO): void
+  (e: 'edit-journal', entry: JournalEntryDTO): void
 }>()
 
 const goalsStore = useGoalsStore()
 const tasksStore = useTasksStore()
 const habitsStore = useHabitsStore()
 const addictionsStore = useAddictionsStore()
+const journalStore = useJournalStore()
 
 onMounted(async () => {
   await Promise.all([
     goalsStore.fetchGoals(),
     tasksStore.fetchTasks(),
     habitsStore.fetchHabits(56),
-    addictionsStore.fetchAddictions(60)
+    addictionsStore.fetchAddictions(60),
+    journalStore.loadEntries()
   ])
 })
 
@@ -66,6 +71,20 @@ const addictionsByGoalId = computed(() => {
   }
   return grouped
 })
+
+const entriesByGoalId = computed(() => {
+  const grouped: Record<string, JournalEntryDTO[]> = {}
+  for (const entry of journalStore.entries) {
+    if (!entry.goalId) continue
+    let bucket = grouped[entry.goalId]
+    if (!bucket) {
+      bucket = []
+      grouped[entry.goalId] = bucket
+    }
+    bucket.push(entry)
+  }
+  return grouped
+})
 </script>
 
 <template>
@@ -86,9 +105,10 @@ const addictionsByGoalId = computed(() => {
 
     <GoalCard v-else v-for="goal in goalsStore.goalsSorted" :key="goal.id" :goal="goal"
       :tasks="tasksByGoalId[goal.id] ?? []" :habits="habitsByGoalId[goal.id] ?? []"
-      :addictions="addictionsByGoalId[goal.id] ?? []" @edit-goal="emit('edit-goal', $event)"
-      @edit-task="emit('edit-task', $event)" @edit-habit="emit('edit-habit', $event)"
-      @edit-addiction="emit('edit-addiction', $event)" @completion-change="tasksStore.toggleTaskCompletion" />
+      :addictions="addictionsByGoalId[goal.id] ?? []" :journal-entries="entriesByGoalId[goal.id] ?? []"
+      @edit-goal="emit('edit-goal', $event)" @edit-task="emit('edit-task', $event)"
+      @edit-habit="emit('edit-habit', $event)" @edit-addiction="emit('edit-addiction', $event)"
+      @edit-journal="emit('edit-journal', $event)" @completion-change="tasksStore.toggleTaskCompletion" />
   </div>
 </template>
 

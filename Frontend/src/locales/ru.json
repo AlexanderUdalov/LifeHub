@@ -170,6 +170,7 @@
     "tasksCount": "Задачи ({count})",
     "habitsCount": "Привычки ({count})",
     "addictionsCount": "Зависимости ({count})",
+    "journalCount": "Заметки ({count})",
     "showCompleted": "Показать выполненные ({count})",
     "hideCompleted": "Скрыть выполненные"
   },
@@ -201,6 +202,7 @@
   "new-password": "Новый пароль",
   "journal": {
     "title": "Журнал",
+    "entries": "Записи журнала",
     "empty": "Записей пока нет",
     "emptySubtitle": "Создайте запись, чтобы вести свой дневник",
     "newNote": "Новая запись",

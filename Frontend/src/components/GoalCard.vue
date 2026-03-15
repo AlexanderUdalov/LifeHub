@@ -6,25 +6,32 @@ import Button from 'primevue/button'
 import TaskCard from './TaskCard.vue'
 import HabitCard from './HabitCard.vue'
 import AddictionCard from './AddictionCard.vue'
+import JournalCard from './JournalCard.vue'
 import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
 import type { AddictionDTO, AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import type { TaskDTO } from '@/api/TasksAPI'
+import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useI18n } from 'vue-i18n'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 
-const props = defineProps<{
-  goal: GoalDTO
-  tasks: TaskDTO[]
-  habits: HabitWithHistoryDTO[]
-  addictions: AddictionWithResetsDTO[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    goal: GoalDTO
+    tasks: TaskDTO[]
+    habits: HabitWithHistoryDTO[]
+    addictions: AddictionWithResetsDTO[]
+    journalEntries?: JournalEntryDTO[]
+  }>(),
+  { journalEntries: () => [] }
+)
 
 const emit = defineEmits<{
   (e: 'edit-goal', goal: GoalDTO): void
   (e: 'edit-task', task: TaskDTO): void
   (e: 'edit-habit', habit: HabitDTO): void
   (e: 'edit-addiction', addiction: AddictionDTO): void
+  (e: 'edit-journal', entry: JournalEntryDTO): void
   (e: 'completion-change', taskId: string, value: boolean): void
 }>()
 
@@ -60,10 +67,20 @@ const isSoon = computed(() => {
 })
 
 const hasEntities = computed(
-  () => props.tasks.length > 0 || props.habits.length > 0 || props.addictions.length > 0
+  () =>
+    props.tasks.length > 0 ||
+    props.habits.length > 0 ||
+    props.addictions.length > 0 ||
+    (props.journalEntries?.length ?? 0) > 0
 )
 
 const activeTasks = computed(() => props.tasks.filter(t => !t.completionDate))
+
+const journalEntriesSorted = computed(() =>
+  [...(props.journalEntries ?? [])].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+)
 const completedTasks = computed(() =>
   props.tasks.filter(t => t.completionDate).sort(
     (a, b) => new Date(b.completionDate!).getTime() - new Date(a.completionDate!).getTime()
@@ -104,6 +121,7 @@ function toggle() {
         <span>{{ t('goals.tasksCount', { count: tasks.length }) }}</span>
         <span>{{ t('goals.habitsCount', { count: habits.length }) }}</span>
         <span>{{ t('goals.addictionsCount', { count: addictions.length }) }}</span>
+        <span>{{ t('goals.journalCount', { count: journalEntriesSorted.length }) }}</span>
       </div>
 
       <div v-if="expanded" class="goal-expanded">
@@ -134,6 +152,12 @@ function toggle() {
           <h4>{{ t('addictions.addictions') }}</h4>
           <AddictionCard v-for="addiction in addictions" :key="addiction.addiction.id" :addiction="addiction" no-border
             @edit="emit('edit-addiction', $event)" />
+        </div>
+
+        <div v-if="journalEntriesSorted.length">
+          <h4>{{ t('journal.entries') }}</h4>
+          <JournalCard v-for="entry in journalEntriesSorted" :key="entry.id" :item="entry" no-border
+            @edit-journal="emit('edit-journal', $event)" />
         </div>
       </div>
     </template>

@@ -17,14 +17,14 @@ public class JournalController(ApplicationContext context) : ControllerBase
     public async Task<ActionResult<IEnumerable<JournalEntryDTO>>> GetAll()
     {
         var userId = User.GetUserId();
-
-        var items = await context.JournalEntries
+        // SQLite does not support DateTimeOffset in Select/OrderBy; load entities then project and sort in memory
+        var entries = await context.JournalEntries
             .AsNoTracking()
             .Where(e => e.UserId == userId)
-            .Select(e => e.ToDTO())
             .ToListAsync();
 
-        return items
+        return entries
+            .Select(e => e.ToDTO())
             .OrderByDescending(e => e.IsPinned)
             .ThenByDescending(e => e.PinnedAt ?? e.CreatedAt)
             .ThenByDescending(e => e.CreatedAt)

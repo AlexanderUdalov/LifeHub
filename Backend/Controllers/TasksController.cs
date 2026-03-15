@@ -20,13 +20,16 @@ public class TasksController(ApplicationContext context) : ControllerBase
     public async Task<ActionResult<IEnumerable<TaskDTO>>> GetAll()
     {
         var userId = User.GetUserId();
+        // SQLite does not support DateTimeOffset in WHERE; filter in memory
         var tasks = await context.Tasks
             .AsNoTracking()
-            .Where(t => t.UserId == userId && t.CompletionDate == null)
-            .Select(t => t.ToDTO())
+            .Where(t => t.UserId == userId)
             .ToListAsync();
 
-        return tasks.ToList();
+        return tasks
+            .Where(t => t.CompletionDate == null)
+            .Select(t => t.ToDTO())
+            .ToList();
     }
 
     /// <summary>
@@ -42,17 +45,23 @@ public class TasksController(ApplicationContext context) : ControllerBase
         offset = Math.Max(0, offset);
 
         var userId = User.GetUserId();
-        var query = context.Tasks
+        // SQLite does not support DateTimeOffset in WHERE/ORDER BY; load and sort in memory
+        var all = await context.Tasks
             .AsNoTracking()
-            .Where(t => t.UserId == userId && t.CompletionDate != null)
-            .OrderByDescending(t => t.CompletionDate);
+            .Where(t => t.UserId == userId)
+            .ToListAsync();
 
-        var total = await query.CountAsync();
-        var items = await query
+        var completed = all
+            .Where(t => t.CompletionDate != null)
+            .OrderByDescending(t => t.CompletionDate)
+            .ToList();
+
+        var total = completed.Count;
+        var items = completed
             .Skip(offset)
             .Take(limit)
             .Select(t => t.ToDTO())
-            .ToListAsync();
+            .ToList();
 
         return new CompletedTasksPageResponse(items, total);
     }

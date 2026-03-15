@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineOptions({ name: 'TasksView' })
-import { onMounted, computed, ref } from 'vue'
+import { onMounted, onUnmounted, computed, ref, watch } from 'vue'
 
 import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
@@ -9,7 +9,6 @@ import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
 import DatePicker from 'primevue/datepicker'
 import Skeleton from 'primevue/skeleton'
-import VirtualScroller from 'primevue/virtualscroller'
 import EmptyState from '@/components/EmptyState.vue'
 import TaskCard from '@/components/TaskCard.vue'
 import { type TaskDTO } from '@/api/TasksAPI'
@@ -53,11 +52,60 @@ const taskSections = computed(() => [
 
 const hasAnyTasks = computed(() => tasksStore.tasks.length > 0 || tasksStore.completedTotal > 0)
 
-const COMPLETED_ITEM_SIZE = 72
+const COMPLETED_PAGE_SIZE = 20
 
-function onLazyLoadCompleted(event: { first: number; last: number }) {
-  tasksStore.fetchMoreCompletedTasks(event.first, event.last)
+/** Loaded completed tasks in order (up to first undefined slot). */
+const completedLoadedList = computed(() => {
+  const list = tasksStore.completedTasks
+  const i = list.findIndex(t => t === undefined)
+  return i < 0 ? (list as TaskDTO[]) : list.slice(0, i) as TaskDTO[]
+})
+
+const firstUnloadedCompletedIndex = computed(() => {
+  const i = tasksStore.completedTasks.findIndex(t => t === undefined)
+  return i < 0 ? tasksStore.completedTotal : i
+})
+
+const hasMoreCompleted = computed(
+  () => tasksStore.completedTotal > 0 && firstUnloadedCompletedIndex.value < tasksStore.completedTotal
+)
+
+const loadMoreCompletedSentinel = ref<HTMLElement | null>(null)
+
+function loadMoreCompleted() {
+  if (tasksStore.isLoadingMoreCompleted || !hasMoreCompleted.value) return
+  const first = firstUnloadedCompletedIndex.value
+  const last = Math.min(first + COMPLETED_PAGE_SIZE - 1, tasksStore.completedTotal - 1)
+  if (first > last) return
+  tasksStore.fetchMoreCompletedTasks(first, last)
 }
+
+let loadMoreObserver: IntersectionObserver | null = null
+
+onMounted(() => {
+  loadMoreObserver = new IntersectionObserver(
+    (entries) => {
+      if (!entries[0]?.isIntersecting) return
+      loadMoreCompleted()
+    },
+    { root: null, rootMargin: '100px', threshold: 0 }
+  )
+  watch(
+    loadMoreCompletedSentinel,
+    (el, prev) => {
+      if (prev && loadMoreObserver) loadMoreObserver.unobserve(prev)
+      if (el && loadMoreObserver) loadMoreObserver.observe(el)
+    },
+    { immediate: true }
+  )
+})
+
+onUnmounted(() => {
+  if (loadMoreObserver && loadMoreCompletedSentinel.value) {
+    loadMoreObserver.unobserve(loadMoreCompletedSentinel.value)
+  }
+  loadMoreObserver?.disconnect()
+})
 
 function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
@@ -222,19 +270,19 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
           <AccordionContent>
             <template v-if="section.isCompleted">
-              <VirtualScroller :items="tasksStore.completedTasks" :item-size="COMPLETED_ITEM_SIZE" :step="20" lazy
-                show-loader :loading="tasksStore.isLoadingMoreCompleted" class="completed-virtual-scroller"
-                @lazy-load="onLazyLoadCompleted">
-                <template #item="{ item }">
-                  <div v-if="item" class="task-card-wrapper">
-                    <TaskCard class="task-card" :task="item" @completion-change="tasksStore.toggleTaskCompletion"
+              <div class="completed-list">
+                <TransitionGroup name="task-list">
+                  <div v-for="task in completedLoadedList" :key="task.id" class="task-card-wrapper">
+                    <TaskCard class="task-card" :task="task" @completion-change="tasksStore.toggleTaskCompletion"
                       @edit="onEditTask" />
                   </div>
-                  <div v-else class="task-card-wrapper completed-placeholder">
+                  <div v-if="tasksStore.isLoadingMoreCompleted" class="task-card-wrapper completed-loading">
                     <Skeleton height="3rem" class="skeleton-row" />
                   </div>
-                </template>
-              </VirtualScroller>
+                  <div v-show="hasMoreCompleted && !tasksStore.isLoadingMoreCompleted" ref="loadMoreCompletedSentinel"
+                    class="completed-load-more-sentinel" aria-hidden="true" />
+                </TransitionGroup>
+              </div>
             </template>
             <TransitionGroup v-else name="task-list">
               <template v-if="section.draggable">
@@ -273,19 +321,19 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
           <AccordionContent>
             <template v-if="section.isCompleted">
-              <VirtualScroller :items="tasksStore.completedTasks" :item-size="COMPLETED_ITEM_SIZE" :step="20" lazy
-                show-loader :loading="tasksStore.isLoadingMoreCompleted" class="completed-virtual-scroller"
-                @lazy-load="onLazyLoadCompleted">
-                <template #item="{ item }">
-                  <div v-if="item" class="task-card-wrapper">
-                    <TaskCard class="task-card" :task="item" :compact="true" :hide-goal="true"
+              <div class="completed-list">
+                <TransitionGroup name="task-list">
+                  <div v-for="task in completedLoadedList" :key="task.id" class="task-card-wrapper">
+                    <TaskCard class="task-card" :task="task" :compact="true" :hide-goal="true"
                       @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask" />
                   </div>
-                  <div v-else class="task-card-wrapper completed-placeholder">
+                  <div v-if="tasksStore.isLoadingMoreCompleted" class="task-card-wrapper completed-loading">
                     <Skeleton height="2.5rem" class="skeleton-row" />
                   </div>
-                </template>
-              </VirtualScroller>
+                  <div v-show="hasMoreCompleted && !tasksStore.isLoadingMoreCompleted" ref="loadMoreCompletedSentinel"
+                    class="completed-load-more-sentinel" aria-hidden="true" />
+                </TransitionGroup>
+              </div>
             </template>
             <TransitionGroup v-else name="task-list">
               <template v-if="section.draggable">
@@ -405,17 +453,22 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   min-height: 4px;
 }
 
-.completed-virtual-scroller {
-  width: 100%;
-  max-height: 60vh;
+.completed-list {
+  display: flex;
+  flex-direction: column;
 }
 
-.task-card-wrapper {
+.completed-list .task-card-wrapper {
   padding: 0 0.5rem;
 }
 
-.task-card-wrapper.completed-placeholder {
+.completed-list .task-card-wrapper.completed-loading {
   padding: 0.25rem 0.5rem;
+}
+
+.completed-load-more-sentinel {
+  min-height: 1px;
+  width: 100%;
 }
 
 .task-list-move {

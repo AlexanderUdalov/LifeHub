@@ -14,7 +14,8 @@ import TaskCard from '@/components/TaskCard.vue'
 import { type TaskDTO } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 import { useTasksStore } from '@/stores/tasks'
-import { getStoredTaskViewMode, type TaskViewMode } from '@/utils/taskViewMode'
+import { getStoredTaskViewMode, setStoredTaskViewMode, type TaskViewMode } from '@/utils/taskViewMode'
+import SelectButton from 'primevue/selectbutton'
 import { isToday, isSameDateOnly, startOfDay, toDateOnlyString } from '@/utils/dateOnly'
 
 const { t } = useI18n()
@@ -29,6 +30,17 @@ onMounted(() => {
 })
 
 const taskViewMode = ref<TaskViewMode>(getStoredTaskViewMode() ?? 'standard')
+
+const taskViewModeOptions = computed(() => [
+  { label: t('profile-view.task-list-view-standard'), value: 'standard' as TaskViewMode, icon: 'pi pi-bars' },
+  { label: t('profile-view.task-list-view-compact'), value: 'compact' as TaskViewMode, icon: 'pi pi-align-justify' },
+  { label: t('profile-view.task-list-view-calendar'), value: 'calendar' as TaskViewMode, icon: 'pi pi-calendar' },
+])
+
+function onTaskViewModeChange(mode: TaskViewMode) {
+  setStoredTaskViewMode(mode)
+  taskViewMode.value = mode
+}
 
 const taskSections = computed(() => [
   { key: 'overdue', title: t('tasks.list.overdue'), tasks: tasksStore.overdueTasks, draggable: false },
@@ -173,7 +185,15 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
 <template>
   <div class="tasks-view-root">
-    <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
+    <header class="tasks-view-header">
+      <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
+      <SelectButton v-model="taskViewMode" :options="taskViewModeOptions" option-label="label" option-value="value"
+        :aria-label="$t('profile-view.task-list-view')" @change="onTaskViewModeChange(taskViewMode)">
+        <template #option="slotProps">
+          <i :class="slotProps.option.icon" :aria-hidden="true" />
+        </template>
+      </SelectButton>
+    </header>
 
     <div v-if="tasksStore.isLoading && tasksStore.tasks.length === 0" class="tasks-skeleton">
       <Skeleton v-for="i in 4" :key="i" height="3.5rem" class="skeleton-row" />
@@ -297,6 +317,14 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   border-radius: var(--p-border-radius);
 }
 
+.tasks-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .view-page-header {
   font-size: var(--p-card-title-font-size);
   font-weight: 600;
@@ -382,7 +410,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 .calendar-day.has-tasks::after {
   content: '';
   position: absolute;
-  bottom: 6px;
+  bottom: 0px;
   left: 50%;
   transform: translateX(-50%);
   width: 6px;

@@ -65,7 +65,6 @@ const submitUserData = async () => {
 }
 
 import { applyTheme, getStoredTheme, setStoredTheme, getStoredPrimaryColor, getStoredSurfaceColor, applyPrimaryColor, applySurfaceColor, type ThemeMode } from '@/utils/theme'
-import { getStoredTaskViewMode, setStoredTaskViewMode, type TaskViewMode } from '@/utils/taskViewMode'
 
 const DEFAULT_PRIMARY_HEX = '#10b981'
 const DEFAULT_SURFACE_HEX = '#71717a'
@@ -104,29 +103,6 @@ const themeOptions = [
 function onThemeChange(mode: ThemeMode) {
     setStoredTheme(mode)
     applyTheme(mode)
-}
-
-const taskViewMode = ref<TaskViewMode>(getStoredTaskViewMode() ?? 'standard')
-const taskViewModeOptions = computed(() => [
-    {
-        label: t('profile-view.task-list-view-standard'),
-        value: 'standard' as TaskViewMode,
-        icon: 'pi pi-bars'
-    },
-    {
-        label: t('profile-view.task-list-view-compact'),
-        value: 'compact' as TaskViewMode,
-        icon: 'pi pi-align-justify'
-    },
-    {
-        label: t('profile-view.task-list-view-calendar'),
-        value: 'calendar' as TaskViewMode,
-        icon: 'pi pi-calendar'
-    }
-])
-
-function onTaskViewModeChange(mode: TaskViewMode) {
-    setStoredTaskViewMode(mode)
 }
 
 const primaryColor = ref<string>(getStoredPrimaryColor() ?? DEFAULT_PRIMARY_HEX)
@@ -224,8 +200,6 @@ onMounted(async () => {
     primaryColor.value = getStoredPrimaryColor() ?? DEFAULT_PRIMARY_HEX
     surfaceColor.value = getStoredSurfaceColor() ?? DEFAULT_SURFACE_HEX
 
-    const savedTaskViewMode = getStoredTaskViewMode()
-    if (savedTaskViewMode) taskViewMode.value = savedTaskViewMode
 })
 </script>
 
@@ -261,18 +235,6 @@ onMounted(async () => {
                     </div>
                     <SelectButton v-model="theme" :options="themeOptions" optionLabel="label" optionValue="value"
                         @change="onThemeChange(theme)" />
-                </div>
-
-                <div class="selector">
-                    <div class="selector-label">
-                        <label>{{ $t('profile-view.task-list-view') }}</label>
-                    </div>
-                    <SelectButton v-model="taskViewMode" :options="taskViewModeOptions" optionLabel="label"
-                        optionValue="value" @change="onTaskViewModeChange(taskViewMode)">
-                        <template #option="slotProps">
-                            <i :class="slotProps.option.icon" :aria-label="slotProps.option.label"></i>
-                        </template>
-                    </SelectButton>
                 </div>
 
                 <div class="selector color-selector">

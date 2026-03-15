@@ -29,7 +29,7 @@ onMounted(async () => {
   await Promise.all([
     goalsStore.fetchGoals(),
     tasksStore.fetchTasks(),
-    habitsStore.fetchHabits(14),
+    habitsStore.fetchHabits(56),
     addictionsStore.fetchAddictions(60)
   ])
 })

@@ -94,6 +94,12 @@
     "empty": "No habits yet",
     "emptySubtitle": "Add a habit to track your daily progress",
     "currentStreakLabel": "Current streak: {count}",
+    "weeklyRow": {
+      "thisWeek": "This week",
+      "weekOfTooltip": "Week of {date}: {count}/{goal}",
+      "weeksAgo": "{count}w ago",
+      "lastWeek": "last week"
+    },
     "editdialog": {
       "newHabit": "New habit",
       "color": "Color",

@@ -1,6 +1,83 @@
-import { getWeekKey } from './dateOnly'
+import { fromDateOnlyString, getWeekKey, getWeekStart, startOfDay } from './dateOnly'
 
 export type HabitCompletion = 'none' | 'skip' | 'full'
+
+export interface WeekSummary {
+  weekKey: string
+  monday: Date
+  count: number
+  goal: number
+  goalMet: boolean
+}
+
+/**
+ * Build per-week completion summary for *past* weeks only (excludes current week).
+ * Returns weeks from oldest to newest (index 0 = 8w ago, last = 1w ago), for "8w ago … last week" strip.
+ * goal must be 1–7.
+ */
+export function getWeekSummaries(
+  history: Array<{ date: string; status?: string | null }>,
+  goal: number,
+  numberOfWeeks = 8,
+): WeekSummary[] {
+  if (goal < 1 || goal > 7) return []
+
+  const fullCountByWeek = new Map<string, number>()
+  for (const h of history) {
+    if (h.status?.toLowerCase() !== 'full') continue
+    const weekKey = getWeekKey(fromDateOnlyString(h.date))
+    fullCountByWeek.set(weekKey, (fullCountByWeek.get(weekKey) ?? 0) + 1)
+  }
+
+  const today = startOfDay(new Date())
+  const summaries: WeekSummary[] = []
+
+  for (let i = numberOfWeeks; i >= 1; i--) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - 7 * i)
+    const weekKey = getWeekKey(d)
+    const monday = getWeekStart(d)
+    const count = fullCountByWeek.get(weekKey) ?? 0
+    const goalMet = count >= goal
+    summaries.push({ weekKey, monday, count, goal, goalMet })
+  }
+
+  return summaries
+}
+
+/**
+ * Current streak in weeks for "N times per week" habits.
+ * Counts consecutive weeks (current week first, then past) where each has >= goal full completions.
+ * Shown until reset (e.g. Monday); does not require today to be marked.
+ * goal must be 1–7.
+ */
+export function getCurrentWeeksStreak(
+  history: Array<{ date: string; status?: string | null }>,
+  goal: number,
+): number {
+  if (goal < 1 || goal > 7) return 0
+
+  const fullCountByWeek = new Map<string, number>()
+  for (const h of history) {
+    if (h.status?.toLowerCase() !== 'full') continue
+    const weekKey = getWeekKey(fromDateOnlyString(h.date))
+    fullCountByWeek.set(weekKey, (fullCountByWeek.get(weekKey) ?? 0) + 1)
+  }
+
+  const today = startOfDay(new Date())
+  let streak = 0
+
+  for (let i = 0; i < 52; i++) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - 7 * i)
+    const weekKey = getWeekKey(d)
+    const count = fullCountByWeek.get(weekKey) ?? 0
+    if (count >= goal) streak++
+    else break
+  }
+
+  return streak
+}
 
 /**
  * Streak for "N times per week" habits (no fixed weekdays).

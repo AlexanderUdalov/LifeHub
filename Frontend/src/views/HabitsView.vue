@@ -14,7 +14,7 @@ const emit = defineEmits<{
 }>()
 
 onMounted(async () => {
-    await habitsStore.fetchHabits(14)
+    await habitsStore.fetchHabits(56)
 })
 </script>
 

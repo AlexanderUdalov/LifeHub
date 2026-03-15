@@ -94,6 +94,12 @@
     "empty": "Привычек пока нет",
     "emptySubtitle": "Добавьте привычку и отслеживайте свой прогресс",
     "currentStreakLabel": "Текущий серия: {count}",
+    "weeklyRow": {
+      "thisWeek": "На этой неделе",
+      "weekOfTooltip": "Неделя с {date}: {count}/{goal}",
+      "weeksAgo": "{count} нед. назад",
+      "lastWeek": "прошлая неделя"
+    },
     "editdialog": {
       "newHabit": "Новая привычка",
       "color": "Цвет",

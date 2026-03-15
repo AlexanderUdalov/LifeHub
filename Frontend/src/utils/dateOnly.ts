@@ -52,6 +52,23 @@ export function getWeekKey(date: Date): string {
   return toDateOnlyString(d)
 }
 
+/** Monday 00:00 of the ISO week containing the given date. */
+export function getWeekStart(date: Date): Date {
+  return fromDateOnlyString(getWeekKey(date))
+}
+
+/** Array of 7 dates (Mon–Sun) for the ISO week containing the given date. */
+export function getWeekDays(date: Date): Date[] {
+  const monday = getWeekStart(date)
+  const result: Date[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    result.push(d)
+  }
+  return result
+}
+
 /**
  * Elapsed time since a reference moment. Pass startOfDay(date) for "time since that calendar day", or exact Date for "time since that moment".
  */

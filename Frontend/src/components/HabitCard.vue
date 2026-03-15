@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import Card from 'primevue/card'
 import HabitDayRow from './HabitDayRow.vue'
+import HabitWeeklyRow from './HabitWeeklyRow.vue'
 import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
+import { getCurrentWeeksStreak } from '@/utils/habitStreak'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -20,13 +22,24 @@ const cardBorderStyle = computed(() => {
   return areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
 })
 const goalTitle = computed(() => goalsStore.getGoalById(props.habit.habit.goalId)?.title ?? null)
-const streakValue = computed(() => {
-  const raw = props.habit.currentStreak
-  const n = typeof raw === 'number' ? raw : Number(raw ?? 0)
-  if (!Number.isFinite(n) || n <= 0) return null
-  return n
+const isWeeklyMode = computed(() => {
+  const g = props.habit.habit.timesPerWeekGoal
+  const n = typeof g === 'number' ? g : Number(g)
+  return Number.isFinite(n) && n >= 1 && n <= 7
 })
-const streakText = computed(() => {
+
+const goalNum = computed(() => {
+  const g = props.habit.habit.timesPerWeekGoal
+  const n = typeof g === 'number' ? g : Number(g)
+  return Number.isFinite(n) && n >= 1 && n <= 7 ? n : 0
+})
+
+/** For weekly habits: streak in weeks (computed from history, shown until Monday reset). Otherwise backend value. */
+const streakValue = computed(() => {
+  if (isWeeklyMode.value && goalNum.value > 0) {
+    const weeks = getCurrentWeeksStreak(props.habit.history, goalNum.value)
+    return weeks > 0 ? weeks : null
+  }
   const raw = props.habit.currentStreak
   const n = typeof raw === 'number' ? raw : Number(raw ?? 0)
   if (!Number.isFinite(n) || n <= 0) return null
@@ -41,12 +54,14 @@ const emit = defineEmits<{
 <template>
     <Card class="habit-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
         <template #title>
-            <div class="habit-title-row">
+            <div class="habit-title-block">
                 <div class="habit-title" @click="emit('edit', habit.habit)">
                     {{ habit.habit.title }}
                 </div>
-                <div v-if="streakValue" class="habit-streak-chip">
-                    {{ t('habits.currentStreakLabel', { count: streakValue }) }}
+                <div v-if="streakValue" class="habit-streak-row">
+                    <span class="habit-streak-chip">
+                        {{ t('habits.currentStreakLabel', { count: streakValue }) }}
+                    </span>
                 </div>
             </div>
         </template>
@@ -55,7 +70,8 @@ const emit = defineEmits<{
             <div v-if="goalTitle" class="goal-text">
                 {{ goalTitle }}
             </div>
-            <HabitDayRow :habit="habit" />
+            <HabitWeeklyRow v-if="isWeeklyMode" :habit="habit" />
+            <HabitDayRow v-else :habit="habit" />
         </template>
     </Card>
 </template>
@@ -77,16 +93,20 @@ const emit = defineEmits<{
   box-shadow: none;
 }
 
-.habit-title-row {
+.habit-title-block {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .habit-title {
-    cursor: pointer;
-    user-select: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.habit-streak-row {
+  display: flex;
+  align-items: center;
 }
 
 .habit-streak-chip {

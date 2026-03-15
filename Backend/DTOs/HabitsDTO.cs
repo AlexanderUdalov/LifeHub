@@ -133,6 +133,10 @@ public static class HabitStreakCalculator
         return dict;
     }
 
+    /// <summary>
+    /// Finds the index of the most recent day with Full status (going backwards from startIndex).
+    /// Does not stop at None: streak is shown until Monday resets it, so we anchor at the last Full day.
+    /// </summary>
     private static int FindLastFullIndex(
         IReadOnlyList<DateOnly> days,
         int startIndex,
@@ -140,16 +144,9 @@ public static class HabitStreakCalculator
     {
         for (var i = startIndex; i >= 0; i--)
         {
-            var status = getStatus(days[i]);
-            if (status == HabitDayStatus.Full)
+            if (getStatus(days[i]) == HabitDayStatus.Full)
             {
                 return i;
-            }
-
-            if (status == HabitDayStatus.None)
-            {
-                // Streak cannot pass through a "none" day
-                break;
             }
         }
 

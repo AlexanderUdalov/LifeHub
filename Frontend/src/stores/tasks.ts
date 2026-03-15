@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { rrulestr } from 'rrule'
-import { createTask, deleteTask, getTasks, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
+import { createTask, deleteTask, getTasks, getCompletedTasks, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { isToday } from '@/utils/dateOnly'
+
+const COMPLETED_PAGE_SIZE = 20
 
 function getNextRecurrenceDate(ruleStr: string | null | undefined, afterDate: Date, dtstart?: Date): Date | null {
     const str = ruleStr?.trim()
@@ -18,15 +20,49 @@ function getNextRecurrenceDate(ruleStr: string | null | undefined, afterDate: Da
 }
 
 export const useTasksStore = defineStore('tasks', () => {
+    /** Active (non-completed) tasks only. */
     const tasks = ref<TaskDTO[]>([])
+    /** Completed tasks: loaded slots have TaskDTO, unloaded slots are undefined (length = completedTotal for virtual scroll). */
+    const completedTasks = ref<(TaskDTO | undefined)[]>([])
+    const completedTotal = ref(0)
     const isLoading = ref(false)
+    const isLoadingMoreCompleted = ref(false)
 
     async function fetchTasks() {
         isLoading.value = true
         try {
-            tasks.value = await getTasks()
+            const [active, completedPage] = await Promise.all([
+                getTasks(),
+                getCompletedTasks(COMPLETED_PAGE_SIZE, 0)
+            ])
+            tasks.value = active
+            completedTotal.value = completedPage.total
+            completedTasks.value = [
+                ...completedPage.items,
+                ...Array(Math.max(0, completedPage.total - completedPage.items.length)).fill(undefined)
+            ]
         } finally {
             isLoading.value = false
+        }
+    }
+
+    /** Load more completed tasks for the range [first, last] (inclusive). Called by VirtualScroller lazy-load. */
+    async function fetchMoreCompletedTasks(first: number, last: number) {
+        const count = last - first + 1
+        if (count <= 0) return
+        const current = completedTasks.value
+        const needLoad = current.slice(first, last + 1).some(t => t === undefined)
+        if (!needLoad) return
+        isLoadingMoreCompleted.value = true
+        try {
+            const page = await getCompletedTasks(count, first)
+            const next: (TaskDTO | undefined)[] = [...current]
+            for (let i = 0; i < page.items.length; i++) {
+                next[first + i] = page.items[i]
+            }
+            completedTasks.value = next
+        } finally {
+            isLoadingMoreCompleted.value = false
         }
     }
 
@@ -36,7 +72,11 @@ export const useTasksStore = defineStore('tasks', () => {
     }
 
     async function editTask(taskId: string, request: UpdateTaskRequest) {
-        const existing = tasks.value.find(t => t.id === taskId)
+        let existing: TaskDTO | undefined = tasks.value.find(t => t.id === taskId)
+        if (!existing) {
+            const idx = completedTasks.value.findIndex(t => t?.id === taskId)
+            existing = idx !== -1 ? completedTasks.value[idx] : undefined
+        }
         if (!existing) return
 
         const backup = { ...existing }
@@ -52,17 +92,30 @@ export const useTasksStore = defineStore('tasks', () => {
     }
 
     async function removeTask(taskId: string) {
-        const index = tasks.value.findIndex(t => t.id === taskId)
-        if (index === -1) return
-
-        const backup = tasks.value[index]
-        tasks.value.splice(index, 1)
-
+        let index = tasks.value.findIndex(t => t.id === taskId)
+        if (index !== -1) {
+            const backup = tasks.value[index]
+            tasks.value.splice(index, 1)
+            try {
+                await deleteTask(taskId)
+            } catch (e) {
+                if (backup) tasks.value.push(backup)
+                throw e
+            }
+            return
+        }
+        const completedIdx = completedTasks.value.findIndex(t => t?.id === taskId)
+        if (completedIdx === -1) return
+        const backup = completedTasks.value[completedIdx]
+        completedTasks.value = completedTasks.value.slice(0, completedIdx).concat(completedTasks.value.slice(completedIdx + 1))
+        completedTotal.value = Math.max(0, completedTotal.value - 1)
         try {
             await deleteTask(taskId)
         } catch (e) {
-            if (backup)
-                tasks.value.push(backup)
+            const next = [...completedTasks.value]
+            next.splice(completedIdx, 0, backup)
+            completedTasks.value = next
+            completedTotal.value = completedTotal.value + 1
             throw e
         }
     }
@@ -90,12 +143,12 @@ export const useTasksStore = defineStore('tasks', () => {
             return sortByOrder(a.sortOrder as number, b.sortOrder as number)
         })
     })
-    const completedTasks = computed(() => {
-        const list = tasks.value.filter(t => t.completionDate)
-        return list.sort((a, b) => (new Date(b.completionDate!).getTime()) - (new Date(a.completionDate!).getTime()))
-    })
+    /** Completed tasks for display: defined slots from completedTasks ref (order already by completion date from API). */
+    const completedTasksList = computed(() =>
+        completedTasks.value.filter((t): t is TaskDTO => t !== undefined && t !== null)
+    )
     const inboxTasks = computed(() => {
-        const list = tasks.value.filter(t => !overdueTasks.value.includes(t) && !todayTasks.value.includes(t) && !weekTasks.value.includes(t) && !completedTasks.value.includes(t))
+        const list = tasks.value.filter(t => !overdueTasks.value.includes(t) && !todayTasks.value.includes(t) && !weekTasks.value.includes(t))
         return list.sort((a, b) => sortByOrder(a.sortOrder as number, b.sortOrder as number))
     })
 
@@ -107,11 +160,28 @@ export const useTasksStore = defineStore('tasks', () => {
     }
 
     async function toggleTaskCompletion(taskId: string, completed: boolean) {
-        const task = tasks.value.find(t => t.id === taskId)
+        let task: TaskDTO | undefined = tasks.value.find(t => t.id === taskId)
+        if (!task) {
+            const idx = completedTasks.value.findIndex(t => t?.id === taskId)
+            task = idx !== -1 ? completedTasks.value[idx] : undefined
+        }
         if (!task) return
 
         const previousCompletionDate = task.completionDate
         task.completionDate = completed ? new Date().toISOString() : null
+
+        if (completed) {
+            tasks.value = tasks.value.filter(t => t.id !== taskId)
+            completedTasks.value = [task, ...completedTasks.value]
+            completedTotal.value = completedTotal.value + 1
+        } else {
+            const idx = completedTasks.value.findIndex(t => t?.id === taskId)
+            if (idx !== -1) {
+                completedTasks.value = completedTasks.value.slice(0, idx).concat(completedTasks.value.slice(idx + 1))
+                completedTotal.value = Math.max(0, completedTotal.value - 1)
+                tasks.value.push(task)
+            }
+        }
 
         await delay(400)
 
@@ -144,6 +214,19 @@ export const useTasksStore = defineStore('tasks', () => {
             })
         } catch {
             task.completionDate = previousCompletionDate
+            if (completed) {
+                tasks.value.push(task)
+                const i = completedTasks.value.findIndex(t => t?.id === taskId)
+                if (i !== -1) {
+                    const arr = completedTasks.value.slice(0, i).concat(completedTasks.value.slice(i + 1))
+                    completedTasks.value = arr
+                    completedTotal.value = Math.max(0, completedTotal.value - 1)
+                }
+            } else {
+                tasks.value = tasks.value.filter(t => t.id !== taskId)
+                completedTasks.value = [{ ...task, completionDate: new Date().toISOString() } as TaskDTO, ...completedTasks.value]
+                completedTotal.value = completedTotal.value + 1
+            }
         }
     }
 
@@ -172,8 +255,13 @@ export const useTasksStore = defineStore('tasks', () => {
 
     return {
         tasks,
+        completedTasks,
+        completedTotal,
+        completedTasksList,
         isLoading,
+        isLoadingMoreCompleted,
         fetchTasks,
+        fetchMoreCompletedTasks,
         editTask,
         removeTask,
         createNewTask,
@@ -182,7 +270,6 @@ export const useTasksStore = defineStore('tasks', () => {
         todayTasks,
         overdueTasks,
         weekTasks,
-        inboxTasks,
-        completedTasks
+        inboxTasks
     }
 })

@@ -9,6 +9,7 @@ import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
 import DatePicker from 'primevue/datepicker'
 import Skeleton from 'primevue/skeleton'
+import VirtualScroller from 'primevue/virtualscroller'
 import EmptyState from '@/components/EmptyState.vue'
 import TaskCard from '@/components/TaskCard.vue'
 import { type TaskDTO } from '@/api/TasksAPI'
@@ -47,10 +48,16 @@ const taskSections = computed(() => [
   { key: 'today', title: t('tasks.list.today'), tasks: tasksStore.todayTasks, draggable: true },
   { key: 'thisweek', title: t('tasks.list.thisweek'), tasks: tasksStore.weekTasks, draggable: true },
   { key: 'inbox', title: t('tasks.list.inbox'), tasks: tasksStore.inboxTasks, draggable: true },
-  { key: 'completed', title: t('tasks.list.completed'), tasks: tasksStore.completedTasks, draggable: false },
+  { key: 'completed', title: t('tasks.list.completed'), tasks: [] as TaskDTO[], draggable: false, isCompleted: true },
 ])
 
-const hasAnyTasks = computed(() => tasksStore.tasks.length > 0)
+const hasAnyTasks = computed(() => tasksStore.tasks.length > 0 || tasksStore.completedTotal > 0)
+
+const COMPLETED_ITEM_SIZE = 72
+
+function onLazyLoadCompleted(event: { first: number; last: number }) {
+  tasksStore.fetchMoreCompletedTasks(event.first, event.last)
+}
 
 function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
@@ -204,16 +211,32 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
     <Accordion v-else-if="taskViewMode === 'standard'" :value="['0']" multiple>
       <template v-for="(section, index) in taskSections" :key="section.key">
-        <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
+        <AccordionPanel v-if="section.tasks.length || (section.isCompleted && tasksStore.completedTotal > 0)"
+          :value="String(index)" class="tasks-list">
           <AccordionHeader>
             <div class="tasks-list-header">
               <span>{{ section.title }}</span>
-              <Badge>{{ section.tasks.length }}</Badge>
+              <Badge>{{ section.isCompleted ? tasksStore.completedTotal : section.tasks.length }}</Badge>
             </div>
           </AccordionHeader>
 
           <AccordionContent>
-            <TransitionGroup name="task-list">
+            <template v-if="section.isCompleted">
+              <VirtualScroller :items="tasksStore.completedTasks" :item-size="COMPLETED_ITEM_SIZE" :step="20" lazy
+                show-loader :loading="tasksStore.isLoadingMoreCompleted" class="completed-virtual-scroller"
+                @lazy-load="onLazyLoadCompleted">
+                <template #item="{ item }">
+                  <div v-if="item" class="task-card-wrapper">
+                    <TaskCard class="task-card" :task="item" @completion-change="tasksStore.toggleTaskCompletion"
+                      @edit="onEditTask" />
+                  </div>
+                  <div v-else class="task-card-wrapper completed-placeholder">
+                    <Skeleton height="3rem" class="skeleton-row" />
+                  </div>
+                </template>
+              </VirtualScroller>
+            </template>
+            <TransitionGroup v-else name="task-list">
               <template v-if="section.draggable">
                 <div data-draggable-list>
                   <div v-for="(task, taskIndex) in section.tasks" :key="task.id" data-task-row>
@@ -239,16 +262,32 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
     <Accordion v-else-if="taskViewMode === 'compact'" :value="['0']" multiple>
       <template v-for="(section, index) in taskSections" :key="section.key">
-        <AccordionPanel v-if="section.tasks.length" :value="String(index)" class="tasks-list">
+        <AccordionPanel v-if="section.tasks.length || (section.isCompleted && tasksStore.completedTotal > 0)"
+          :value="String(index)" class="tasks-list">
           <AccordionHeader>
             <div class="tasks-list-header">
               <span>{{ section.title }}</span>
-              <Badge>{{ section.tasks.length }}</Badge>
+              <Badge>{{ section.isCompleted ? tasksStore.completedTotal : section.tasks.length }}</Badge>
             </div>
           </AccordionHeader>
 
           <AccordionContent>
-            <TransitionGroup name="task-list">
+            <template v-if="section.isCompleted">
+              <VirtualScroller :items="tasksStore.completedTasks" :item-size="COMPLETED_ITEM_SIZE" :step="20" lazy
+                show-loader :loading="tasksStore.isLoadingMoreCompleted" class="completed-virtual-scroller"
+                @lazy-load="onLazyLoadCompleted">
+                <template #item="{ item }">
+                  <div v-if="item" class="task-card-wrapper">
+                    <TaskCard class="task-card" :task="item" :compact="true" :hide-goal="true"
+                      @completion-change="tasksStore.toggleTaskCompletion" @edit="onEditTask" />
+                  </div>
+                  <div v-else class="task-card-wrapper completed-placeholder">
+                    <Skeleton height="2.5rem" class="skeleton-row" />
+                  </div>
+                </template>
+              </VirtualScroller>
+            </template>
+            <TransitionGroup v-else name="task-list">
               <template v-if="section.draggable">
                 <div data-draggable-list>
                   <div v-for="(task, taskIndex) in section.tasks" :key="task.id" data-task-row>
@@ -364,6 +403,19 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 
 .drop-indicator-last {
   min-height: 4px;
+}
+
+.completed-virtual-scroller {
+  width: 100%;
+  max-height: 60vh;
+}
+
+.task-card-wrapper {
+  padding: 0 0.5rem;
+}
+
+.task-card-wrapper.completed-placeholder {
+  padding: 0.25rem 0.5rem;
 }
 
 .task-list-move {

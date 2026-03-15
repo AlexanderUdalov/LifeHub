@@ -72,6 +72,8 @@ Modern self-development tools are fragmented: one app for tasks, another for hab
 
 ### Локальная разработка
 
+Перед первым запуском задайте секреты локально (User Secrets), см. [Backend/SECRETS.md](Backend/SECRETS.md).
+
 Из корня репозитория одной командой можно запустить и бэкенд, и фронтенд:
 
 ```bash

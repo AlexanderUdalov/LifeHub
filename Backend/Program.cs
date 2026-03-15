@@ -11,6 +11,9 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 var dbPath = Path.GetFullPath(
     Path.Combine(AppContext.BaseDirectory, "..", "database", "lifehub.db")
 );

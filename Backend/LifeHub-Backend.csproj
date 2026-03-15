@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>LifeHub_Backend</RootNamespace>
+    <UserSecretsId>LifeHub-Backend-Dev</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.4.0" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
   </ItemGroup>
 
 </Project>

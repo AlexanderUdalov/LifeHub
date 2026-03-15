@@ -67,6 +67,7 @@ jobs:
         key: ${{ secrets.VPS_KEY }}
         script: |
           echo "Jwt__Key=${{ secrets.JWT_KEY }}" > /var/www/lifehub/backend/.env
+          echo "Ai__ApiKey=${{ secrets.AI_API_KEY }}" >> /var/www/lifehub/backend/.env
 
     - name: Restart backend
       uses: appleboy/ssh-action@v1.0.3

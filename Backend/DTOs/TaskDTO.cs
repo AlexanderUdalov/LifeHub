@@ -35,6 +35,11 @@ public record UpdateTaskRequest(
     int? SortOrder
 );
 
+/// <summary>
+/// Paginated list of completed tasks for lazy loading.
+/// </summary>
+public record CompletedTasksPageResponse(IReadOnlyList<TaskDTO> Items, int Total);
+
 public static class TaskMapping
 {
     public static TaskDTO ToDTO(this TaskItem task) =>

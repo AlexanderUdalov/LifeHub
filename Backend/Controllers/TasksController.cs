@@ -12,6 +12,9 @@ namespace LifeHub.Controllers;
 [Route("api/tasks")]
 public class TasksController(ApplicationContext context) : ControllerBase
 {
+    /// <summary>
+    /// Returns only active (non-completed) tasks. Use GET completed for completed tasks with pagination.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<TaskDTO>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<TaskDTO>>> GetAll()
@@ -19,11 +22,39 @@ public class TasksController(ApplicationContext context) : ControllerBase
         var userId = User.GetUserId();
         var tasks = await context.Tasks
             .AsNoTracking()
-            .Where(t => t.UserId == userId)
+            .Where(t => t.UserId == userId && t.CompletionDate == null)
             .Select(t => t.ToDTO())
             .ToListAsync();
 
-        return tasks;
+        return tasks.ToList();
+    }
+
+    /// <summary>
+    /// Returns paginated completed tasks for lazy loading. Sorted by completion date descending.
+    /// </summary>
+    [HttpGet("completed")]
+    [ProducesResponseType(typeof(CompletedTasksPageResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CompletedTasksPageResponse>> GetCompleted(
+        [FromQuery] int limit = 20,
+        [FromQuery] int offset = 0)
+    {
+        limit = Math.Clamp(limit, 1, 100);
+        offset = Math.Max(0, offset);
+
+        var userId = User.GetUserId();
+        var query = context.Tasks
+            .AsNoTracking()
+            .Where(t => t.UserId == userId && t.CompletionDate != null)
+            .OrderByDescending(t => t.CompletionDate);
+
+        var total = await query.CountAsync();
+        var items = await query
+            .Skip(offset)
+            .Take(limit)
+            .Select(t => t.ToDTO())
+            .ToListAsync();
+
+        return new CompletedTasksPageResponse(items, total);
     }
 
     [HttpGet("{id:guid}")]

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { rrulestr } from 'rrule'
 import { createTask, deleteTask, getTasks, getCompletedTasks, updateTask, type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
-import { isToday } from '@/utils/dateOnly'
+import { isToday, startOfDay, startOfUtcDay, toUtcDateOnlyIso } from '@/utils/dateOnly'
 
 const COMPLETED_PAGE_SIZE = 20
 
@@ -11,9 +11,16 @@ function getNextRecurrenceDate(ruleStr: string | null | undefined, afterDate: Da
     if (!str) return null
     try {
         const fullStr = str.toUpperCase().startsWith('RRULE:') ? str : `RRULE:${str}`
-        const rule = rrulestr(fullStr, { dtstart: dtstart ?? afterDate, unfold: true })
-        const next = rule.after(afterDate, false)
-        return next ?? null
+
+        // rrule MONTHLY behaves like it matches BYMONTHDAY in UTC.
+        // To preserve "calendar day" semantics, we build dtstart/after as UTC-midnight
+        // for the chosen local Y/M/D.
+        const afterUtcMidnight = startOfUtcDay(afterDate)
+        const dtstartUtcMidnight = dtstart ? startOfUtcDay(dtstart) : undefined
+
+        const rule = rrulestr(fullStr, { dtstart: dtstartUtcMidnight ?? afterUtcMidnight, unfold: true })
+        const next = rule.after(afterUtcMidnight, false)
+        return next ? startOfUtcDay(next) : null
     } catch {
         return null
     }
@@ -187,14 +194,18 @@ export const useTasksStore = defineStore('tasks', () => {
 
         try {
             if (completed && task.recurrenceRule?.trim()) {
-                const afterDate = new Date()
-                const dtstart = task.dueDate ? new Date(task.dueDate) : undefined
-                const nextDate = getNextRecurrenceDate(task.recurrenceRule, afterDate, dtstart)
+                // Compute the next occurrence after the *scheduled* due date.
+                // Using `new Date()` (moment of clicking) can cause the next task
+                // to land on the next immediate day if the user completes the task
+                // before the scheduled moment.
+                const due = task.dueDate ? new Date(task.dueDate) : undefined
+                const afterDate = due ?? new Date()
+                const nextDate = getNextRecurrenceDate(task.recurrenceRule, afterDate, due)
                 if (nextDate) {
                     await createNewTask({
                         title: task.title,
                         description: task.description,
-                        dueDate: nextDate.toISOString(),
+                        dueDate: toUtcDateOnlyIso(nextDate),
                         recurrenceRule: task.recurrenceRule,
                         goalId: task.goalId,
                         lifeAreaId: task.lifeAreaId

@@ -16,6 +16,7 @@ import DateAndRecurrencePicker from '@/components/DateAndRecurrencePicker.vue'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 import { useApiError } from '@/composables/useApiError'
 import { useTasksStore } from '@/stores/tasks'
+import { startOfDay, toUtcDateOnlyIso } from '@/utils/dateOnly'
 
 const { t, locale } = useI18n()
 
@@ -51,10 +52,10 @@ const localTask = ref<TaskDTO>({
 
 const dueDateAsDate = computed<Date | null>({
   get() {
-    return localTask.value.dueDate ? new Date(localTask.value.dueDate) : null
+    return localTask.value.dueDate ? startOfDay(new Date(localTask.value.dueDate)) : null
   },
   set(value) {
-    localTask.value.dueDate = value?.toISOString() ?? null
+    localTask.value.dueDate = value ? toUtcDateOnlyIso(value) : null
   }
 })
 
@@ -205,7 +206,7 @@ async function onDelete() {
         @click="(e: Event) => dateRecurrencePopover?.toggle(e)" />
       <Popover ref="dateRecurrencePopover" append-to="body">
         <DateAndRecurrencePicker :date="dueDateAsDate" :recurrence-rule="localTask.recurrenceRule"
-          @update:date="(v) => { localTask.dueDate = v?.toISOString() ?? null }"
+          @update:date="(v) => { localTask.dueDate = v ? toUtcDateOnlyIso(v) : null }"
           @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }" @close="dateRecurrencePopover?.hide()" />
       </Popover>
 

@@ -22,6 +22,26 @@ export function parseUtcIso(isoString: string): Date {
   return new Date(s + 'Z')
 }
 
+/**
+ * Encode a local calendar date as an ISO string that is independent of client timezone.
+ * Backend still stores DateTimeOffset, but for "date-only" semantics we always use
+ * UTC midnight for the selected Y/M/D.
+ */
+export function toUtcDateOnlyIso(date: Date): string {
+  const y = date.getFullYear()
+  const m = date.getMonth()
+  const d = date.getDate()
+  return new Date(Date.UTC(y, m, d, 0, 0, 0, 0)).toISOString()
+}
+
+/** Date object for UTC midnight of the given local calendar day. */
+export function startOfUtcDay(date: Date): Date {
+  const y = date.getFullYear()
+  const m = date.getMonth()
+  const d = date.getDate()
+  return new Date(Date.UTC(y, m, d, 0, 0, 0, 0))
+}
+
 export function isSameDateOnly(a: Date, b: Date): boolean {
   return toDateOnlyString(a) === toDateOnlyString(b)
 }

@@ -9,7 +9,7 @@ function diffInDays(from: Date, to: Date) {
 }
 
 export function useDeadlineFormatter() {
-    const { te, t } = useI18n()
+    const { t } = useI18n()
     const { locale } = useI18n()
 
     function getDaysDiffString(target: Date): string {
@@ -32,22 +32,11 @@ export function useDeadlineFormatter() {
         return due.toLocaleDateString(locale.value)
     }
 
-    function getTimeString(date: Date): string | null {
-        const hours = date.getHours()
-        const minutes = date.getMinutes()
-
-        if (hours === 0 && minutes === 0) return null
-
-        return date.toLocaleTimeString(locale.value, {
-            hour: '2-digit',
-            minute: '2-digit',
-        })
-    }
-
     function formatDeadline(date: Date): string {
         const dayText = getDaysDiffString(date)
-        const timeText = getTimeString(date)
-        return timeText ? `${dayText}, ${timeText}` : dayText
+        // For due dates we only show the calendar day (no time-of-day).
+        // Time may exist in the DateTimeOffset, but it causes TZ shifts and confusing UI.
+        return dayText
     }
 
     return {

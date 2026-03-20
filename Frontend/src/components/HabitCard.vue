@@ -3,7 +3,7 @@ import Card from 'primevue/card'
 import HabitDayRow from './HabitDayRow.vue'
 import HabitWeeklyRow from './HabitWeeklyRow.vue'
 import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
-import { getCurrentWeeksStreak } from '@/utils/habitStreak'
+import { getCurrentDayBasedStreakFallback, getCurrentWeeksStreak } from '@/utils/habitStreak'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -42,8 +42,10 @@ const streakValue = computed(() => {
   }
   const raw = props.habit.currentStreak
   const n = typeof raw === 'number' ? raw : Number(raw ?? 0)
-  if (!Number.isFinite(n) || n <= 0) return null
-  return n
+  if (Number.isFinite(n) && n > 0) return n
+
+  const fallback = getCurrentDayBasedStreakFallback(props.habit.history)
+  return fallback > 0 ? fallback : null
 })
 
 const emit = defineEmits<{

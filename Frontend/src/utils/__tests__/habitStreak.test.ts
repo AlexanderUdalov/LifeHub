@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calcTimesPerWeekStreak, calcFixedDaysStreak, type HabitCompletion } from '../habitStreak'
+import { calcTimesPerWeekStreak, calcFixedDaysStreak, getCurrentDayBasedStreakFallback, type HabitCompletion } from '../habitStreak'
 import { getWeekKey } from '../dateOnly'
 
 /** Create a Date for a given YYYY-MM-DD string (local timezone). */
@@ -370,5 +370,35 @@ describe('calcFixedDaysStreak', () => {
     const disabled = days.map(() => false)
 
     expect(calcFixedDaysStreak(days, 2, comp, disabled)).toBe(1)
+  })
+})
+
+describe('getCurrentDayBasedStreakFallback', () => {
+  it('keeps streak from yesterday when today is unmarked', () => {
+    const history = [
+      { date: '2026-03-18', status: 'full' },
+      { date: '2026-03-19', status: 'full' },
+    ]
+
+    expect(getCurrentDayBasedStreakFallback(history, d('2026-03-20'))).toBe(2)
+  })
+
+  it('starts from today when today is full', () => {
+    const history = [
+      { date: '2026-03-19', status: 'full' },
+      { date: '2026-03-20', status: 'full' },
+    ]
+
+    expect(getCurrentDayBasedStreakFallback(history, d('2026-03-20'))).toBe(2)
+  })
+
+  it('treats skip as neutral and keeps counting through it', () => {
+    const history = [
+      { date: '2026-03-17', status: 'full' },
+      { date: '2026-03-18', status: 'skip' },
+      { date: '2026-03-19', status: 'full' },
+    ]
+
+    expect(getCurrentDayBasedStreakFallback(history, d('2026-03-20'))).toBe(2)
   })
 })

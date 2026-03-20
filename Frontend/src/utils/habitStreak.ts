@@ -1,4 +1,4 @@
-import { fromDateOnlyString, getWeekKey, getWeekStart, startOfDay } from './dateOnly'
+import { fromDateOnlyString, getWeekKey, getWeekStart, startOfDay, toDateOnlyString } from './dateOnly'
 
 export type HabitCompletion = 'none' | 'skip' | 'full'
 
@@ -74,6 +74,48 @@ export function getCurrentWeeksStreak(
     const count = fullCountByWeek.get(weekKey) ?? 0
     if (count >= goal) streak++
     else break
+  }
+
+  return streak
+}
+
+/**
+ * Fallback streak for day-based habits when backend currentStreak is 0,
+ * but user hasn't marked today yet.
+ *
+ * Counts consecutive `full` days backwards from today (if full) or yesterday.
+ * `skip` days are ignored and do not break the chain.
+ */
+export function getCurrentDayBasedStreakFallback(
+  history: Array<{ date: string; status?: string | null }>,
+  todayDate: Date = new Date(),
+): number {
+  const byDate = new Map<string, HabitCompletion>()
+  for (const h of history) {
+    const raw = (h.status ?? 'none').toLowerCase()
+    const normalized: HabitCompletion = raw === 'full' || raw === 'skip' || raw === 'none' ? raw : 'none'
+    byDate.set(h.date, normalized)
+  }
+
+  const today = startOfDay(todayDate)
+  const todayStatus = byDate.get(toDateOnlyString(today)) ?? 'none'
+  const cursor = new Date(today)
+  if (todayStatus !== 'full') {
+    cursor.setDate(cursor.getDate() - 1)
+  }
+
+  let streak = 0
+  for (let i = 0; i < 365; i++) {
+    const key = toDateOnlyString(cursor)
+    const status = byDate.get(key) ?? 'none'
+
+    if (status === 'full') {
+      streak++
+    } else if (status === 'none') {
+      break
+    }
+
+    cursor.setDate(cursor.getDate() - 1)
   }
 
   return streak

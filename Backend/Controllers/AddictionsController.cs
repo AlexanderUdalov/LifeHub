@@ -30,6 +30,7 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
 
         var resets = await context.AddictionResets
             .AsNoTracking()
+            .Include(r => r.JournalEntry)
             .Where(r => addictionIds.Contains(r.AddictionId) && r.Date >= startDate && r.Date <= today)
             .OrderBy(r => r.Date).ThenBy(r => r.ResetAt)
             .ToListAsync();
@@ -43,7 +44,16 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
 
         var resetsByAddiction = resets
             .GroupBy(r => r.AddictionId)
-            .ToDictionary(g => g.Key, g => g.OrderBy(r => r.ResetAt).Select(r => r.Date).ToList() as IReadOnlyList<DateOnly>);
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(r => r.ResetAt)
+                    .Select(r => new AddictionResetEntryDTO(
+                        r.Id,
+                        r.Date,
+                        r.ResetAt,
+                        r.JournalEntryId,
+                        r.JournalEntry?.Text))
+                    .ToList() as IReadOnlyList<AddictionResetEntryDTO>);
 
         var result = addictions.Select(a =>
             new AddictionWithResetsDTO(
@@ -95,15 +105,17 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
         context.Addictions.Add(addiction);
         await context.SaveChangesAsync();
 
-        if (request.LastRelapseDate.HasValue)
+        if (request.LastRelapseAt.HasValue)
         {
-            var date = request.LastRelapseDate.Value;
+            var resetAt = ToUtc(request.LastRelapseAt.Value);
+            var date = DateOnly.FromDateTime(resetAt);
             context.AddictionResets.Add(new AddictionReset
             {
                 Id = Guid.NewGuid(),
                 AddictionId = addiction.Id,
                 Date = date,
-                ResetAt = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc)
+                ResetAt = resetAt,
+                JournalEntryId = null
             });
             await context.SaveChangesAsync();
         }
@@ -184,23 +196,63 @@ public class AddictionsController(ApplicationContext context) : ControllerBase
     [HttpPut("{id:guid}/resets/{date}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> SetReset(Guid id, DateOnly date)
+    public async Task<IActionResult> SetReset(Guid id, DateOnly date, [FromBody] SetResetRequest? body)
     {
-        var userId = User.GetUserId();
-        var exists = await context.Addictions.AnyAsync(a => a.Id == id && a.UserId == userId);
-        if (!exists)
+        var addiction = await context.Addictions.FirstOrDefaultAsync(a => a.Id == id && a.UserId == User.GetUserId());
+        if (addiction is null)
             return NotFound();
+
+        DateTime resetAt;
+        DateOnly dateOnly;
+        if (body?.ResetAt is { } clientAt)
+        {
+            resetAt = ToUtc(clientAt);
+            dateOnly = DateOnly.FromDateTime(resetAt);
+        }
+        else
+        {
+            dateOnly = date;
+            resetAt = DateTime.UtcNow;
+        }
+
+        Guid? journalEntryId = null;
+        if (!string.IsNullOrWhiteSpace(body?.Note))
+        {
+            var resetAtOffset = new DateTimeOffset(DateTime.SpecifyKind(resetAt, DateTimeKind.Utc), TimeSpan.Zero);
+            var entry = new JournalEntry
+            {
+                Id = Guid.NewGuid(),
+                UserId = addiction.UserId,
+                Text = body!.Note!.Trim(),
+                CreatedAt = resetAtOffset,
+                IsPinned = false,
+                AddictionId = id,
+                GoalId = addiction.GoalId,
+                LifeAreaId = addiction.LifeAreaId
+            };
+            context.JournalEntries.Add(entry);
+            journalEntryId = entry.Id;
+        }
 
         context.AddictionResets.Add(new AddictionReset
         {
             Id = Guid.NewGuid(),
             AddictionId = id,
-            Date = date,
-            ResetAt = DateTime.UtcNow
+            Date = dateOnly,
+            ResetAt = resetAt,
+            JournalEntryId = journalEntryId
         });
         await context.SaveChangesAsync();
         return Ok();
     }
+
+    private static DateTime ToUtc(DateTime value) =>
+        value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+        };
 
     [HttpDelete("{id:guid}/resets/{date}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

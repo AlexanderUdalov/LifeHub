@@ -26,63 +26,34 @@ export const useAddictionsStore = defineStore('addictions', () => {
     [...addictions.value].sort((a, b) => a.addiction.title.localeCompare(b.addiction.title))
   )
 
-  async function setReset(addictionId: string, date: Date) {
-    const a = addictions.value.find((x) => x.addiction.id === addictionId)
-    if (!a) return
-
-    const dateKey = toDateOnlyString(date)
-    const prev = [...a.resetDates]
-    a.resetDates.push(dateKey)
-    a.resetDates.sort()
-
+  async function setReset(
+    addictionId: string,
+    date: Date,
+    options?: { note?: string; resetAt?: Date }
+  ) {
     try {
-      await addictionsApi.setReset(addictionId, date)
-      if (toDateOnlyString(date) === toDateOnlyString(new Date())) {
-        a.lastResetAt = new Date().toISOString()
-      }
-      // Обновляем список, чтобы currentStreakDays пересчитался на бэке.
+      await addictionsApi.setReset(addictionId, date, {
+        note: options?.note ?? null,
+        resetAt: options?.resetAt ?? null
+      })
       await fetchAddictions(rangeDays.value)
     } catch (e) {
-      a.resetDates = prev
       throw e
     }
   }
 
   async function removeReset(addictionId: string, date: Date) {
-    const a = addictions.value.find((x) => x.addiction.id === addictionId)
-    if (!a) return
-
-    const dateKey = toDateOnlyString(date)
-    const prev = [...a.resetDates]
-    const idx = a.resetDates.lastIndexOf(dateKey)
-    if (idx === -1) return
-
-    a.resetDates.splice(idx, 1)
-
     try {
       await addictionsApi.removeReset(addictionId, date)
-      if (toDateOnlyString(date) === toDateOnlyString(new Date())) {
-        a.lastResetAt = null
-      }
-      // Обновляем список, чтобы currentStreakDays пересчитался на бэке.
       await fetchAddictions(rangeDays.value)
     } catch (e) {
-      a.resetDates = prev
       throw e
     }
   }
 
   async function createAddiction(request: AddictionUpsertRequest) {
-    const created = await addictionsApi.createAddiction(request)
-    const lastRelapse = request.lastRelapseDate ?? null
-    const resetDates = lastRelapse ? [lastRelapse] : []
-    const lastResetAt = lastRelapse ? new Date(lastRelapse + 'T00:00:00Z').toISOString() : null
-    addictions.value.push({
-      addiction: created,
-      resetDates,
-      lastResetAt,
-      currentStreakDays: 0
-    })
+    await addictionsApi.createAddiction(request)
+    await fetchAddictions(rangeDays.value)
   }
 
   async function updateAddiction(id: string, request: AddictionUpsertRequest) {

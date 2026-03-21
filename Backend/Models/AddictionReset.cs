@@ -12,4 +12,7 @@ public class AddictionReset
 
     /// <summary>When the reset was recorded (UTC). Used for "time since last reset" when that day is today.</summary>
     public DateTime ResetAt { get; set; }
+
+    public Guid? JournalEntryId { get; set; }
+    public JournalEntry? JournalEntry { get; set; }
 }

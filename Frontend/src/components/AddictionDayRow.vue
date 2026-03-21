@@ -21,7 +21,7 @@ const createdDate = computed(() => {
 /** Number of resets on this day (multiple resets per day allowed). */
 function resetCountOn(date: Date): number {
   const key = toDateOnlyString(date)
-  return props.addiction.resetDates.filter((d) => d === key).length
+  return (props.addiction.resets ?? []).filter((r) => r.date === key).length
 }
 
 const days = computed(() => {

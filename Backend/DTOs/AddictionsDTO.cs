@@ -11,9 +11,17 @@ public record AddictionDTO(
     Guid? LifeAreaId
 );
 
+public record AddictionResetEntryDTO(
+    Guid Id,
+    DateOnly Date,
+    DateTime ResetAt,
+    Guid? JournalEntryId,
+    string? JournalText
+);
+
 public record AddictionWithResetsDTO(
     AddictionDTO Addiction,
-    IReadOnlyList<DateOnly> ResetDates,
+    IReadOnlyList<AddictionResetEntryDTO> Resets,
     DateTime? LastResetAt,
     int CurrentStreakDays
 );
@@ -23,8 +31,15 @@ public record AddictionUpsertRequest(
     string Color,
     Guid? GoalId,
     Guid? LifeAreaId,
-    /// <summary>Optional. When creating, sets the last relapse date (adds one reset on this date). Ignored on update.</summary>
-    DateOnly? LastRelapseDate
+    /// <summary>Optional. When creating, adds one reset at this moment (UTC). Ignored on update.</summary>
+    DateTime? LastRelapseAt
+);
+
+public record SetResetRequest(
+    /// <summary>Optional. When set, a <see cref="JournalEntry"/> is created and linked to this reset.</summary>
+    string? Note,
+    /// <summary>Optional. When set, used as <see cref="AddictionReset.ResetAt"/>; calendar <see cref="AddictionReset.Date"/> is derived from this instant in UTC.</summary>
+    DateTime? ResetAt
 );
 
 public static class AddictionMapping

@@ -107,6 +107,12 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .HasForeignKey(x => x.AddictionId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<AddictionReset>()
+            .HasOne(x => x.JournalEntry)
+            .WithMany()
+            .HasForeignKey(x => x.JournalEntryId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<Goal>()
             .HasOne(x => x.LifeFocus)
             .WithMany(x => x.Goals)

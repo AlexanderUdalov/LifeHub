@@ -127,13 +127,65 @@
       "color": "Color",
       "lastRelapseDate": "Last relapse date",
       "lastRelapseDatePlaceholder": "Not set",
+      "lastRelapseDateTime": "Last relapse date & time",
+      "lastRelapseDateTimePlaceholder": "Not set",
       "save": "Save",
       "create": "Create",
       "delete": "Delete"
     },
     "calendar": "Calendar",
     "collapse": "Collapse",
-    "reset": "Reset"
+    "reset": "Reset",
+    "trigger": "Trigger",
+    "units": {
+      "mo": "mo",
+      "d": "d",
+      "h": "h",
+      "min": "min",
+      "s": "s"
+    },
+    "milestones": {
+      "1hour": "1 hour",
+      "1day": "1 day",
+      "3days": "3 days",
+      "1week": "1 week",
+      "10days": "10 days",
+      "2weeks": "2 weeks",
+      "1month": "1 month",
+      "2months": "2 months",
+      "3months": "3 months",
+      "6months": "6 months",
+      "1year": "1 year"
+    },
+    "nextMilestone": "→ {milestone}",
+    "maxStage": "Maximum stage reached",
+    "resetDrawer": {
+      "title": "Reset progress",
+      "confirm": "Reset",
+      "date": "Date",
+      "time": "Time",
+      "dateTime": "Date & time",
+      "note": "Journal entry",
+      "notePlaceholder": "What happened? What can you do differently next time?"
+    },
+    "resetInfo": {
+      "title": "Resets: {date}",
+      "count": "Number of resets: {count}",
+      "notesPlaceholder": "Notes will be available later",
+      "noNote": "No note",
+      "empty": "No entries for this day",
+      "addAnother": "Add another reset on this day"
+    },
+    "triggerDrawer": {
+      "title": "Pause. Breathe.",
+      "subtitle": "You're not weak. Urges pass. Stay with it for a few minutes.",
+      "dismiss": "I'm okay now",
+      "slide1": "Breathe slowly for 60 seconds.",
+      "slide2": "This urge will peak and fade.",
+      "slide3": "Do one small physical action: stand up, wash your face.",
+      "slide4": "Remember why you started.",
+      "slide5": "You've come so far. Don't give up."
+    }
   },
   "lifeareas": {
     "title": "Life Areas",

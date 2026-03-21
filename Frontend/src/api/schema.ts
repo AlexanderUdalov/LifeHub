@@ -230,7 +230,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["SetResetRequest"];
+                };
+            };
             responses: {
                 /** @description OK */
                 200: {
@@ -1821,6 +1825,17 @@ export interface components {
             /** Format: uuid */
             lifeAreaId: null | string;
         };
+        AddictionResetEntryDTO: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            date: string;
+            /** Format: date-time */
+            resetAt: string;
+            /** Format: uuid */
+            journalEntryId: null | string;
+            journalText: null | string;
+        };
         AddictionUpsertRequest: {
             title: string;
             color: string;
@@ -1828,16 +1843,21 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
-            /** Format: date */
-            lastRelapseDate: null | string;
+            /** Format: date-time */
+            lastRelapseAt: null | string;
         };
         AddictionWithResetsDTO: {
             addiction: components["schemas"]["AddictionDTO"];
-            resetDates: string[];
+            resets: components["schemas"]["AddictionResetEntryDTO"][];
             /** Format: date-time */
             lastResetAt: null | string;
             /** Format: int32 */
             currentStreakDays: number | string;
+        };
+        SetResetRequest: {
+            note: null | string;
+            /** Format: date-time */
+            resetAt: null | string;
         };
         AuthResponse: {
             token: string;

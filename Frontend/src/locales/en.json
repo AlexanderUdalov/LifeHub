@@ -93,7 +93,17 @@
     "habits": "Habits",
     "empty": "No habits yet",
     "emptySubtitle": "Add a habit to track your daily progress",
-    "currentStreakLabel": "Current streak: {count}",
+    "currentStreakLabel": "Current streak: {count} {unit}",
+    "streakUnits": {
+      "day": {
+        "one": "day",
+        "other": "days"
+      },
+      "week": {
+        "one": "week",
+        "other": "weeks"
+      }
+    },
     "weeklyRow": {
       "thisWeek": "This week",
       "weekOfTooltip": "Week of {date}: {count}/{goal}",

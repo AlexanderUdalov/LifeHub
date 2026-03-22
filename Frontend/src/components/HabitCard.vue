@@ -15,7 +15,7 @@ const props = withDefaults(
 )
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.habit.habit.lifeAreaId))
 const cardBorderStyle = computed(() => {
   if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
@@ -34,18 +34,45 @@ const goalNum = computed(() => {
   return Number.isFinite(n) && n >= 1 && n <= 7 ? n : 0
 })
 
-/** For weekly habits: streak in weeks (computed from history, shown until Monday reset). Otherwise backend value. */
-const streakValue = computed(() => {
+type StreakUnit = 'day' | 'week'
+
+interface StreakInfo {
+  value: number
+  unit: StreakUnit
+}
+
+/** For weekly habits: streak in weeks with fallback to previous week when current one is in progress. */
+const streakInfo = computed<StreakInfo | null>(() => {
   if (isWeeklyMode.value && goalNum.value > 0) {
     const weeks = getCurrentWeeksStreak(props.habit.history, goalNum.value)
-    return weeks > 0 ? weeks : null
+    return weeks > 0 ? { value: weeks, unit: 'week' } : null
   }
   const raw = props.habit.currentStreak
   const n = typeof raw === 'number' ? raw : Number(raw ?? 0)
-  if (Number.isFinite(n) && n > 0) return n
+  if (Number.isFinite(n) && n > 0) return { value: n, unit: 'day' }
 
   const fallback = getCurrentDayBasedStreakFallback(props.habit.history)
-  return fallback > 0 ? fallback : null
+  return fallback > 0 ? { value: fallback, unit: 'day' } : null
+})
+
+function getStreakUnitLabel(unit: StreakUnit, count: number): string {
+  const pluralCategory = new Intl.PluralRules(locale.value).select(count)
+  const key = `habits.streakUnits.${unit}.${pluralCategory}`
+  const translated = t(key)
+  if (translated !== key) return translated
+
+  const fallbackKey = `habits.streakUnits.${unit}.other`
+  const fallback = t(fallbackKey)
+  if (fallback !== fallbackKey) return fallback
+
+  return unit === 'week' ? 'weeks' : 'days'
+}
+
+const streakLabel = computed(() => {
+  const info = streakInfo.value
+  if (!info) return null
+  const unit = getStreakUnitLabel(info.unit, info.value)
+  return t('habits.currentStreakLabel', { count: info.value, unit })
 })
 
 const emit = defineEmits<{
@@ -60,9 +87,9 @@ const emit = defineEmits<{
                 <div class="habit-title" @click="emit('edit', habit.habit)">
                     {{ habit.habit.title }}
                 </div>
-                <div v-if="streakValue" class="habit-streak-row">
+                <div v-if="streakInfo && streakLabel" class="habit-streak-row">
                     <span class="habit-streak-chip">
-                        {{ t('habits.currentStreakLabel', { count: streakValue }) }}
+                        {{ streakLabel }}
                     </span>
                 </div>
             </div>

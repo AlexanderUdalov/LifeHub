@@ -93,7 +93,21 @@
     "habits": "Привычки",
     "empty": "Привычек пока нет",
     "emptySubtitle": "Добавьте привычку и отслеживайте свой прогресс",
-    "currentStreakLabel": "Текущий серия: {count}",
+    "currentStreakLabel": "Текущая серия: {count} {unit}",
+    "streakUnits": {
+      "day": {
+        "one": "день",
+        "few": "дня",
+        "many": "дней",
+        "other": "дня"
+      },
+      "week": {
+        "one": "неделя",
+        "few": "недели",
+        "many": "недель",
+        "other": "недели"
+      }
+    },
     "weeklyRow": {
       "thisWeek": "На этой неделе",
       "weekOfTooltip": "Неделя с {date}: {count}/{goal}",

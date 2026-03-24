@@ -87,17 +87,17 @@ const emit = defineEmits<{
                 <div class="habit-title" @click="emit('edit', habit.habit)">
                     {{ habit.habit.title }}
                 </div>
-                <div v-if="streakInfo && streakLabel" class="habit-streak-row">
-                    <span class="habit-streak-chip">
-                        {{ streakLabel }}
-                    </span>
-                </div>
             </div>
         </template>
 
         <template #content>
-            <div v-if="goalTitle" class="goal-text">
-                {{ goalTitle }}
+            <div v-if="goalTitle || (streakInfo && streakLabel)" class="goal-streak-row">
+                <div v-if="goalTitle" class="goal-text">
+                    {{ goalTitle }}
+                </div>
+                <span v-if="streakInfo && streakLabel" class="habit-streak-chip">
+                    {{ streakLabel }}
+                </span>
             </div>
             <HabitWeeklyRow v-if="isWeeklyMode" :habit="habit" />
             <HabitDayRow v-else :habit="habit" />
@@ -133,9 +133,12 @@ const emit = defineEmits<{
   user-select: none;
 }
 
-.habit-streak-row {
+.goal-streak-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .habit-streak-chip {
@@ -151,6 +154,10 @@ const emit = defineEmits<{
 .goal-text {
   color: var(--p-text-muted-color);
   font-size: 0.875rem;
-  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 </style>

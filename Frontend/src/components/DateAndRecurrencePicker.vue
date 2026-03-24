@@ -18,7 +18,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const localDate = ref<Date | null>(props.date ?? null)
 watch(
@@ -49,7 +49,7 @@ const optionsWithLabels = computed(() => {
   const month = d.getMonth()
   const year = d.getFullYear()
   const weekdayKey = String((weekday + 6) % 7)
-  const monthShort = d.toLocaleDateString(undefined, { month: 'short' })
+  const monthShort = new Intl.DateTimeFormat(locale.value, { month: 'short' }).format(d)
   return presetOptions.map((opt) => {
     if (opt.value === 'weekly') {
       return { value: opt.value, label: t('tasks.recurrence.preset.weeklyWithDay', { weekday: t(`tasks.recurrence.weekdays.${weekdayKey}`) }) }

@@ -183,8 +183,23 @@ function onEditArea(area: LifeAreaDTO) {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 9999px;
   font-size: 1.25rem;
   line-height: 1;
+  z-index: 0;
+}
+
+.wheel-emoji::before {
+  content: '';
+  position: absolute;
+  inset: -0.2em;
+  border-radius: inherit;
+  background: radial-gradient(circle at 30% 30%,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.18) 45%,
+      rgba(0, 0, 0, 0.3) 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.24);
+  z-index: -1;
 }
 
 .wheel-emoji--text {

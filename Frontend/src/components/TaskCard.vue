@@ -103,6 +103,22 @@ const recurrenceText = computed(() =>
   formatRecurrence(props.task.recurrenceRule, props.task.dueDate)
 )
 const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.title ?? null)
+const hasDescription = computed(() => !!props.task.description?.trim())
+const showCompactDeadline = computed(
+  () => props.compact && !props.hideDeadline && !!deadlineText.value && isOverdue.value
+)
+const showRegularDeadline = computed(
+  () => !props.compact && !props.hideDeadline && !!deadlineText.value
+)
+const showRecurrence = computed(() => !props.compact && !!recurrenceText.value)
+const showGoal = computed(() => !props.compact && !props.hideGoal && !!goalTitle.value)
+const showDeadlineRow = computed(
+  () =>
+    showCompactDeadline.value ||
+    showRegularDeadline.value ||
+    showRecurrence.value ||
+    showGoal.value
+)
 </script>
 
 
@@ -112,10 +128,8 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
       <div class="task-card-title-row" @click="onHeaderClick">
         <Checkbox v-model="localCompleted" name="completed" binary @click.stop />
         <label for="completed" class="title title-clickable" :class="{ completed: localCompleted }">
-          {{ task.title }}
+          {{ props.compact && hasDescription ? `${task.title}…` : task.title }}
         </label>
-        <i v-if="props.compact && props.task.description" class="pi pi-align-left description-indicator"
-          aria-hidden="true" />
         <div v-if="draggable" class="drag-handle" @pointerdown.prevent.stop="emit('drag-start', $event)">
           <i class="pi pi-bars" />
         </div>
@@ -138,19 +152,18 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
         </template>
       </p>
 
-      <div v-if="(!props.hideDeadline && deadlineText) || recurrenceText || (!props.hideGoal && goalTitle)"
-        class="deadline-row">
+      <div v-if="showDeadlineRow" class="deadline-row">
         <span class="deadline-row-left">
-          <span v-if="!props.hideDeadline && deadlineText" class="deadline"
+          <span v-if="showCompactDeadline || showRegularDeadline" class="deadline"
             :class="{ overdue: isOverdue, completed: localCompleted }">
             {{ deadlineText }}
           </span>
-          <span v-if="recurrenceText" class="recurrence" :class="{ completed: localCompleted }">
+          <span v-if="showRecurrence" class="recurrence" :class="{ completed: localCompleted }">
             <i class="pi pi-refresh recurrence-icon" aria-hidden="true"></i>
             {{ recurrenceText }}
           </span>
         </span>
-        <span v-if="!props.hideGoal && goalTitle" class="goal-text">
+        <span v-if="showGoal" class="goal-text">
           {{ goalTitle }}
         </span>
       </div>
@@ -210,12 +223,6 @@ const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.titl
 
 .title-clickable {
   cursor: pointer;
-}
-
-.description-indicator {
-  flex-shrink: 0;
-  color: var(--p-text-muted-color);
-  font-size: 0.95em;
 }
 
 .drag-handle {

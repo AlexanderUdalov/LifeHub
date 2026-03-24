@@ -205,9 +205,8 @@ onMounted(async () => {
 
 <template>
     <div class="profile-view-root">
+        <h1 class="view-page-header">{{ $t('profile-view.profile') }}</h1>
         <Card>
-            <template #title>{{ $t('profile-view.profile') }}</template>
-
             <template #content>
                 <IftaLabel>
                     <InputText id="name" v-model="updateForm.name" fluid />
@@ -305,6 +304,12 @@ onMounted(async () => {
 <style scoped>
 .profile-view-root {
     width: 100%;
+}
+
+.view-page-header {
+    font-size: var(--p-card-title-font-size);
+    font-weight: 600;
+    text-align: center;
 }
 
 :deep(.p-iftalabel) {

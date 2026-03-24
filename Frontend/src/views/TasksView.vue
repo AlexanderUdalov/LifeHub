@@ -75,12 +75,27 @@ const hasMoreCompleted = computed(
 
 const loadMoreCompletedSentinel = ref<HTMLElement | null>(null)
 
-function loadMoreCompleted() {
+async function loadMoreCompleted() {
   if (tasksStore.isLoadingMoreCompleted || !hasMoreCompleted.value) return
   const first = firstUnloadedCompletedIndex.value
   const last = Math.min(first + COMPLETED_PAGE_SIZE - 1, tasksStore.completedTotal - 1)
   if (first > last) return
-  tasksStore.fetchMoreCompletedTasks(first, last)
+  await tasksStore.fetchMoreCompletedTasks(first, last)
+}
+
+function isSentinelNearViewport(): boolean {
+  const el = loadMoreCompletedSentinel.value
+  if (!el) return false
+  const rect = el.getBoundingClientRect()
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+  // Keep loading while sentinel stays near viewport bottom.
+  return rect.top <= viewportHeight + 100
+}
+
+async function loadMoreCompletedUntilNotVisible() {
+  while (!tasksStore.isLoadingMoreCompleted && hasMoreCompleted.value && isSentinelNearViewport()) {
+    await loadMoreCompleted()
+  }
 }
 
 let loadMoreObserver: IntersectionObserver | null = null
@@ -89,7 +104,7 @@ onMounted(() => {
   loadMoreObserver = new IntersectionObserver(
     (entries) => {
       if (!entries[0]?.isIntersecting) return
-      loadMoreCompleted()
+      void loadMoreCompletedUntilNotVisible()
     },
     { root: null, rootMargin: '100px', threshold: 0 }
   )

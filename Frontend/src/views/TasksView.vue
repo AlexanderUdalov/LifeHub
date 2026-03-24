@@ -37,7 +37,10 @@ const taskViewModeOptions = computed(() => [
   { label: t('profile-view.task-list-view-calendar'), value: 'calendar' as TaskViewMode, icon: 'pi pi-calendar' },
 ])
 
-function onTaskViewModeChange(mode: TaskViewMode) {
+function onTaskViewModeChange(mode: TaskViewMode | null | undefined) {
+  if (!mode) {
+    return
+  }
   setStoredTaskViewMode(mode)
   taskViewMode.value = mode
 }
@@ -243,7 +246,8 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     <header class="tasks-view-header">
       <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
       <SelectButton v-model="taskViewMode" :options="taskViewModeOptions" option-label="label" option-value="value"
-        :aria-label="$t('profile-view.task-list-view')" @change="onTaskViewModeChange(taskViewMode)">
+        :allow-empty="false" :aria-label="$t('profile-view.task-list-view')"
+        @change="onTaskViewModeChange($event.value)">
         <template #option="slotProps">
           <i :class="slotProps.option.icon" :aria-hidden="true" />
         </template>

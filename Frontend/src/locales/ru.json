@@ -238,7 +238,43 @@
     "addictionsCount": "Зависимости ({count})",
     "journalCount": "Заметки ({count})",
     "showCompleted": "Показать выполненные ({count})",
-    "hideCompleted": "Скрыть выполненные"
+    "hideCompleted": "Скрыть выполненные",
+    "showCompletedGoals": "Показать завершённые",
+    "hideCompletedGoals": "Скрыть завершённые",
+    "showCompletedGoalsInline": "Показать выполненные ({count})",
+    "hideCompletedGoalsInline": "Скрыть выполненные ({count})",
+    "completedSection": "Завершённые цели",
+    "completeDrawer": {
+      "open": "Закрыть цель",
+      "title": "Закрытие цели: {goal}",
+      "back": "Назад",
+      "next": "Далее",
+      "complete": "Закрыть цель",
+      "completeAnyway": "Закрыть всё равно",
+      "steps": {
+        "review": {
+          "title": "Проверьте прогресс",
+          "text": "Перед закрытием убедитесь, что вы завершили ключевые шаги по этой цели."
+        },
+        "tasks": {
+          "title": "Проверка задач",
+          "text": "Незакрытых задач: {count}. Лучше завершить их до закрытия цели."
+        },
+        "streak": {
+          "title": "Проверка серии",
+          "text": "Для привычек и зависимостей рекомендуем минимум 3 недели без срывов (21 день)."
+        }
+      },
+      "warnings": {
+        "openTasks": "Остались незакрытые задачи: {count}.",
+        "habitsLead": "У этих привычек серия меньше 21 дня:",
+        "habitItem": "{title} - {days} дн.",
+        "habitsHint": "Напоминание: привычка обычно формируется за 21 день.",
+        "addictionsLead": "У этих зависимостей серия меньше 21 дня:",
+        "addictionItem": "{title} - {days} дн.",
+        "addictionsHint": "Напоминание: устойчивый прогресс формируется за 21 день."
+      }
+    }
   },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",

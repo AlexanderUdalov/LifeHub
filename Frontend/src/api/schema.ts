@@ -232,7 +232,9 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["SetResetRequest"];
+                    "application/json": null | components["schemas"]["SetResetRequest"];
+                    "text/json": null | components["schemas"]["SetResetRequest"];
+                    "application/*+json": null | components["schemas"]["SetResetRequest"];
                 };
             };
             responses: {
@@ -733,7 +735,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    includeCompleted?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -925,6 +929,56 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/goals/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDTO"];
+                        "application/json": components["schemas"]["GoalDTO"];
+                        "text/json": components["schemas"]["GoalDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1854,11 +1908,6 @@ export interface components {
             /** Format: int32 */
             currentStreakDays: number | string;
         };
-        SetResetRequest: {
-            note: null | string;
-            /** Format: date-time */
-            resetAt: null | string;
-        };
         AuthResponse: {
             token: string;
             refreshToken: string;
@@ -1918,6 +1967,8 @@ export interface components {
             dueDate: string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            /** Format: date-time */
+            completedAt: null | string;
         };
         HabitDayDTO: {
             /** Format: date */
@@ -2015,6 +2066,11 @@ export interface components {
         };
         SetDayStatusRequest: {
             status: string;
+        };
+        SetResetRequest: {
+            note: null | string;
+            /** Format: date-time */
+            resetAt: null | string;
         };
         StartReflectionRequest: {
             /** Format: int32 */

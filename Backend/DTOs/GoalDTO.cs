@@ -7,7 +7,8 @@ public record GoalDTO(
     string Title,
     string? Description,
     DateTimeOffset DueDate,
-    Guid? LifeAreaId
+    Guid? LifeAreaId,
+    DateTimeOffset? CompletedAt
 );
 
 public record CreateGoalRequest(
@@ -32,6 +33,9 @@ public static class GoalMapping
             goal.Title,
             goal.Description,
             new DateTimeOffset(DateTime.SpecifyKind(goal.DueDate, DateTimeKind.Utc)),
-            goal.LifeAreaId
+            goal.LifeAreaId,
+            goal.CompletedAt is null
+                ? null
+                : new DateTimeOffset(DateTime.SpecifyKind(goal.CompletedAt.Value, DateTimeKind.Utc))
         );
 }

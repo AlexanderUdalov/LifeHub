@@ -234,7 +234,43 @@
     "addictionsCount": "Addictions ({count})",
     "journalCount": "Notes ({count})",
     "showCompleted": "Show completed ({count})",
-    "hideCompleted": "Hide completed"
+    "hideCompleted": "Hide completed",
+    "showCompletedGoals": "Show completed",
+    "hideCompletedGoals": "Hide completed",
+    "showCompletedGoalsInline": "Show completed ({count})",
+    "hideCompletedGoalsInline": "Hide completed ({count})",
+    "completedSection": "Completed goals",
+    "completeDrawer": {
+      "open": "Complete goal",
+      "title": "Complete goal: {goal}",
+      "back": "Back",
+      "next": "Next",
+      "complete": "Complete goal",
+      "completeAnyway": "Complete anyway",
+      "steps": {
+        "review": {
+          "title": "Review progress",
+          "text": "Before completing the goal, make sure your key steps are done."
+        },
+        "tasks": {
+          "title": "Task check",
+          "text": "Open tasks: {count}. It is better to finish them before completing the goal."
+        },
+        "streak": {
+          "title": "Streak check",
+          "text": "For habits and addictions, we recommend at least 3 weeks without breaks (21 days)."
+        }
+      },
+      "warnings": {
+        "openTasks": "There are still open tasks: {count}.",
+        "habitsLead": "These habits have a streak below 21 days:",
+        "habitItem": "{title} - {days} days.",
+        "habitsHint": "Reminder: a habit usually forms in 21 days.",
+        "addictionsLead": "These addictions have a streak below 21 days:",
+        "addictionItem": "{title} - {days} days.",
+        "addictionsHint": "Reminder: stable progress usually forms in 21 days."
+      }
+    }
   },
   "toasts": {
     "logged-out": "You have logged out",

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineOptions({ name: 'GoalsView' })
-import { computed, onMounted } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import EmptyState from '@/components/EmptyState.vue'
 import GoalCard from '@/components/GoalCard.vue'
 import Skeleton from 'primevue/skeleton'
@@ -28,15 +28,20 @@ const tasksStore = useTasksStore()
 const habitsStore = useHabitsStore()
 const addictionsStore = useAddictionsStore()
 const journalStore = useJournalStore()
+const showCompletedGoals = ref(false)
 
 onMounted(async () => {
   await Promise.all([
-    goalsStore.fetchGoals(),
+    goalsStore.fetchGoals(true),
     tasksStore.fetchTasks(),
     habitsStore.fetchHabits(56),
     addictionsStore.fetchAddictions(60),
     journalStore.loadEntries()
   ])
+})
+
+onActivated(async () => {
+  await goalsStore.fetchGoals(true)
 })
 
 const tasksByGoalId = computed(() => {
@@ -85,6 +90,17 @@ const entriesByGoalId = computed(() => {
   }
   return grouped
 })
+
+const activeGoals = computed(() => goalsStore.goalsSorted.filter(goal => !goal.completedAt))
+const completedGoals = computed(() => goalsStore.goalsSorted.filter(goal => !!goal.completedAt))
+
+watch(completedGoals, (list) => {
+  if (list.length === 0) showCompletedGoals.value = false
+})
+
+async function onCompleteGoal(goalId: string) {
+  await goalsStore.completeGoal(goalId)
+}
 </script>
 
 <template>
@@ -100,15 +116,32 @@ const entriesByGoalId = computed(() => {
       </div>
     </div>
 
-    <EmptyState v-else-if="goalsStore.goals.length === 0" icon="pi pi-flag" :title="$t('goals.empty')"
-      :subtitle="$t('goals.emptySubtitle')" />
+    <template v-else>
+      <EmptyState v-if="activeGoals.length === 0" icon="pi pi-flag" :title="$t('goals.empty')"
+        :subtitle="$t('goals.emptySubtitle')" />
+      <GoalCard v-else v-for="goal in activeGoals" :key="goal.id" :goal="goal" :tasks="tasksByGoalId[goal.id] ?? []"
+        :habits="habitsByGoalId[goal.id] ?? []" :addictions="addictionsByGoalId[goal.id] ?? []"
+        :journal-entries="entriesByGoalId[goal.id] ?? []" @edit-goal="emit('edit-goal', $event)"
+        @edit-task="emit('edit-task', $event)" @edit-habit="emit('edit-habit', $event)"
+        @edit-addiction="emit('edit-addiction', $event)" @edit-journal="emit('edit-journal', $event)"
+        @completion-change="tasksStore.toggleTaskCompletion" @complete-goal="onCompleteGoal" />
 
-    <GoalCard v-else v-for="goal in goalsStore.goalsSorted" :key="goal.id" :goal="goal"
-      :tasks="tasksByGoalId[goal.id] ?? []" :habits="habitsByGoalId[goal.id] ?? []"
-      :addictions="addictionsByGoalId[goal.id] ?? []" :journal-entries="entriesByGoalId[goal.id] ?? []"
-      @edit-goal="emit('edit-goal', $event)" @edit-task="emit('edit-task', $event)"
-      @edit-habit="emit('edit-habit', $event)" @edit-addiction="emit('edit-addiction', $event)"
-      @edit-journal="emit('edit-journal', $event)" @completion-change="tasksStore.toggleTaskCompletion" />
+      <div v-if="completedGoals.length" class="completed-goals-text-block">
+        <button class="completed-goals-toggle" type="button" @click="showCompletedGoals = !showCompletedGoals">
+          <i :class="showCompletedGoals ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"/>
+          {{
+            showCompletedGoals
+              ? $t('goals.hideCompletedGoalsInline', { count: completedGoals.length })
+              : $t('goals.showCompletedGoalsInline', { count: completedGoals.length })
+          }}
+        </button>
+        <ul v-if="showCompletedGoals" class="completed-goals-list">
+          <li v-for="goal in completedGoals" :key="goal.id">
+            {{ goal.title }}
+          </li>
+        </ul>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -144,5 +177,32 @@ const entriesByGoalId = computed(() => {
   font-size: var(--p-card-title-font-size);
   font-weight: 600;
   text-align: center;
+}
+
+.completed-goals-text-block {
+  margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.completed-goals-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.completed-goals-list {
+  margin: 0.5rem 0 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.9rem;
+  padding-left: 1.1rem;
 }
 </style>

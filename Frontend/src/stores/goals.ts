@@ -12,7 +12,15 @@ export const useGoalsStore = defineStore('goals', () => {
   const isLoading = ref(false)
 
   const goalsSorted = computed(() =>
-    [...goals.value].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    [...goals.value].sort((a, b) => {
+      const aCompleted = !!a.completedAt
+      const bCompleted = !!b.completedAt
+      if (aCompleted !== bCompleted) return aCompleted ? 1 : -1
+      if (aCompleted && bCompleted) {
+        return new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime()
+      }
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    })
   )
 
   function getGoalById(goalId: string | null | undefined): GoalDTO | null {
@@ -20,10 +28,10 @@ export const useGoalsStore = defineStore('goals', () => {
     return goals.value.find(x => x.id === goalId) ?? null
   }
 
-  async function fetchGoals() {
+  async function fetchGoals(includeCompleted = false) {
     isLoading.value = true
     try {
-      goals.value = await goalsApi.getGoals()
+      goals.value = await goalsApi.getGoals(includeCompleted)
     } finally {
       isLoading.value = false
     }
@@ -65,6 +73,22 @@ export const useGoalsStore = defineStore('goals', () => {
     }
   }
 
+  async function completeGoal(id: string) {
+    const existing = goals.value.find(x => x.id === id)
+    if (!existing) return
+
+    const backup = { ...existing }
+    existing.completedAt = new Date().toISOString()
+
+    try {
+      const updated = await goalsApi.completeGoal(id)
+      Object.assign(existing, updated)
+    } catch (e) {
+      Object.assign(existing, backup)
+      throw e
+    }
+  }
+
   return {
     goals,
     goalsSorted,
@@ -73,6 +97,7 @@ export const useGoalsStore = defineStore('goals', () => {
     createGoal,
     updateGoal,
     deleteGoal,
+    completeGoal,
     getGoalById
   }
 })

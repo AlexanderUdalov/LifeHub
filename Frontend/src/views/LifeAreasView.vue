@@ -88,7 +88,7 @@ function onEditArea(area: LifeAreaDTO) {
       <div class="wheel" :style="wheelStyle" aria-hidden="true" />
       <div v-if="sortedAreas.length" class="wheel-emojis" aria-hidden="true">
         <span v-for="(area, index) in sortedAreas" :key="area.id" class="wheel-emoji" :class="{ 'wheel-emoji--text': !area.emoji?.trim() }" :style="{
-          transform: `rotate(${getSectorCenterAngle(index)}deg) translate(0, -150%) rotate(${-getSectorCenterAngle(index)}deg)`
+          transform: `rotate(${getSectorCenterAngle(index)}deg) translate(0, -200%) rotate(${-getSectorCenterAngle(index)}deg)`
         }">{{ getSegmentLabel(area) }}</span>
       </div>
     </div>
@@ -203,7 +203,7 @@ function onEditArea(area: LifeAreaDTO) {
 }
 
 .wheel-emoji--text {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--p-text-color);
   text-shadow: 0 0 1px var(--p-content-background), 0 1px 2px rgba(0, 0, 0, 0.15);

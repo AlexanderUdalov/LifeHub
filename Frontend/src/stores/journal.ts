@@ -54,7 +54,14 @@ export const useJournalStore = defineStore('journal', () => {
     async function togglePin(id: string) {
         const existing = entries.value.find((e) => e.id === id);
         if (!existing) return;
-        const updated = await updateJournalEntry(id, { isPinned: !existing.isPinned });
+        const updated = await updateJournalEntry(id, {
+            isPinned: !existing.isPinned,
+            taskItemId: existing.taskItemId ?? null,
+            habitId: existing.habitId ?? null,
+            addictionId: existing.addictionId ?? null,
+            goalId: existing.goalId ?? null,
+            lifeAreaId: existing.lifeAreaId ?? null
+        });
         const idx = entries.value.findIndex((e) => e.id === updated.id);
         if (idx !== -1) {
             entries.value[idx] = updated;

@@ -105,7 +105,9 @@ const recurrenceText = computed(() =>
 const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.title ?? null)
 const hasDescription = computed(() => !!props.task.description?.trim())
 const showCompactDeadline = computed(
-  () => props.compact && !props.hideDeadline && !!deadlineText.value && isOverdue.value
+  // In compact mode show due date for active tasks (so "this week" can display a date).
+  // Overdue color is still determined by `isOverdue` for the deadline styling.
+  () => props.compact && !props.hideDeadline && !!deadlineText.value && !localCompleted.value
 )
 const showRegularDeadline = computed(
   () => !props.compact && !props.hideDeadline && !!deadlineText.value

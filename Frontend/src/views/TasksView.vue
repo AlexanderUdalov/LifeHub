@@ -53,6 +53,31 @@ const taskSections = computed(() => [
   { key: 'completed', title: t('tasks.list.completed'), tasks: [] as TaskDTO[], draggable: false, isCompleted: true },
 ])
 
+/** Keys (by panel index) for the panels that are actually rendered via `v-if`. */
+const visibleSectionKeys = computed(() => {
+  const keys: string[] = []
+  for (const [index, section] of taskSections.value.entries()) {
+    const isVisible = section.tasks.length > 0 || (section.isCompleted && tasksStore.completedTotal > 0)
+    if (isVisible) keys.push(String(index))
+  }
+  return keys
+})
+
+const activeAccordionValue = ref<string[]>([])
+
+// Ensure at least one visible panel is opened (e.g. when panel "0" isn't rendered).
+watch(visibleSectionKeys, (keys) => {
+  const currentlyVisible = activeAccordionValue.value.filter(k => keys.includes(k))
+  if (!keys.length) {
+    activeAccordionValue.value = []
+    return
+  }
+
+  if (!currentlyVisible.length) {
+    activeAccordionValue.value = [keys[0]!]
+  }
+}, { immediate: true })
+
 const hasAnyTasks = computed(() => tasksStore.tasks.length > 0 || tasksStore.completedTotal > 0)
 
 const COMPLETED_PAGE_SIZE = 20
@@ -276,7 +301,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     <EmptyState v-else-if="!hasAnyTasks" icon="pi pi-list-check" :title="$t('tasks.empty')"
       :subtitle="$t('tasks.emptySubtitle')" />
 
-    <Accordion v-else-if="taskViewMode === 'standard'" :value="['0']" multiple>
+    <Accordion v-else-if="taskViewMode === 'standard'" v-model:value="activeAccordionValue" multiple>
       <template v-for="(section, index) in taskSections" :key="section.key">
         <AccordionPanel v-if="section.tasks.length || (section.isCompleted && tasksStore.completedTotal > 0)"
           :value="String(index)" class="tasks-list">
@@ -327,7 +352,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
       </template>
     </Accordion>
 
-    <Accordion v-else-if="taskViewMode === 'compact'" :value="['0']" multiple>
+    <Accordion v-else-if="taskViewMode === 'compact'" v-model:value="activeAccordionValue" multiple>
       <template v-for="(section, index) in taskSections" :key="section.key">
         <AccordionPanel v-if="section.tasks.length || (section.isCompleted && tasksStore.completedTotal > 0)"
           :value="String(index)" class="tasks-list">

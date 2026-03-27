@@ -13,8 +13,12 @@
     "windows": [
       {
         "title": "LifeHub",
-        "width": 350,
-        "height": 600,
+        "width": 400,
+        "height": 800,
+        "minWidth": 300,
+        "minHeight": 600,
+        "maxWidth": 800,
+        "maxHeight": 1200,
         "resizable": true,
         "fullscreen": false
       }

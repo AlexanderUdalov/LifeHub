@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { GoalDTO } from '@/api/GoalsAPI'
-import Card from 'primevue/card'
 import Button from 'primevue/button'
-import Drawer from 'primevue/drawer'
 import Carousel from 'primevue/carousel'
 import Message from 'primevue/message'
 import TaskCard from './TaskCard.vue'
@@ -18,6 +16,9 @@ import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useI18n } from 'vue-i18n'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 import { getCurrentDayBasedStreakFallback, getCurrentWeeksStreak } from '@/utils/habitStreak'
+import BaseCard from '@/components/base/BaseCard.vue'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -44,11 +45,6 @@ const { t } = useI18n()
 const { formatDeadline } = useDeadlineFormatter()
 const lifeAreasStore = useLifeAreasStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.goal.lifeAreaId))
-const cardBorderStyle = computed(() =>
-  areaColor.value
-    ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value }
-    : { borderLeftWidth: 0 }
-)
 
 const dueDateText = computed(() => formatDeadline(new Date(props.goal.dueDate)))
 
@@ -206,7 +202,7 @@ function confirmGoalCompletion() {
 </script>
 
 <template>
-  <Card class="goal-card" :style="cardBorderStyle">
+  <BaseCard class="goal-card" :accent-color="areaColor">
     <template #header>
       <div class="goal-header-row" :class="{ 'has-entities': hasEntities }" @click="toggle">
         <div class="goal-title-wrap">
@@ -218,10 +214,10 @@ function confirmGoalCompletion() {
           </div>
         </div>
         <div class="goal-header-actions">
-          <Button v-if="!isCompleted" icon="pi pi-check" class="p-button-rounded goal-complete-btn" severity="success"
+          <BaseButton v-if="!isCompleted" icon="pi pi-check" rounded class="goal-complete-btn" ds-variant="primary"
             :title="t('goals.completeDrawer.open')" :aria-label="t('goals.completeDrawer.open')"
             @click.stop="openCompleteDrawer" />
-          <Button v-if="hasEntities" icon="pi pi-chevron-down" class="p-button-text p-button-rounded chevron"
+          <BaseButton v-if="hasEntities" icon="pi pi-chevron-down" class="chevron" ds-variant="text" rounded
             :class="{ rotated: expanded }" />
         </div>
       </div>
@@ -244,11 +240,13 @@ function confirmGoalCompletion() {
           <TaskCard v-for="task in activeTasks" :key="task.id" :task="task" no-border @edit="emit('edit-task', task)"
             @completion-change="(id, val) => emit('completion-change', id, val)" />
           <div v-if="completedTasks.length" class="completed-tasks-section">
-            <Button v-if="!completedExpanded" class="show-completed-btn p-button-text"
+            <BaseButton v-if="!completedExpanded" class="show-completed-btn"
+              ds-variant="text"
               :label="t('goals.showCompleted', { count: completedTasks.length })" icon="pi pi-chevron-down"
               @click="completedExpanded = true" />
             <template v-else>
-              <Button class="hide-completed-btn p-button-text" :label="t('goals.hideCompleted')" icon="pi pi-chevron-up"
+              <BaseButton class="hide-completed-btn" ds-variant="text"
+                :label="t('goals.hideCompleted')" icon="pi pi-chevron-up"
                 @click="completedExpanded = false" />
               <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" no-border
                 @edit="emit('edit-task', task)" @completion-change="(id, val) => emit('completion-change', id, val)" />
@@ -275,10 +273,9 @@ function confirmGoalCompletion() {
         </div>
       </div>
     </template>
-  </Card>
+  </BaseCard>
 
-  <Drawer v-model:visible="showCompleteDrawer" position="bottom" class="goal-complete-drawer"
-    style="height: auto; max-height: 85vh">
+  <BaseDrawer v-model:visible="showCompleteDrawer" class="goal-complete-drawer">
     <template #header>
       <div class="goal-complete-title-row">
         <i class="pi pi-flag" />
@@ -323,7 +320,7 @@ function confirmGoalCompletion() {
 
     <template #footer>
       <div class="goal-complete-actions">
-        <Button v-if="completeStep > 0" icon="pi pi-angle-left" class="p-button-text"
+        <BaseButton v-if="completeStep > 0" icon="pi pi-angle-left" ds-variant="text"
           :label="t('goals.completeDrawer.back')" @click="prevCompleteStep" />
         <span v-else />
         <Button v-if="completeStep < completeSlides.length - 1" icon="pi pi-angle-right" iconPos="right"
@@ -333,14 +330,12 @@ function confirmGoalCompletion() {
           @click="confirmGoalCompletion" />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style scoped>
 .goal-card {
-  border-left-width: 4px;
-  border-left-style: solid;
-  border-radius: 16px;
+  border-radius: var(--ds-radius-lg);
 }
 
 .goal-header-row {
@@ -411,14 +406,14 @@ function confirmGoalCompletion() {
 }
 
 .goal-expanded {
-  margin-top: 12px;
+  margin-top: var(--ds-space-3);
 }
 
 .goal-expanded h4 {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  margin: 12px 0 6px;
+  margin: var(--ds-space-3) 0 var(--ds-space-2);
   font-size: 0.9rem;
   color: var(--p-text-muted-color);
 }
@@ -428,7 +423,7 @@ function confirmGoalCompletion() {
 }
 
 .completed-tasks-section {
-  margin-top: 8px;
+  margin-top: var(--ds-space-2);
 }
 
 .show-completed-btn,

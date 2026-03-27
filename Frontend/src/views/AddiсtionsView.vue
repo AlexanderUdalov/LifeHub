@@ -20,7 +20,7 @@ onMounted(async () => {
 
 <template>
   <div class="addictions-view">
-    <h1 class="view-page-header">{{ $t('addictions.addictions') }}</h1>
+    <h1 class="ds-page-header">{{ $t('addictions.addictions') }}</h1>
 
     <div v-if="addictionsStore.isLoading && addictionsStore.addictions.length === 0" class="addictions-skeleton">
       <div v-for="i in 4" :key="i" class="skeleton-card">
@@ -75,9 +75,4 @@ onMounted(async () => {
   flex: 1;
 }
 
-.view-page-header {
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
-}
 </style>

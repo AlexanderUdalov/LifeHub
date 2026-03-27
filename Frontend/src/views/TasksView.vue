@@ -284,7 +284,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 <template>
   <div class="tasks-view-root">
     <header class="tasks-view-header">
-      <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
+      <h1 class="ds-page-header">{{ $t('tasks.tasks') }}</h1>
       <SelectButton v-model="taskViewMode" :options="taskViewModeOptions" option-label="label" option-value="value"
         :allow-empty="false" :aria-label="$t('profile-view.task-list-view')"
         @change="onTaskViewModeChange($event.value)">
@@ -456,14 +456,8 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   flex-wrap: wrap;
 }
 
-.view-page-header {
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
-}
-
 .tasks-list {
-  font-size: large;
+  font-size: var(--ds-font-size-lg);
 }
 
 .tasks-list-header {
@@ -573,6 +567,6 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-  font-size: large;
+  font-size: var(--ds-font-size-lg);
 }
 </style>

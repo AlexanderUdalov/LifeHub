@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import Carousel from 'primevue/carousel'
 import { useI18n } from 'vue-i18n'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 defineProps<{
   addictionTitle: string
@@ -30,15 +30,13 @@ const slides = computed(() => [
 </script>
 
 <template>
-  <Drawer
+  <BaseDrawer
     v-model:visible="visible"
-    position="bottom"
     class="addiction-drawer"
-    style="height: auto; max-height: 85vh"
   >
     <template #header>
       <div class="trigger-drawer-title-row">
-        <i class="pi pi-bolt" style="color: var(--p-warning-color)" />
+        <i class="pi pi-bolt trigger-title-icon" />
         <span>{{ t('addictions.triggerDrawer.title') }}</span>
       </div>
     </template>
@@ -57,11 +55,11 @@ const slides = computed(() => [
     </Carousel>
 
     <template #footer>
-      <div class="addiction-drawer-actions" style="justify-content: center">
+      <div class="addiction-drawer-actions trigger-actions">
         <Button :label="t('addictions.triggerDrawer.dismiss')" icon="pi pi-check" @click="visible = false" />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style>
@@ -71,6 +69,10 @@ const slides = computed(() => [
   gap: 8px;
   font-weight: 600;
   font-size: 1.1rem;
+}
+
+.trigger-title-icon {
+  color: var(--p-warning-color);
 }
 
 .trigger-subtitle {
@@ -98,5 +100,9 @@ const slides = computed(() => [
   font-size: 1.05rem;
   line-height: 1.5;
   max-width: 300px;
+}
+
+.trigger-actions {
+  justify-content: center;
 }
 </style>

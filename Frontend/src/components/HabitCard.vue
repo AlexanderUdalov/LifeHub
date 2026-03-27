@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Card from 'primevue/card'
 import HabitDayRow from './HabitDayRow.vue'
 import HabitWeeklyRow from './HabitWeeklyRow.vue'
 import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
@@ -8,6 +7,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
+import BaseCard from '@/components/base/BaseCard.vue'
 
 const props = withDefaults(
   defineProps<{ habit: HabitWithHistoryDTO; noBorder?: boolean }>(),
@@ -17,10 +17,6 @@ const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
 const { t, locale } = useI18n()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.habit.habit.lifeAreaId))
-const cardBorderStyle = computed(() => {
-  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
-  return areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
-})
 const goalTitle = computed(() => goalsStore.getGoalById(props.habit.habit.goalId)?.title ?? null)
 const isWeeklyMode = computed(() => {
   const g = props.habit.habit.timesPerWeekGoal
@@ -81,7 +77,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Card class="habit-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
+    <BaseCard class="habit-card" :borderless="noBorder" :accent-color="areaColor">
         <template #title>
             <div class="habit-title-block">
                 <div class="habit-title" @click="emit('edit', habit.habit)">
@@ -102,24 +98,12 @@ const emit = defineEmits<{
             <HabitWeeklyRow v-if="isWeeklyMode" :habit="habit" />
             <HabitDayRow v-else :habit="habit" />
         </template>
-    </Card>
+    </BaseCard>
 </template>
 
 <style scoped>
 .habit-card {
-  border-radius: 16px;
-  border-left-width: 4px;
-  border-left-style: solid;
-}
-
-.habit-card.no-border {
-  border: none;
-  border-left-width: 0;
-}
-
-.habit-card.no-border :deep(.p-card) {
-  border: none;
-  box-shadow: none;
+  border-radius: var(--ds-radius-lg);
 }
 
 .habit-title-block {

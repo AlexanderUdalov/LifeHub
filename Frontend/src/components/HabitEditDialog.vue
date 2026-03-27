@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -16,6 +15,7 @@ import { parseRuleToOptions, optionsToRuleString } from '@/composables/useRecurr
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 import { useApiError } from '@/composables/useApiError'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const HABIT_COLOR_OPTIONS = [
   '#3b82f6', '#ef4444', '#22c55e', '#eab308', '#a855f7', '#ec4899', '#06b6d4'
@@ -220,25 +220,25 @@ async function onDelete() {
 </script>
 
 <template>
-  <Drawer v-model:visible="visible" position="bottom" class="habit-drawer" style="height: auto; max-height: 85vh">
+  <BaseDrawer v-model:visible="visible" class="habit-drawer">
     <template #header>
-      <div class="habit-drawer-header" ref="titleWrap">
+      <div class="ds-drawer-title-row" ref="titleWrap">
         <InputText v-model="localHabit.title" :placeholder="t('habits.editdialog.newHabit')"
-          class="habit-drawer-title-input" />
+          class="ds-drawer-title-input" />
       </div>
     </template>
 
-    <div class="habit-drawer-section">
-      <label class="habit-drawer-label">{{ t('habits.editdialog.color') }}</label>
+    <div class="ds-drawer-section">
+      <label class="ds-drawer-label">{{ t('habits.editdialog.color') }}</label>
       <div class="habit-drawer-colors">
-        <button v-for="color in HABIT_COLOR_OPTIONS" :key="color" type="button" class="habit-color-chip"
-          :class="{ selected: localHabit.color === color }" :style="{ backgroundColor: color }"
+        <button v-for="color in HABIT_COLOR_OPTIONS" :key="color" type="button" class="ds-color-swatch"
+          :class="{ 'is-selected': localHabit.color === color }" :style="{ backgroundColor: color }"
           :aria-pressed="localHabit.color === color" :aria-label="color" @click="localHabit.color = color" />
       </div>
     </div>
 
-    <div class="habit-drawer-section">
-      <label class="habit-drawer-label">{{ t('habits.editdialog.days') }}</label>
+    <div class="ds-drawer-section">
+      <label class="ds-drawer-label">{{ t('habits.editdialog.days') }}</label>
       <SelectButton v-model="habitMode" :options="habitModeOptions" option-label="label" option-value="value"
         :allow-empty="false" class="habit-drawer-mode-select" />
 
@@ -261,12 +261,12 @@ async function onDelete() {
       </template>
     </div>
 
-    <div class="habit-drawer-chips">
+    <div class="ds-chip-row">
       <Select v-model="localHabit.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.field')" class="habit-chip-select"
-        :class="{ 'habit-chip-select--active': hasLifeArea }">
+        show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasLifeArea }">
         <template #value>
-          <span class="habit-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-objects-column" />
             {{ lifeAreaChipLabel }}
           </span>
@@ -274,10 +274,10 @@ async function onDelete() {
       </Select>
 
       <Select v-model="localHabit.goalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id"
-        show-clear :placeholder="t('goals.field')" class="habit-chip-select"
-        :class="{ 'habit-chip-select--active': hasGoal }">
+        show-clear :placeholder="t('goals.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasGoal }">
         <template #value>
-          <span class="habit-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-bullseye" />
             {{ goalChipLabel }}
           </span>
@@ -290,7 +290,7 @@ async function onDelete() {
     </Message>
 
     <template #footer>
-      <div class="habit-drawer-actions">
+      <div class="ds-drawer-actions">
         <Button v-if="isEdit" icon="pi pi-trash" :label="t('habits.editdialog.delete')" severity="danger" variant="text"
           size="small" :loading="isDeleteLoading" @click="onDelete" />
         <span v-else />
@@ -298,94 +298,13 @@ async function onDelete() {
           :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style>
-.p-drawer.habit-drawer {
-  border-radius: 1rem 1rem 0 0;
-}
-
-.habit-drawer .p-drawer-header {
-  position: relative;
-  padding: 0.75rem 1.25rem;
-  padding-top: 1.5rem;
-}
-
-.habit-drawer .p-drawer-header::before {
-  content: '';
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2.5rem;
-  height: 0.25rem;
-  background: var(--p-content-border-color);
-  border-radius: 999px;
-}
-
-.habit-drawer-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.p-inputtext.habit-drawer-title-input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  box-shadow: none !important;
-  background: transparent;
-  font-size: 1.125rem;
-  font-weight: 600;
-  padding: 0.5rem 0;
-}
-
-.habit-drawer .p-drawer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-bottom: 0.25rem;
-}
-
-.habit-drawer-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.habit-drawer-label {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--p-text-muted-color);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
 .habit-drawer-colors {
   display: flex;
   justify-content: space-between;
-}
-
-.habit-color-chip {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  padding: 0;
-  cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
-}
-
-.habit-color-chip:hover {
-  transform: scale(1.1);
-}
-
-.habit-color-chip.selected {
-  border-color: var(--p-text-color);
-  box-shadow: 0 0 0 1px var(--p-content-border-color);
 }
 
 .habit-drawer-mode-select {
@@ -461,64 +380,4 @@ async function onDelete() {
   padding: 0.4rem 0;
 }
 
-.habit-drawer-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.habit-chip-select.p-select {
-  border-radius: 999px;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0.8125rem;
-  height: auto;
-  padding-right: 0.5rem;
-}
-
-.habit-chip-select.p-select .p-select-label {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
-}
-
-.habit-chip-select.p-select .p-select-dropdown {
-  display: none;
-}
-
-.habit-chip-select--active.p-select {
-  border-color: var(--p-primary-color);
-  --p-select-clear-icon-color: var(--p-primary-color);
-}
-
-.habit-chip-select--active.p-select .p-select-label {
-  color: var(--p-primary-color);
-}
-
-.habit-chip-select-value {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  white-space: nowrap;
-}
-
-.habit-chip-select-value i {
-  font-size: 0.75rem;
-}
-
-.habit-drawer .p-drawer-footer {
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.habit-drawer-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
 </style>

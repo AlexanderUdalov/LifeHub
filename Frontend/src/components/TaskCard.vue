@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Card from 'primevue/card'
 import Checkbox from 'primevue/checkbox'
 import { computed, ref, watch } from 'vue'
 import type { TaskDTO } from '@/api/TasksAPI'
@@ -7,6 +6,7 @@ import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
+import BaseCard from '@/components/base/BaseCard.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -22,10 +22,6 @@ const props = withDefaults(
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.task.lifeAreaId))
-const cardBorderStyle = computed(() => {
-  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
-  return areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
-})
 
 type DescriptionPart =
   | { type: 'text'; value: string }
@@ -125,7 +121,8 @@ const showDeadlineRow = computed(
 
 
 <template>
-  <Card class="task-card" :class="{ 'no-border': noBorder, compact: props.compact }" :style="cardBorderStyle">
+  <BaseCard class="task-card" :class="{ 'no-border': noBorder, compact: props.compact }"
+    :borderless="noBorder" :accent-color="areaColor">
     <template #title>
       <div class="task-card-title-row" @click="onHeaderClick">
         <Checkbox v-model="localCompleted" name="completed" binary @click.stop />
@@ -170,27 +167,17 @@ const showDeadlineRow = computed(
         </span>
       </div>
     </template>
-  </Card>
+  </BaseCard>
 </template>
 
 <style scoped>
 .task-card {
-  border-radius: 0px;
+  border-radius: 0;
   border-left-width: 4px;
   border-left-style: solid;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-}
-
-.task-card.no-border {
-  border: none;
-  border-left-width: 0;
-}
-
-.task-card.no-border :deep(.p-card) {
-  border: none;
-  box-shadow: none;
 }
 
 :deep(.p-card-body) {
@@ -243,7 +230,7 @@ const showDeadlineRow = computed(
 
 .description {
   color: var(--p-gray-400);
-  font-size: medium;
+  font-size: var(--ds-font-size-md);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -273,7 +260,7 @@ const showDeadlineRow = computed(
   align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem;
-  font-size: small;
+  font-size: var(--ds-font-size-sm);
   margin: 0;
 }
 

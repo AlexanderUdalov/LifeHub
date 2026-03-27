@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -13,6 +12,7 @@ import type { GoalDTO } from '@/api/GoalsAPI'
 import { useGoalsStore } from '@/stores/goals'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useApiError } from '@/composables/useApiError'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const props = defineProps<{
   goal: GoalDTO | null
@@ -120,28 +120,28 @@ async function onDelete() {
 </script>
 
 <template>
-  <Drawer v-model:visible="visible" position="bottom" class="goal-drawer" style="height: auto; max-height: 85vh">
+  <BaseDrawer v-model:visible="visible" class="goal-drawer">
     <template #header>
-      <div class="goal-drawer-header" ref="titleWrap">
-        <InputText v-model="localTitle" :placeholder="t('goals.newGoal')" class="goal-drawer-title-input" />
+      <div class="ds-drawer-title-row" ref="titleWrap">
+        <InputText v-model="localTitle" :placeholder="t('goals.newGoal')" class="ds-drawer-title-input" />
       </div>
     </template>
 
-    <Textarea v-model="descriptionModel" :placeholder="t('tasks.description')" autoResize class="goal-drawer-textarea"
+    <Textarea v-model="descriptionModel" :placeholder="t('tasks.description')" autoResize class="ds-drawer-textarea"
       :rows="3" fluid />
 
-    <div class="goal-drawer-chips">
+    <div class="ds-chip-row">
       <Button :label="dueDateChipLabel" icon="pi pi-calendar" size="small" severity="secondary" variant="outlined"
-        class="goal-chip" @click="(e: Event) => datePopover?.toggle(e)" />
+        class="ds-chip-button" @click="(e: Event) => datePopover?.toggle(e)" />
       <Popover ref="datePopover" append-to="body">
         <DatePicker v-model="localDueDate" inline />
       </Popover>
 
       <Select v-model="localLifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.field')" class="goal-chip-select"
-        :class="{ 'goal-chip-select--active': hasLifeArea }">
+        show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasLifeArea }">
         <template #value>
-          <span class="goal-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-objects-column" />
             {{ lifeAreaChipLabel }}
           </span>
@@ -154,7 +154,7 @@ async function onDelete() {
     </Message>
 
     <template #footer>
-      <div class="goal-drawer-actions">
+      <div class="ds-drawer-actions">
         <Button v-if="isEdit" icon="pi pi-trash" :label="t('goals.delete')" severity="danger" variant="text"
           size="small" :loading="isDeleteLoading" @click="onDelete" />
         <span v-else />
@@ -162,130 +162,8 @@ async function onDelete() {
           icon="pi pi-check" @click="onSave" />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style>
-.p-drawer.goal-drawer {
-  border-radius: 1rem 1rem 0 0;
-}
-
-.goal-drawer .p-drawer-header {
-  position: relative;
-  padding: 0.75rem 1.25rem;
-  padding-top: 1.5rem;
-}
-
-.goal-drawer .p-drawer-header::before {
-  content: '';
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2.5rem;
-  height: 0.25rem;
-  background: var(--p-content-border-color);
-  border-radius: 999px;
-}
-
-.goal-drawer-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.p-inputtext.goal-drawer-title-input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  box-shadow: none !important;
-  background: transparent;
-  font-size: 1.125rem;
-  font-weight: 600;
-  padding: 0.5rem 0;
-}
-
-.goal-drawer .p-drawer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-bottom: 0.25rem;
-}
-
-.goal-drawer-textarea.p-textarea {
-  border: none;
-  box-shadow: none !important;
-  background: transparent;
-  font-size: 1rem;
-  line-height: 1.6;
-  padding: 0.5rem 0;
-}
-
-.goal-drawer-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.goal-chip {
-  border-radius: 999px !important;
-  font-size: 0.8125rem !important;
-}
-
-.goal-chip-select.p-select {
-  border-radius: 999px;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0.8125rem;
-  height: auto;
-  padding-right: 0.5rem;
-}
-
-.goal-chip-select.p-select .p-select-label {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
-}
-
-.goal-chip-select.p-select .p-select-dropdown {
-  display: none;
-}
-
-.goal-chip-select--active.p-select {
-  border-color: var(--p-primary-color);
-  --p-select-clear-icon-color: var(--p-primary-color);
-}
-
-.goal-chip-select--active.p-select .p-select-label {
-  color: var(--p-primary-color);
-}
-
-.goal-chip-select-value {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  white-space: nowrap;
-}
-
-.goal-chip-select-value i {
-  font-size: 0.75rem;
-}
-
-.goal-drawer .p-drawer-footer {
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.goal-drawer-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
 </style>

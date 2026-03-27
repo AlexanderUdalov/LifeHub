@@ -91,7 +91,7 @@ onMounted(async () => {
 <template>
   <div class="journal-view">
     <header class="journal-view__header">
-      <h1 class="view-page-header">{{ $t('journal.title') }}</h1>
+      <h1 class="ds-page-header">{{ $t('journal.title') }}</h1>
       <div class="journal-view__actions">
         <Button icon="pi pi-sparkles" variant="text" rounded size="small"
           class="journal-view__action-btn"
@@ -177,14 +177,10 @@ onMounted(async () => {
   min-height: 3rem;
 }
 
-.view-page-header {
+.journal-view__header .ds-page-header {
   position: absolute;
   left: 0;
   right: 0;
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
-  margin: 0;
   pointer-events: none;
   line-height: 1.2;
 }

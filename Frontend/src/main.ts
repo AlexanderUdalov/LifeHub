@@ -15,6 +15,7 @@ import Aura from '@primeuix/themes/aura'
 
 import 'primeicons/primeicons.css'
 import './main.css'
+import './styles/design-system.css'
 import { applyTheme, applyStoredCustomColors, getStoredTheme } from '@/utils/theme'
 
 const storedTheme = getStoredTheme()

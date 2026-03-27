@@ -105,7 +105,7 @@ async function onCompleteGoal(goalId: string) {
 
 <template>
   <div class="goals-view">
-    <h1 class="view-page-header">{{ $t('goals.title') }}</h1>
+    <h1 class="ds-page-header">{{ $t('goals.title') }}</h1>
 
     <div v-if="goalsStore.isLoading && goalsStore.goals.length === 0" class="goals-skeleton">
       <div v-for="i in 3" :key="i" class="skeleton-card">
@@ -171,12 +171,6 @@ async function onCompleteGoal(goalId: string) {
 
 .skeleton-title {
   margin-bottom: 0.25rem;
-}
-
-.view-page-header {
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
 }
 
 .completed-goals-text-block {

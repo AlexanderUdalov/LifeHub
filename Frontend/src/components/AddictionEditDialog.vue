@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -12,6 +11,7 @@ import { useAddictionsStore } from '@/stores/addictions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 import { useApiError } from '@/composables/useApiError'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const ADDICTION_COLOR_OPTIONS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'
@@ -133,7 +133,7 @@ async function onDelete() {
 </script>
 
 <template>
-  <Drawer v-model:visible="visible" position="bottom" class="addiction-drawer" style="height: auto; max-height: 85vh">
+  <BaseDrawer v-model:visible="visible" class="addiction-drawer">
     <template #header>
       <div class="addiction-drawer-header" ref="titleWrap">
         <InputText v-model="localTitle" :placeholder="t('addictions.editdialog.newAddiction')"
@@ -141,12 +141,12 @@ async function onDelete() {
       </div>
     </template>
 
-    <div class="addiction-drawer-chips">
+    <div class="ds-chip-row">
       <Select v-model="localLifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.field')" class="addiction-chip-select"
-        :class="{ 'addiction-chip-select--active': hasLifeArea }">
+        show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasLifeArea }">
         <template #value>
-          <span class="addiction-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-objects-column" />
             {{ lifeAreaChipLabel }}
           </span>
@@ -154,10 +154,10 @@ async function onDelete() {
       </Select>
 
       <Select v-model="localGoalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id"
-        show-clear :placeholder="t('goals.field')" class="addiction-chip-select"
-        :class="{ 'addiction-chip-select--active': hasGoal }">
+        show-clear :placeholder="t('goals.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasGoal }">
         <template #value>
-          <span class="addiction-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-bullseye" />
             {{ goalChipLabel }}
           </span>
@@ -193,5 +193,5 @@ async function onDelete() {
           :disabled="!canSave" :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>

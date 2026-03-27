@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
@@ -11,6 +10,7 @@ import { useGoalsStore } from '@/stores/goals'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useApiError } from '@/composables/useApiError'
 import { useI18n } from 'vue-i18n'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const { t, locale } = useI18n()
 
@@ -127,7 +127,7 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-  <Drawer v-model:visible="visible" position="bottom" class="journal-drawer" style="height: auto; max-height: 85vh">
+  <BaseDrawer v-model:visible="visible" class="journal-drawer">
     <template #header>
       <span class="journal-drawer-title">
         {{ isEdit ? t('journal.editNote') : t('journal.newNote') }}
@@ -146,22 +146,22 @@ const formattedDate = computed(() => {
       <span class="journal-drawer-markdown-hint">{{ t('journal.markdownHint') }}</span>
     </div>
 
-    <div class="journal-drawer-chips">
+    <div class="ds-chip-row">
       <Select v-model="localLifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.field')" class="journal-chip-select"
-        :class="{ 'journal-chip-select--active': hasLifeArea }">
+        show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasLifeArea }">
         <template #value>
-          <span class="journal-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-chart-pie" />
             {{ lifeAreaChipLabel }}
           </span>
         </template>
       </Select>
       <Select v-model="localGoalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id"
-        show-clear :placeholder="t('goals.field')" class="journal-chip-select"
-        :class="{ 'journal-chip-select--active': hasGoal }">
+        show-clear :placeholder="t('goals.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasGoal }">
         <template #value>
-          <span class="journal-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-bullseye" />
             {{ goalChipLabel }}
           </span>
@@ -184,49 +184,21 @@ const formattedDate = computed(() => {
     </Message>
 
     <template #footer>
-      <div class="journal-drawer-actions">
+      <div class="ds-drawer-actions">
         <span />
         <Button :label="isEdit ? t('journal.save') : t('journal.create')" :disabled="!canSave" :loading="isSaveLoading"
           icon="pi pi-check" @click="onSave" />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style>
-.p-drawer.journal-drawer {
-  border-radius: 1rem 1rem 0 0;
-}
-
-.journal-drawer .p-drawer-header {
-  position: relative;
-  padding: 0.75rem 1.25rem;
-  padding-top: 1.5rem;
-}
-
-.journal-drawer .p-drawer-header::before {
-  content: '';
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2.5rem;
-  height: 0.25rem;
-  background: var(--p-content-border-color);
-  border-radius: 999px;
-}
 
 .journal-drawer-title {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--p-text-color);
-}
-
-.journal-drawer .p-drawer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-bottom: 0.25rem;
 }
 
 .journal-drawer-textarea.p-textarea {
@@ -245,55 +217,6 @@ const formattedDate = computed(() => {
   margin-top: 0.25rem;
 }
 
-.journal-drawer-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.journal-chip-select.p-select {
-  border-radius: 999px;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0.8125rem;
-  height: auto;
-  padding-right: 0.5rem;
-}
-
-.journal-chip-select.p-select .p-select-label {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
-}
-
-.journal-chip-select.p-select .p-select-dropdown {
-  display: none;
-}
-
-.journal-chip-select--active.p-select {
-  border-color: var(--p-primary-color);
-  --p-select-clear-icon-color: var(--p-primary-color);
-}
-
-.journal-chip-select--active.p-select .p-select-label {
-  color: var(--p-primary-color);
-}
-
-.journal-chip-select-value {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  white-space: nowrap;
-}
-
-.journal-chip-select-value i {
-  font-size: 0.75rem;
-}
 
 .journal-drawer-meta {
   display: flex;
@@ -315,14 +238,4 @@ const formattedDate = computed(() => {
   font-size: 0.75rem;
 }
 
-.journal-drawer .p-drawer-footer {
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.journal-drawer-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
 </style>

@@ -40,3 +40,7 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## Design system
+
+- Guidelines and migration checklist: `docs/design-system.md`

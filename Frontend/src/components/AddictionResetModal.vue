@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 import { useI18n } from 'vue-i18n'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const props = defineProps<{
   addiction: AddictionDTO
@@ -71,15 +71,13 @@ function confirmReset() {
 </script>
 
 <template>
-  <Drawer
+  <BaseDrawer
     v-model:visible="visible"
-    position="bottom"
     class="addiction-drawer"
-    style="height: auto; max-height: 85vh"
   >
     <template #header>
       <div class="reset-drawer-title-row">
-        <i class="pi pi-undo" style="color: var(--red-500)" />
+        <i class="pi pi-undo reset-title-icon" />
         <span>{{ t('addictions.resetDrawer.title') }}</span>
       </div>
     </template>
@@ -121,7 +119,7 @@ function confirmReset() {
     </div>
 
     <template #footer>
-      <div class="addiction-drawer-actions" style="justify-content: flex-end">
+      <div class="addiction-drawer-actions reset-actions">
         <Button :label="t('cancel')" severity="secondary" text @click="visible = false" />
         <Button
           :label="t('addictions.resetDrawer.confirm')"
@@ -131,7 +129,7 @@ function confirmReset() {
         />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style>
@@ -141,6 +139,10 @@ function confirmReset() {
   gap: 8px;
   font-weight: 600;
   font-size: 1.1rem;
+}
+
+.reset-title-icon {
+  color: var(--red-500);
 }
 
 .reset-addiction-name {
@@ -168,5 +170,9 @@ function confirmReset() {
 
 .reset-note-textarea.p-textarea {
   width: 100%;
+}
+
+.reset-actions {
+  justify-content: flex-end;
 }
 </style>

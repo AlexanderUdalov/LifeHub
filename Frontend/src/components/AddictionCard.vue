@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import Card from 'primevue/card'
 import Button from 'primevue/button'
-import Drawer from 'primevue/drawer'
 import AddictionCalendar from './AddictionCalendar.vue'
 import AddictionResetModal from './AddictionResetModal.vue'
 import AddictionTriggerModal from './AddictionTriggerModal.vue'
@@ -13,6 +11,8 @@ import { useAddictionsStore } from '@/stores/addictions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 import { useAddictionProgress } from '@/composables/useAddictionProgress'
+import BaseCard from '@/components/base/BaseCard.vue'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const props = withDefaults(
   defineProps<{ addiction: AddictionWithResetsDTO; noBorder?: boolean }>(),
@@ -37,15 +37,6 @@ const displayColor = computed(() => {
   if (fromArea?.trim()) return fromArea.trim()
   const c = props.addiction.addiction.color?.trim()
   return c && c.length > 0 ? c : '#ef4444'
-})
-
-const cardBorderStyle = computed(() => {
-  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
-  return {
-    borderLeftWidth: '4px',
-    borderLeftStyle: 'solid',
-    borderLeftColor: displayColor.value
-  }
 })
 
 const goalTitle = computed(() => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null)
@@ -161,7 +152,7 @@ function formatResetAt(iso: string) {
 </script>
 
 <template>
-  <Card class="addiction-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
+  <BaseCard class="addiction-card" :borderless="noBorder" :accent-color="displayColor">
     <template #title>
       <div class="ac-header">
         <div class="ac-title-wrap">
@@ -226,7 +217,7 @@ function formatResetAt(iso: string) {
         />
       </div>
     </template>
-  </Card>
+  </BaseCard>
 
   <AddictionResetModal
     v-if="showResetDrawer"
@@ -242,11 +233,9 @@ function formatResetAt(iso: string) {
     @close="showTriggerDrawer = false"
   />
 
-  <Drawer
+  <BaseDrawer
     v-model:visible="showResetInfoDrawer"
-    position="bottom"
     class="addiction-drawer"
-    style="height: auto; max-height: 85vh"
   >
     <template #header>
       <div class="reset-info-drawer-title">
@@ -265,26 +254,19 @@ function formatResetAt(iso: string) {
         </div>
       </div>
     </div>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style scoped>
 .addiction-card {
-  border-radius: 16px;
-  border-left-width: 4px;
-  border-left-style: solid;
-}
-
-.addiction-card.no-border {
-  border: none;
-  border-left-width: 0;
+  border-radius: var(--ds-radius-lg);
 }
 
 .ac-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--ds-space-2);
   width: 100%;
 }
 
@@ -303,9 +285,9 @@ function formatResetAt(iso: string) {
 }
 
 .ac-goal {
-  font-size: 0.8rem;
+  font-size: var(--ds-font-size-xs);
   color: var(--p-text-muted-color);
-  margin-top: 2px;
+  margin-top: var(--ds-space-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -318,7 +300,7 @@ function formatResetAt(iso: string) {
 .ac-compact {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .ac-timer {
@@ -332,20 +314,20 @@ function formatResetAt(iso: string) {
 .ac-progress-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .ac-progress-track {
   flex: 1;
-  height: 6px;
-  border-radius: 3px;
+  height: 0.375rem;
+  border-radius: var(--ds-radius-sm);
   background-color: var(--p-content-border-color);
   overflow: hidden;
 }
 
 .ac-progress-fill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: var(--ds-radius-sm);
   transition: width 1s linear;
 }
 
@@ -359,11 +341,11 @@ function formatResetAt(iso: string) {
 .ac-actions {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--ds-space-2);
 }
 
 .ac-expanded {
-  padding-top: 4px;
+  padding-top: var(--ds-space-1);
 }
 
 .reset-info-drawer-title {

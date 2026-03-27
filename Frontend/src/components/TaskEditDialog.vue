@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -17,6 +16,7 @@ import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 import { useApiError } from '@/composables/useApiError'
 import { useTasksStore } from '@/stores/tasks'
 import { startOfDay, toUtcDateOnlyIso } from '@/utils/dateOnly'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const { t, locale } = useI18n()
 
@@ -188,21 +188,21 @@ async function onDelete() {
 </script>
 
 <template>
-  <Drawer v-model:visible="visible" position="bottom" class="task-drawer" style="height: auto; max-height: 85vh">
+  <BaseDrawer v-model:visible="visible" class="task-drawer">
     <template #header>
-      <div class="task-drawer-header" ref="titleWrap">
+      <div class="ds-drawer-title-row" ref="titleWrap">
         <Checkbox v-if="isEdit" binary v-model="completedModel" />
         <InputText v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')"
-          class="task-drawer-title-input" :class="{ completed: completedModel }" />
+          class="ds-drawer-title-input task-drawer-title-input" :class="{ completed: completedModel }" />
       </div>
     </template>
 
-    <Textarea v-model="descriptionModel" :placeholder="t('tasks.description')" autoResize class="task-drawer-textarea"
+    <Textarea v-model="descriptionModel" :placeholder="t('tasks.description')" autoResize class="ds-drawer-textarea"
       :rows="3" fluid />
 
-    <div class="task-drawer-chips">
+    <div class="ds-chip-row">
       <Button :label="dateChipLabel" icon="pi pi-calendar" size="small" :severity="hasDate ? undefined : 'secondary'"
-        :variant="hasDate ? 'outlined' : 'text'" class="task-chip"
+        :variant="hasDate ? 'outlined' : 'text'" class="ds-chip-button"
         @click="(e: Event) => dateRecurrencePopover?.toggle(e)" />
       <Popover ref="dateRecurrencePopover" append-to="body">
         <DateAndRecurrencePicker :date="dueDateAsDate" :recurrence-rule="localTask.recurrenceRule"
@@ -211,10 +211,10 @@ async function onDelete() {
       </Popover>
 
       <Select v-if="!hasGoal" v-model="localTask.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.field')" class="task-chip-select"
-        :class="{ 'task-chip-select--active': hasLifeArea }">
+        show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasLifeArea }">
         <template #value>
-          <span class="task-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-chart-pie" />
             {{ lifeAreaChipLabel }}
           </span>
@@ -222,10 +222,10 @@ async function onDelete() {
       </Select>
 
       <Select v-model="localTask.goalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id"
-        show-clear :placeholder="t('goals.field')" class="task-chip-select"
-        :class="{ 'task-chip-select--active': hasGoal }">
+        show-clear :placeholder="t('goals.field')" class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasGoal }">
         <template #value>
-          <span class="task-chip-select-value">
+          <span class="ds-chip-select-value">
             <i class="pi pi-bullseye" />
             {{ goalChipLabel }}
           </span>
@@ -238,7 +238,7 @@ async function onDelete() {
     </Message>
 
     <template #footer>
-      <div class="task-drawer-actions">
+      <div class="ds-drawer-actions">
         <Button v-if="isEdit" icon="pi pi-trash" :label="t('tasks.editdialog.delete')" severity="danger" variant="text"
           size="small" :loading="isDeleteLoading" @click="onDelete" />
         <span v-else />
@@ -246,135 +246,12 @@ async function onDelete() {
           :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style>
-.p-drawer.task-drawer {
-  border-radius: 1rem 1rem 0 0;
-}
-
-.task-drawer .p-drawer-header {
-  position: relative;
-  padding: 0.75rem 1.25rem;
-  padding-top: 1.5rem;
-}
-
-.task-drawer .p-drawer-header::before {
-  content: '';
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2.5rem;
-  height: 0.25rem;
-  background: var(--p-content-border-color);
-  border-radius: 999px;
-}
-
-.task-drawer-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.p-inputtext.task-drawer-title-input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  box-shadow: none !important;
-  background: transparent;
-  font-size: 1.125rem;
-  font-weight: 600;
-  padding: 0.5rem 0;
-}
-
 .p-inputtext.task-drawer-title-input.completed {
   text-decoration: line-through;
   color: var(--p-text-muted-color);
-}
-
-.task-drawer .p-drawer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-bottom: 0.25rem;
-}
-
-.task-drawer-textarea.p-textarea {
-  border: none;
-  box-shadow: none !important;
-  background: transparent;
-  font-size: 1rem;
-  line-height: 1.6;
-  padding: 0.5rem 0;
-}
-
-.task-drawer-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.task-chip {
-  border-radius: 999px !important;
-  font-size: 0.8125rem !important;
-}
-
-.task-chip-select.p-select {
-  border-radius: 999px;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0.8125rem;
-  height: auto;
-  padding-right: 0.5rem;
-}
-
-.task-chip-select.p-select .p-select-label {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
-}
-
-.task-chip-select.p-select .p-select-dropdown {
-  display: none;
-}
-
-.task-chip-select--active.p-select {
-  border-color: var(--p-primary-color);
-  --p-select-clear-icon-color: var(--p-primary-color);
-}
-
-.task-chip-select--active.p-select .p-select-label {
-  color: var(--p-primary-color);
-}
-
-.task-chip-select-value {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  white-space: nowrap;
-}
-
-.task-chip-select-value i {
-  font-size: 0.75rem;
-}
-
-.task-drawer .p-drawer-footer {
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.task-drawer-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
 }
 </style>

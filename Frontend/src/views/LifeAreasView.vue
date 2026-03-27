@@ -71,7 +71,7 @@ function onEditArea(area: LifeAreaDTO) {
 
 <template>
   <div class="lifeareas-view">
-    <h1 class="view-page-header">{{ $t('lifeareas.title') }}</h1>
+    <h1 class="ds-page-header">{{ $t('lifeareas.title') }}</h1>
 
     <div v-if="lifeAreasStore.isLoading && lifeAreasStore.lifeAreas.length === 0" class="lifeareas-skeleton">
       <Skeleton shape="circle" size="170px" class="skeleton-wheel" />
@@ -140,12 +140,6 @@ function onEditArea(area: LifeAreaDTO) {
 
 .skeleton-legend-card {
   border-radius: var(--p-border-radius);
-}
-
-.view-page-header {
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
 }
 
 .wheel-wrap {

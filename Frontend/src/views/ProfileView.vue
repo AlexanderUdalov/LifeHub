@@ -205,7 +205,7 @@ onMounted(async () => {
 
 <template>
     <div class="profile-view-root">
-        <h1 class="view-page-header">{{ $t('profile-view.profile') }}</h1>
+        <h1 class="ds-page-header">{{ $t('profile-view.profile') }}</h1>
         <Card>
             <template #content>
                 <IftaLabel>
@@ -304,12 +304,6 @@ onMounted(async () => {
 <style scoped>
 .profile-view-root {
     width: 100%;
-}
-
-.view-page-header {
-    font-size: var(--p-card-title-font-size);
-    font-weight: 600;
-    text-align: center;
 }
 
 :deep(.p-iftalabel) {

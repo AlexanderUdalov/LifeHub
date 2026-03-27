@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Card from 'primevue/card'
 import Button from 'primevue/button'
 import { computed, ref } from 'vue'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
@@ -8,6 +7,7 @@ import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 import { useI18n } from 'vue-i18n'
 import { renderMarkdown } from '@/composables/useMarkdown'
+import BaseCard from '@/components/base/BaseCard.vue'
 
 const props = withDefaults(
   defineProps<{ item: JournalEntryDTO; noBorder?: boolean }>(),
@@ -23,12 +23,6 @@ const journalStore = useJournalStore()
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.item.lifeAreaId))
-const cardBorderStyle = computed(() => {
-  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
-  return areaColor.value
-    ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value }
-    : { borderLeftWidth: 0 }
-})
 
 const lifeArea = computed(() => {
   if (!props.item.lifeAreaId) return null
@@ -79,7 +73,7 @@ async function onConfirmDelete() {
 </script>
 
 <template>
-  <Card class="journal-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
+  <BaseCard class="journal-card" :borderless="noBorder" :accent-color="areaColor">
     <template #content>
       <div class="journal-card__header">
         <div class="journal-card__meta">
@@ -151,12 +145,12 @@ async function onConfirmDelete() {
         </div>
       </Transition>
     </template>
-  </Card>
+  </BaseCard>
 </template>
 
 <style scoped>
 .journal-card {
-  border-radius: 16px;
+  border-radius: var(--ds-radius-lg);
   overflow: hidden;
   transition: box-shadow 0.2s ease, transform 0.15s ease;
   position: relative;
@@ -164,15 +158,6 @@ async function onConfirmDelete() {
 
 .journal-card:active {
   transform: scale(0.985);
-}
-
-.journal-card.no-border {
-  box-shadow: none;
-}
-
-.journal-card.no-border :deep(.p-card) {
-  border: none;
-  background: transparent;
 }
 
 :deep(.p-card-body) {

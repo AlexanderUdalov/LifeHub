@@ -137,7 +137,7 @@ async function onConfirmDelete() {
 
       <div v-if="hasFooterMeta" class="journal-card__footer">
         <span v-if="item.addictionId" class="journal-card__addiction">
-          <i class="pi pi-shield" />
+          <i class="pi pi-ban" />
           {{ addictionLabel }}
         </span>
         <span v-if="lifeArea" class="journal-card__life-area">

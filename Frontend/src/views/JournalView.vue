@@ -10,6 +10,7 @@ import Dropdown from 'primevue/dropdown';
 import { useJournalStore } from '@/stores/journal';
 import { useLifeAreasStore } from '@/stores/lifeAreas';
 import { useGoalsStore } from '@/stores/goals';
+import { useAddictionsStore } from '@/stores/addictions';
 import { useI18n } from 'vue-i18n';
 import { computed, onMounted, ref } from 'vue';
 import type { JournalEntryDTO } from '@/api/JournalAPI';
@@ -17,6 +18,7 @@ import type { JournalEntryDTO } from '@/api/JournalAPI';
 const journalStore = useJournalStore();
 const lifeAreasStore = useLifeAreasStore();
 const goalsStore = useGoalsStore();
+const addictionsStore = useAddictionsStore();
 const { t } = useI18n();
 
 const searchQuery = ref('');
@@ -84,7 +86,10 @@ const emit = defineEmits<{
 }>();
 
 onMounted(async () => {
-  await journalStore.loadEntries();
+  await Promise.all([
+    journalStore.loadEntries(),
+    addictionsStore.fetchAddictions(60).catch(() => undefined)
+  ]);
 });
 </script>
 

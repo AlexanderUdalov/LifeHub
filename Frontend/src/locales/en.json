@@ -323,7 +323,8 @@
     "filterAll": "All",
     "clearFilters": "Clear",
     "noResults": "No results",
-    "noResultsHint": "Try changing your search or filters"
+    "noResultsHint": "Try changing your search or filters",
+    "deletedAddiction": "Deleted addiction"
   },
   "profile": "Profile",
   "reflection": {

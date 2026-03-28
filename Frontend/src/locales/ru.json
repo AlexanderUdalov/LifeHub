@@ -327,7 +327,8 @@
     "filterAll": "Все",
     "clearFilters": "Сбросить",
     "noResults": "Ничего не найдено",
-    "noResultsHint": "Попробуйте изменить запрос или фильтры"
+    "noResultsHint": "Попробуйте изменить запрос или фильтры",
+    "deletedAddiction": "Удалённая зависимость"
   },
   "profile": "Профиль",
   "reflection": {

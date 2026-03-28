@@ -5,6 +5,7 @@ import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useJournalStore } from '@/stores/journal'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
+import { useAddictionsStore } from '@/stores/addictions'
 import { useI18n } from 'vue-i18n'
 import { renderMarkdown } from '@/composables/useMarkdown'
 import BaseCard from '@/components/base/BaseCard.vue'
@@ -22,6 +23,7 @@ const { t, locale } = useI18n()
 const journalStore = useJournalStore()
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
+const addictionsStore = useAddictionsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.item.lifeAreaId))
 
 const lifeArea = computed(() => {
@@ -31,7 +33,17 @@ const lifeArea = computed(() => {
 
 const goal = computed(() => goalsStore.getGoalById(props.item.goalId))
 
-const hasLifeAreaOrGoal = computed(() => !!lifeArea.value || !!goal.value)
+const addiction = computed(() => {
+  if (!props.item.addictionId) return null
+  return (
+    addictionsStore.addictions.find((a) => a.addiction.id === props.item.addictionId)?.addiction ??
+    null
+  )
+})
+
+const addictionLabel = computed(() => addiction.value?.title ?? t('journal.deletedAddiction'))
+
+const hasFooterMeta = computed(() => !!props.item.addictionId || !!lifeArea.value || !!goal.value)
 
 const isExpanded = ref(false)
 const showDeleteConfirm = ref(false)
@@ -123,12 +135,15 @@ async function onConfirmDelete() {
         </div>
       </div>
 
-      <div v-if="hasLifeAreaOrGoal" class="journal-card__footer">
+      <div v-if="hasFooterMeta" class="journal-card__footer">
+        <span v-if="item.addictionId" class="journal-card__addiction">
+          <i class="pi pi-shield" />
+          {{ addictionLabel }}
+        </span>
         <span v-if="lifeArea" class="journal-card__life-area">
           <i class="pi pi-chart-pie" />
           {{ lifeArea.name }}
         </span>
-        <span v-else />
         <span v-if="goal" class="journal-card__goal">
           <i class="pi pi-bullseye" />
           {{ goal.title }}
@@ -324,9 +339,22 @@ async function onConfirmDelete() {
 .journal-card__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.25rem 0;
+}
+
+.journal-card__addiction {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+}
+
+.journal-card__addiction i {
+  font-size: 0.625rem;
 }
 
 .journal-card__goal {

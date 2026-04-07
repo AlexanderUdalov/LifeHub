@@ -164,7 +164,7 @@ function onCellClick(cell: CalendarCell) {
 </script>
 
 <template>
-  <div class="addiction-calendar" :style="{ '--calendar-accent': color }">
+  <div class="addiction-calendar">
     <div class="cal-header">
       <Button icon="pi pi-chevron-left" text rounded size="small" @click="prevMonth" />
       <span class="cal-month-label">{{ monthLabel }}</span>
@@ -253,7 +253,8 @@ function onCellClick(cell: CalendarCell) {
     background-color 0.15s,
     border-color 0.15s;
   user-select: none;
-  background-color: color-mix(in srgb, var(--calendar-accent) 11%, transparent);
+  background-color: color-mix(in srgb, var(--p-content-border-color) 32%, transparent);
+  border-color: color-mix(in srgb, var(--p-content-border-color) 78%, transparent);
 }
 
 .cal-cell.interactive {
@@ -284,8 +285,8 @@ function onCellClick(cell: CalendarCell) {
 }
 
 .cal-cell.has-reset {
-  background-color: color-mix(in srgb, var(--red-500) 22%, transparent);
-  border-color: color-mix(in srgb, var(--red-500) 65%, transparent);
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.72);
 }
 
 .cal-cell.has-reset::after {
@@ -349,11 +350,12 @@ function onCellClick(cell: CalendarCell) {
 }
 
 .cal-legend-swatch.clean {
-  background-color: color-mix(in srgb, var(--calendar-accent) 11%, transparent);
+  background-color: color-mix(in srgb, var(--p-content-border-color) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--p-content-border-color) 78%, transparent);
 }
 
 .cal-legend-swatch.reset {
-  background-color: color-mix(in srgb, var(--red-500) 22%, transparent);
-  border: 1px solid color-mix(in srgb, var(--red-500) 65%, transparent);
+  background-color: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.72);
 }
 </style>

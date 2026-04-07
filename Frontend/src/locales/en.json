@@ -147,6 +147,10 @@
     "collapse": "Collapse",
     "reset": "Reset",
     "trigger": "Trigger",
+    "calendarLegend": {
+      "cleanDay": "No reset day",
+      "resetDay": "Reset day"
+    },
     "units": {
       "mo": "mo",
       "d": "d",

@@ -125,6 +125,16 @@ async function onConfirmDelete() {
         </div>
       </div>
 
+      <Transition name="journal-card-slide">
+        <div v-if="showDeleteConfirm" class="journal-card__confirm" @click.stop>
+          <span class="journal-card__confirm-text">{{ t('journal.deleteConfirm') }}</span>
+          <div class="journal-card__confirm-btns">
+            <Button :label="t('cancel')" variant="text" size="small" @click="showDeleteConfirm = false" />
+            <Button :label="t('journal.delete')" severity="danger" size="small" @click="onConfirmDelete" />
+          </div>
+        </div>
+      </Transition>
+
       <div class="journal-card__body" @click="emit('edit-journal', item)">
         <div
           class="journal-card__text"
@@ -149,16 +159,6 @@ async function onConfirmDelete() {
           {{ goal.title }}
         </span>
       </div>
-
-      <Transition name="journal-card-slide">
-        <div v-if="showDeleteConfirm" class="journal-card__confirm" @click.stop>
-          <span class="journal-card__confirm-text">{{ t('journal.deleteConfirm') }}</span>
-          <div class="journal-card__confirm-btns">
-            <Button :label="t('cancel')" variant="text" size="small" @click="showDeleteConfirm = false" />
-            <Button :label="t('journal.delete')" severity="danger" size="small" @click="onConfirmDelete" />
-          </div>
-        </div>
-      </Transition>
     </template>
   </BaseCard>
 </template>
@@ -375,8 +375,7 @@ async function onConfirmDelete() {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--p-content-border-color);
+  padding: 0.25rem 0 0.125rem;
 }
 
 .journal-card__confirm-text {

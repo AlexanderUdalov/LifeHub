@@ -15,7 +15,7 @@ const emit = defineEmits<{
   (e: 'cell-click', date: Date, hasReset: boolean): void
 }>()
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const intlLocale = computed(() => (locale.value === 'ru' ? 'ru-RU' : 'en-US'))
 
@@ -191,6 +191,17 @@ function onCellClick(cell: CalendarCell) {
         <span v-if="cell.resetCount > 0" class="cal-reset-dot" />
       </div>
     </div>
+
+    <div class="cal-legend">
+      <div class="cal-legend-item">
+        <span class="cal-legend-swatch clean" />
+        <span>{{ t('addictions.calendarLegend.cleanDay') }}</span>
+      </div>
+      <div class="cal-legend-item">
+        <span class="cal-legend-swatch reset" />
+        <span>{{ t('addictions.calendarLegend.resetDay') }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -236,9 +247,14 @@ function onCellClick(cell: CalendarCell) {
   justify-content: center;
   aspect-ratio: 1;
   border-radius: 8px;
+  border: 1px solid transparent;
   font-size: 0.8rem;
-  transition: background-color 0.15s;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
   user-select: none;
+  background-color: color-mix(in srgb, var(--p-content-border-color) 32%, transparent);
+  border-color: color-mix(in srgb, var(--p-content-border-color) 78%, transparent);
 }
 
 .cal-cell.interactive {
@@ -269,7 +285,19 @@ function onCellClick(cell: CalendarCell) {
 }
 
 .cal-cell.has-reset {
-  background-color: color-mix(in srgb, var(--red-500) 15%, transparent);
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.72);
+}
+
+.cal-cell.has-reset::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 10px;
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--red-500);
 }
 
 .cal-cell.is-today.has-reset {
@@ -297,5 +325,37 @@ function onCellClick(cell: CalendarCell) {
 
 .cal-cell.is-today .cal-reset-dot {
   background-color: #fff;
+}
+
+.cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+}
+
+.cal-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.cal-legend-swatch.clean {
+  background-color: color-mix(in srgb, var(--p-content-border-color) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--p-content-border-color) 78%, transparent);
+}
+
+.cal-legend-swatch.reset {
+  background-color: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.72);
 }
 </style>

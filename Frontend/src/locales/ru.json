@@ -151,6 +151,10 @@
     "collapse": "Свернуть",
     "reset": "Сброс",
     "trigger": "Триггер",
+    "calendarLegend": {
+      "cleanDay": "Без сброса",
+      "resetDay": "Со сбросом"
+    },
     "units": {
       "mo": "мес",
       "d": "д",

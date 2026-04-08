@@ -376,7 +376,6 @@ async function onConfirmDelete() {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.25rem 0 0.125rem;
-  border-top: 1px solid var(--p-content-border-color);
 }
 
 .journal-card__confirm-text {

@@ -14,7 +14,7 @@ import {
 } from '@/api/ReflectionAPI'
 import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const journalStore = useJournalStore()
 
 const emit = defineEmits<{
@@ -71,7 +71,8 @@ async function selectPeriod(days: number) {
   errorText.value = ''
 
   try {
-    const res = await startReflection(days)
+    const language = locale.value === 'en' ? 'en' : 'ru'
+    const res = await startReflection(days, language)
     contextId.value = res.contextId!
     messages.value = [{ role: 'assistant', content: res.message ?? '' }]
     journalSummary.value = null

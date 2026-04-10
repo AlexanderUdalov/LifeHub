@@ -2,7 +2,7 @@ using LifeHub.Services;
 
 namespace LifeHub.DTOs;
 
-public record StartReflectionRequest(int PeriodDays);
+public record StartReflectionRequest(int PeriodDays, string? Language = null);
 
 public record StartReflectionResponse(
     Guid ContextId,

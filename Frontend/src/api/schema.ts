@@ -2075,6 +2075,7 @@ export interface components {
         StartReflectionRequest: {
             /** Format: int32 */
             periodDays: number | string;
+            language?: null | string;
         };
         StartReflectionResponse: {
             /** Format: uuid */

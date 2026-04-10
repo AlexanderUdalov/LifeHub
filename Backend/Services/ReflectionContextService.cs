@@ -7,7 +7,8 @@ public record ReflectionContext(
     TasksSummary Tasks,
     HabitsSummary Habits,
     AddictionsSummary Addictions,
-    List<string> RecentJournalExcerpts
+    List<string> RecentJournalExcerpts,
+    List<string> PreviousReflectionSummaries
 );
 
 public record TasksSummary(
@@ -52,8 +53,9 @@ public class ReflectionContextService(ApplicationContext context)
         var habits = await GatherHabitsAsync(userId, dateStart, today);
         var addictions = await GatherAddictionsAsync(userId, dateStart, today);
         var journal = await GatherJournalAsync(userId, periodStart);
+        var previousReflections = await GatherPreviousReflectionsAsync(userId, periodStart);
 
-        return new ReflectionContext(tasks, habits, addictions, journal);
+        return new ReflectionContext(tasks, habits, addictions, journal, previousReflections);
     }
 
     private async Task<TasksSummary> GatherTasksAsync(Guid userId, DateTimeOffset periodStart, DateTimeOffset now)
@@ -155,6 +157,23 @@ public class ReflectionContextService(ApplicationContext context)
             .ToList();
     }
 
+    private async Task<List<string>> GatherPreviousReflectionsAsync(Guid userId, DateTimeOffset periodStart)
+    {
+        // SQLite does not support DateTimeOffset in WHERE/ORDER BY; load and sort/filter in memory
+        var entries = await context.JournalEntries
+            .AsNoTracking()
+            .Where(e => e.UserId == userId)
+            .ToListAsync();
+
+        return entries
+            .Where(e => e.CreatedAt < periodStart)
+            .OrderByDescending(e => e.CreatedAt)
+            .Take(3)
+            .Select(e => e.Text.Length > 220 ? e.Text[..220] + "..." : e.Text)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
+    }
+
     public string FormatAsText(ReflectionContext ctx)
     {
         var lines = new List<string>();
@@ -190,6 +209,16 @@ public class ReflectionContextService(ApplicationContext context)
             foreach (var excerpt in ctx.RecentJournalExcerpts)
             {
                 lines.Add($"- {excerpt}");
+            }
+        }
+
+        if (ctx.PreviousReflectionSummaries.Count > 0)
+        {
+            lines.Add("");
+            lines.Add("=== PREVIOUS REFLECTION SUMMARIES ===");
+            foreach (var summary in ctx.PreviousReflectionSummaries)
+            {
+                lines.Add($"- {summary}");
             }
         }
 

@@ -15,13 +15,13 @@ public class AiChatService(
     private int MaxSteps => configuration.GetValue("Ai:MaxReflectionSteps", 5);
 
     public async Task<(Guid ContextId, string ContextSummary, string Message)> StartReflectionAsync(
-        Guid userId, int periodDays)
+        Guid userId, int periodDays, string? preferredLanguage = null)
     {
         var reflectionCtx = await contextService.GatherAsync(userId, periodDays);
         var contextText = contextService.FormatAsText(reflectionCtx);
         var contextSummary = contextService.FormatContextSummary(reflectionCtx);
 
-        var systemPrompt = BuildSystemPrompt(contextText, periodDays);
+        var systemPrompt = BuildSystemPrompt(contextText, periodDays, preferredLanguage);
 
         var contextId = Guid.NewGuid();
         PromptCache[contextId] = new CachedPrompt(systemPrompt, DateTimeOffset.UtcNow);
@@ -94,12 +94,19 @@ public class AiChatService(
         chatClient ?? throw new InvalidOperationException(
             "AI is not configured. Set Ai:ApiKey in appsettings or environment variables.");
 
-    private static string BuildSystemPrompt(string contextText, int periodDays)
+    private static string BuildSystemPrompt(string contextText, int periodDays, string? preferredLanguage)
     {
+        var normalizedLanguage = preferredLanguage?.Trim().ToLowerInvariant() switch
+        {
+            "ru" or "russian" => "Russian",
+            "en" or "english" => "English",
+            _ => "Russian"
+        };
+
         return $"""
             You are a thoughtful reflection partner. The user is reviewing the last {periodDays} days of activity
             in LifeHub (tasks, habits, optional addiction tracking, journal excerpts). Be warm and non-judgmental,
-            but prioritize curiosity and specificity over generic wellness check-ins.
+            and prioritize curiosity and specificity over generic wellness check-ins.
 
             Here is the user's activity data for this period:
 
@@ -114,15 +121,21 @@ public class AiChatService(
               completed days, relate a journal excerpt to a task or habit, ask what made a completed task easier
               or harder, or what would change one overdue item next week. Vary the angle each turn — do not repeat
               the same question shape (e.g. avoid asking "how did that feel?" every time).
+            - Keep feedback collection gentle: invite sharing instead of pressuring for analysis. Avoid sounding like
+              an interview checklist ("what helped, what blocked, what to improve" all at once). A soft, optional
+              prompt is preferred (e.g. "If you want, share what stood out for you here.").
             - Offer a brief observation from the data (1–2 sentences) before your question when it helps — e.g.
               interpret balance between completion and backlog, or call out one standout pattern — without lecturing.
             - If the data is sparse, say so briefly and ask one focused question about what happened off-app or
               what they want the next period to look like, still avoiding vague mood-only prompts.
             - Celebrate real wins and name them; for slips (missed habits, overdue tasks, resets), stay compassionate
               and specific, not generic reassurance.
+            - Use continuity: if "PREVIOUS REFLECTION SUMMARIES" are present in the context, factor them into your
+              observations and avoid re-asking the same angle from earlier reflections unless the user brings it up.
 
             Dialogue:
-            - Respond in the same language the user writes in.
+            - The first assistant message MUST be in {normalizedLanguage} (from app settings for this reflection start).
+            - After the first assistant message, continue in the same language the user writes in.
             - Keep each reply concise (about 2–4 sentences before the single question, or slightly longer only for the final wrap-up).
             - Build on prior user answers; do not re-ask about topics they already addressed unless adding a new angle.
 

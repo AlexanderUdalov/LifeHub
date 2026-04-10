@@ -19,7 +19,10 @@ public class AiController(AiChatService aiChatService) : ControllerBase
             return BadRequest("Period must be between 1 and 90 days.");
 
         var userId = User.GetUserId();
-        var (contextId, contextSummary, message) = await aiChatService.StartReflectionAsync(userId, request.PeriodDays);
+        var (contextId, contextSummary, message) = await aiChatService.StartReflectionAsync(
+            userId,
+            request.PeriodDays,
+            request.Language);
 
         return new StartReflectionResponse(contextId, contextSummary, message);
     }

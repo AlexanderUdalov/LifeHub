@@ -7,9 +7,13 @@ export type SendReflectionMessageRequest = components['schemas']['SendReflection
 export type ReflectionMessageResponse = components['schemas']['ReflectionMessageResponse'];
 export type ChatMessageDTO = components['schemas']['ChatMessageDTO'];
 
-export async function startReflection(periodDays: number): Promise<StartReflectionResponse> {
+export async function startReflection(
+    periodDays: number,
+    language?: StartReflectionRequest['language']
+): Promise<StartReflectionResponse> {
     const { data } = await api.post<StartReflectionResponse>('/ai/reflection/start', {
-        periodDays
+        periodDays,
+        language
     });
     return data;
 }

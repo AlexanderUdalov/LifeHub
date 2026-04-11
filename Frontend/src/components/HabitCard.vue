@@ -120,12 +120,12 @@ const emit = defineEmits<{
 .goal-streak-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
 .habit-streak-chip {
+  margin-left: auto;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
   background-color: var(--p-primary-100);

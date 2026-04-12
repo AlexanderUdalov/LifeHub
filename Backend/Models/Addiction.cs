@@ -6,6 +6,7 @@ public class Addiction
     public Guid UserId { get; set; }
 
     public required string Title { get; set; }
+    public string? Description { get; set; }
     public required string Color { get; set; }
 
     public DateTime CreatedAt { get; set; }
@@ -16,4 +17,5 @@ public class Addiction
     public LifeArea? LifeArea { get; set; }
 
     public List<AddictionReset> Resets { get; } = [];
+    public List<AddictionTriggerEvent> TriggerEvents { get; } = [];
 }

@@ -34,7 +34,10 @@ public record HabitsSummary(
 
 public record AddictionSummary(
     string Title,
+    string? Description,
     int ResetsInPeriod,
+    int TriggerOvercameInPeriod,
+    int TriggerRelapsedInPeriod,
     int CurrentStreakDays
 );
 
@@ -117,15 +120,32 @@ public class ReflectionContextService(ApplicationContext context)
 
     private async Task<AddictionsSummary> GatherAddictionsAsync(Guid userId, DateOnly dateStart, DateOnly today)
     {
+        var periodStartUtc = DateTime.SpecifyKind(dateStart.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
         var addictions = await context.Addictions
             .AsNoTracking()
             .Include(a => a.Resets)
             .Where(a => a.UserId == userId)
             .ToListAsync();
+        var addictionIds = addictions.Select(a => a.Id).ToArray();
+
+        var triggerStats = await context.AddictionTriggerEvents
+            .AsNoTracking()
+            .Where(t => addictionIds.Contains(t.AddictionId) && t.EventAt >= periodStartUtc)
+            .GroupBy(t => new { t.AddictionId, t.Outcome })
+            .Select(g => new { g.Key.AddictionId, g.Key.Outcome, Count = g.Count() })
+            .ToListAsync();
 
         var items = addictions.Select(a =>
         {
             int resetsInPeriod = a.Resets.Count(r => r.Date >= dateStart && r.Date <= today);
+            var overcameCount = triggerStats
+                .Where(x => x.AddictionId == a.Id && x.Outcome == AddictionTriggerOutcome.Overcame)
+                .Select(x => x.Count)
+                .FirstOrDefault();
+            var relapsedCount = triggerStats
+                .Where(x => x.AddictionId == a.Id && x.Outcome == AddictionTriggerOutcome.Relapsed)
+                .Select(x => x.Count)
+                .FirstOrDefault();
 
             var lastReset = a.Resets
                 .OrderByDescending(r => r.ResetAt)
@@ -135,7 +155,13 @@ public class ReflectionContextService(ApplicationContext context)
                 ? (DateTime.UtcNow - lastReset.ResetAt).Days
                 : (DateTime.UtcNow - a.CreatedAt).Days;
 
-            return new AddictionSummary(a.Title, resetsInPeriod, streakDays);
+            return new AddictionSummary(
+                a.Title,
+                a.Description,
+                resetsInPeriod,
+                overcameCount,
+                relapsedCount,
+                streakDays);
         }).ToList();
 
         return new AddictionsSummary(items);
@@ -199,7 +225,14 @@ public class ReflectionContextService(ApplicationContext context)
         lines.Add("=== ADDICTIONS ===");
         foreach (var a in ctx.Addictions.Items)
         {
-            lines.Add($"- {a.Title}: {a.ResetsInPeriod} resets in period, current streak {a.CurrentStreakDays} days");
+            var descriptionPart = string.IsNullOrWhiteSpace(a.Description)
+                ? ""
+                : $", motivation: {a.Description}";
+            lines.Add(
+                $"- {a.Title}: {a.ResetsInPeriod} resets in period, " +
+                $"{a.TriggerOvercameInPeriod} overcame triggers, " +
+                $"{a.TriggerRelapsedInPeriod} relapsed after triggers, " +
+                $"current streak {a.CurrentStreakDays} days{descriptionPart}");
         }
 
         if (ctx.RecentJournalExcerpts.Count > 0)

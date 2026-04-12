@@ -296,6 +296,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/addictions/{id}/trigger-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LogTriggerEventRequest"];
+                    "text/json": components["schemas"]["LogTriggerEventRequest"];
+                    "application/*+json": components["schemas"]["LogTriggerEventRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/addictions/{id}/trigger-guidance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    language?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GenerateTriggerGuidanceResponse"];
+                        "application/json": components["schemas"]["GenerateTriggerGuidanceResponse"];
+                        "text/json": components["schemas"]["GenerateTriggerGuidanceResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/reflection/start": {
         parameters: {
             query?: never;
@@ -1871,6 +1975,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             title: string;
+            description: null | string;
             color: string;
             /** Format: date-time */
             createdAt: string;
@@ -1890,8 +1995,21 @@ export interface components {
             journalEntryId: null | string;
             journalText: null | string;
         };
+        AddictionTriggerEventDTO: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            eventAt: string;
+            outcome: components["schemas"]["AddictionTriggerOutcome"];
+            note: null | string;
+            /** Format: uuid */
+            journalEntryId: null | string;
+            journalText: null | string;
+        };
+        AddictionTriggerOutcome: number;
         AddictionUpsertRequest: {
             title: string;
+            description: null | string;
             color: string;
             /** Format: uuid */
             goalId: null | string;
@@ -1903,6 +2021,7 @@ export interface components {
         AddictionWithResetsDTO: {
             addiction: components["schemas"]["AddictionDTO"];
             resets: components["schemas"]["AddictionResetEntryDTO"][];
+            triggerEvents: components["schemas"]["AddictionTriggerEventDTO"][];
             /** Format: date-time */
             lastResetAt: null | string;
             /** Format: int32 */
@@ -1957,6 +2076,11 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+        };
+        GenerateTriggerGuidanceResponse: {
+            title: string;
+            subtitle: string;
+            tips: string[];
         };
         GoalDTO: {
             /** Format: uuid */
@@ -2037,6 +2161,12 @@ export interface components {
         LoginRequest: {
             email: string;
             password: string;
+        };
+        LogTriggerEventRequest: {
+            outcome: components["schemas"]["AddictionTriggerOutcome"];
+            note: null | string;
+            /** Format: date-time */
+            eventAt: null | string;
         };
         ProblemDetails: {
             type?: null | string;

@@ -5,6 +5,7 @@ namespace LifeHub.DTOs;
 public record AddictionDTO(
     Guid Id,
     string Title,
+    string? Description,
     string Color,
     DateTime CreatedAt,
     Guid? GoalId,
@@ -19,15 +20,26 @@ public record AddictionResetEntryDTO(
     string? JournalText
 );
 
+public record AddictionTriggerEventDTO(
+    Guid Id,
+    DateTime EventAt,
+    AddictionTriggerOutcome Outcome,
+    string? Note,
+    Guid? JournalEntryId,
+    string? JournalText
+);
+
 public record AddictionWithResetsDTO(
     AddictionDTO Addiction,
     IReadOnlyList<AddictionResetEntryDTO> Resets,
+    IReadOnlyList<AddictionTriggerEventDTO> TriggerEvents,
     DateTime? LastResetAt,
     int CurrentStreakDays
 );
 
 public record AddictionUpsertRequest(
     string Title,
+    string? Description,
     string Color,
     Guid? GoalId,
     Guid? LifeAreaId,
@@ -42,12 +54,36 @@ public record SetResetRequest(
     DateTime? ResetAt
 );
 
+public record LogTriggerEventRequest(
+    AddictionTriggerOutcome Outcome,
+    string? Note,
+    /// <summary>Optional. When set, used as <see cref="AddictionTriggerEvent.EventAt"/> in UTC.</summary>
+    DateTime? EventAt
+);
+
+public record GenerateTriggerGuidanceResponse(
+    string Title,
+    string Subtitle,
+    IReadOnlyList<string> Tips
+);
+
+public record GenerateTriggerGuidanceRequest(
+    string? Language
+);
+
+public record LogTriggerEventResponse(
+    Guid TriggerEventId,
+    Guid? JournalEntryId,
+    Guid? ResetId
+);
+
 public static class AddictionMapping
 {
     public static AddictionDTO ToDTO(this Addiction addiction) =>
         new(
             addiction.Id,
             addiction.Title,
+            addiction.Description,
             addiction.Color,
             addiction.CreatedAt,
             addiction.GoalId,

@@ -229,7 +229,7 @@ function formatResetAt(iso: string) {
 
   <AddictionTriggerModal
     v-if="showTriggerDrawer"
-    :addiction-title="addiction.addiction.title"
+    :addiction="addiction.addiction"
     @close="showTriggerDrawer = false"
   />
 

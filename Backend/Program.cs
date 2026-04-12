@@ -58,6 +58,7 @@ if (!string.IsNullOrWhiteSpace(aiApiKey))
 
 builder.Services.AddScoped<ReflectionContextService>();
 builder.Services.AddScoped<AiChatService>();
+builder.Services.AddScoped<AddictionTriggerGuidanceService>();
 
 builder.Services
     .AddAuthorization()

@@ -6,6 +6,10 @@ export type AddictionDTO = components['schemas']['AddictionDTO']
 export type AddictionWithResetsDTO = components['schemas']['AddictionWithResetsDTO']
 export type AddictionUpsertRequest = components['schemas']['AddictionUpsertRequest']
 export type AddictionResetEntryDTO = components['schemas']['AddictionResetEntryDTO']
+export type AddictionTriggerEventDTO = components['schemas']['AddictionTriggerEventDTO']
+export type AddictionTriggerOutcome = components['schemas']['AddictionTriggerOutcome']
+export type LogTriggerEventRequest = components['schemas']['LogTriggerEventRequest']
+export type GenerateTriggerGuidanceResponse = components['schemas']['GenerateTriggerGuidanceResponse']
 
 export const addictionsApi = {
   async getAddictions(days = 14): Promise<AddictionWithResetsDTO[]> {
@@ -42,5 +46,25 @@ export const addictionsApi = {
   async removeReset(addictionId: string, date: Date): Promise<void> {
     const dateOnly = toDateOnlyString(date)
     await api.delete(`/addictions/${addictionId}/resets/${dateOnly}`)
+  },
+
+  async getTriggerGuidance(
+    addictionId: string,
+    language?: string | null
+  ): Promise<GenerateTriggerGuidanceResponse> {
+    const { data } = await api.get<GenerateTriggerGuidanceResponse>(`/addictions/${addictionId}/trigger-guidance`, {
+      params: {
+        language: language?.trim() ? language.trim() : undefined
+      }
+    })
+    return data!
+  },
+
+  async logTriggerEvent(addictionId: string, request: LogTriggerEventRequest): Promise<void> {
+    await api.post(`/addictions/${addictionId}/trigger-events`, {
+      outcome: request.outcome,
+      note: request.note?.trim() ? request.note.trim() : null,
+      eventAt: request.eventAt ?? null
+    })
   }
 }

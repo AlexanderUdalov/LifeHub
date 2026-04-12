@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Message from 'primevue/message'
@@ -37,6 +38,7 @@ watch(visible, (v) => {
 })
 
 const localTitle = ref(props.addiction?.title ?? '')
+const localDescription = ref(props.addiction?.description ?? '')
 const localColor = ref(props.addiction?.color ?? ADDICTION_COLOR_OPTIONS[0] ?? '#ef4444')
 const localGoalId = ref<string | null>(props.addiction?.goalId ?? null)
 const localLifeAreaId = ref<string | null>(props.addiction?.lifeAreaId ?? null)
@@ -98,6 +100,7 @@ async function onSave() {
   try {
     const request = {
       title: localTitle.value.trim(),
+      description: localDescription.value.trim() || null,
       color: effectiveColor.value,
       goalId: localGoalId.value,
       lifeAreaId: localLifeAreaId.value,
@@ -174,6 +177,17 @@ async function onDelete() {
       </div>
     </div>
 
+    <div class="addiction-drawer-section">
+      <label class="addiction-drawer-label">{{ t('addictions.editdialog.description') }}</label>
+      <Textarea
+        v-model="localDescription"
+        :placeholder="t('addictions.editdialog.descriptionPlaceholder')"
+        autoResize
+        rows="4"
+        class="addiction-description-textarea w-full"
+      />
+    </div>
+
     <div v-if="!isEdit" class="addiction-drawer-section">
       <label class="addiction-drawer-label">{{ t('addictions.editdialog.lastRelapseDateTime') }}</label>
       <DatePicker v-model="localLastRelapseAt" showTime hourFormat="24" date-format="dd.mm.yy"
@@ -195,3 +209,10 @@ async function onDelete() {
     </template>
   </BaseDrawer>
 </template>
+
+<style scoped>
+.addiction-description-textarea {
+  width: 100%;
+  min-height: 6rem;
+}
+</style>

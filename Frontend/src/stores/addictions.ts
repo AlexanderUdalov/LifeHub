@@ -2,10 +2,10 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
   addictionsApi,
+  type AddictionTriggerOutcome,
   type AddictionUpsertRequest,
   type AddictionWithResetsDTO
 } from '@/api/AddictionsAPI'
-import { toDateOnlyString } from '@/utils/dateOnly'
 
 export const useAddictionsStore = defineStore('addictions', () => {
   const addictions = ref<AddictionWithResetsDTO[]>([])
@@ -87,6 +87,19 @@ export const useAddictionsStore = defineStore('addictions', () => {
     }
   }
 
+  async function logTriggerEvent(
+    addictionId: string,
+    outcome: AddictionTriggerOutcome,
+    options?: { note?: string | null; eventAt?: string | null }
+  ) {
+    await addictionsApi.logTriggerEvent(addictionId, {
+      outcome,
+      note: options?.note ?? null,
+      eventAt: options?.eventAt ?? null
+    })
+    await fetchAddictions(rangeDays.value)
+  }
+
   return {
     addictions,
     addictionsSorted,
@@ -95,6 +108,7 @@ export const useAddictionsStore = defineStore('addictions', () => {
     fetchAddictions,
     setReset,
     removeReset,
+    logTriggerEvent,
     createAddiction,
     updateAddiction,
     deleteAddiction

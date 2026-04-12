@@ -1,3 +1,5 @@
+using LifeHub.DTOs;
+using LifeHub.Models;
 using LifeHub.Services;
 using Xunit;
 
@@ -5,6 +7,30 @@ namespace Backend.Tests;
 
 public class AiChatServicePromptTests
 {
+    [Fact]
+    public void TriggerGuidanceFallback_Russian_UsesDescriptionInSubtitle()
+    {
+        var method = typeof(AddictionTriggerGuidanceService).GetMethod(
+            "BuildFallback",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(method);
+
+        var addiction = new Addiction
+        {
+            Id = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
+            Title = "Smoking",
+            Description = "Хочу дышать свободно и быть энергичным",
+            Color = "#ef4444",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var result = method!.Invoke(null, [addiction, 12, 2, 5, true]) as GenerateTriggerGuidanceResponse;
+        Assert.NotNull(result);
+        Assert.Contains("Хочу дышать свободно", result!.Subtitle);
+        Assert.Equal(5, result.Tips.Count);
+    }
+
     [Fact]
     public void BuildSystemPrompt_UsesPreferredLanguageForFirstMessage()
     {

@@ -75,12 +75,6 @@ const milestoneLabel = computed(() => {
   return t('addictions.nextMilestone', { milestone: t(ms.labelKey) })
 })
 
-const isExpanded = ref(false)
-
-function toggleExpanded() {
-  isExpanded.value = !isExpanded.value
-}
-
 const showResetDrawer = ref(false)
 const resetPrefilledDate = ref<Date | null>(null)
 const showTriggerDrawer = ref(false)
@@ -144,9 +138,9 @@ const resetsForInfoDay = computed(() => {
 })
 
 function formatResetAt(iso: string) {
-  return parseUtcIso(iso).toLocaleString(intlLocale.value, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
+  return parseUtcIso(iso).toLocaleTimeString(intlLocale.value, {
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 </script>
@@ -159,21 +153,13 @@ function formatResetAt(iso: string) {
           <div class="ac-title" @click="emit('edit', addiction.addiction)">
             {{ addiction.addiction.title }}
           </div>
-          <div v-if="goalTitle && !isExpanded" class="ac-goal">{{ goalTitle }}</div>
+          <div v-if="goalTitle" class="ac-goal">{{ goalTitle }}</div>
         </div>
-        <Button
-          :icon="isExpanded ? 'pi pi-chevron-up' : 'pi pi-calendar'"
-          text
-          rounded
-          size="small"
-          class="ac-toggle-btn"
-          @click="toggleExpanded"
-        />
       </div>
     </template>
 
     <template #content>
-      <div v-if="!isExpanded" class="ac-compact">
+      <div class="ac-content">
         <div class="ac-timer">{{ progressText }}</div>
 
         <div class="ac-progress-row">
@@ -188,6 +174,13 @@ function formatResetAt(iso: string) {
           </div>
           <span class="ac-milestone">{{ milestoneLabel }}</span>
         </div>
+
+        <AddictionCalendar
+          :resets="resetsList"
+          :created-at="addiction.addiction.createdAt"
+          :color="displayColor"
+          @cell-click="onCalendarCellClick"
+        />
 
         <div class="ac-actions">
           <Button
@@ -206,15 +199,6 @@ function formatResetAt(iso: string) {
             @click="openResetDrawer()"
           />
         </div>
-      </div>
-
-      <div v-else class="ac-expanded">
-        <AddictionCalendar
-          :resets="resetsList"
-          :created-at="addiction.addiction.createdAt"
-          :color="displayColor"
-          @cell-click="onCalendarCellClick"
-        />
       </div>
     </template>
   </BaseCard>
@@ -236,6 +220,8 @@ function formatResetAt(iso: string) {
   <BaseDrawer
     v-model:visible="showResetInfoDrawer"
     class="addiction-drawer"
+    max-height="85vh"
+    min-height="55vh"
   >
     <template #header>
       <div class="reset-info-drawer-title">
@@ -254,6 +240,16 @@ function formatResetAt(iso: string) {
         </div>
       </div>
     </div>
+    <template #footer>
+      <div class="reset-info-drawer-footer">
+        <Button
+          class="reset-info-add-btn"
+          icon="pi pi-plus"
+          :label="t('addictions.resetInfo.addAnother')"
+          @click="onAddAnotherResetForDay"
+        />
+      </div>
+    </template>
   </BaseDrawer>
 </template>
 
@@ -293,14 +289,10 @@ function formatResetAt(iso: string) {
   white-space: nowrap;
 }
 
-.ac-toggle-btn {
-  flex-shrink: 0;
-}
-
-.ac-compact {
+.ac-content {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-4);
 }
 
 .ac-timer {
@@ -342,10 +334,6 @@ function formatResetAt(iso: string) {
   display: flex;
   justify-content: space-between;
   gap: var(--ds-space-2);
-}
-
-.ac-expanded {
-  padding-top: var(--ds-space-1);
 }
 
 .reset-info-drawer-title {

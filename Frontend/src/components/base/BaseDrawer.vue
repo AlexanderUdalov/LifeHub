@@ -5,6 +5,7 @@ import { computed } from "vue"
 const props = withDefaults(defineProps<{
   visible: boolean
   maxHeight?: string
+  minHeight?: string
   class?: string | string[] | Record<string, boolean>
 }>(), {
   maxHeight: "var(--ds-drawer-max-height)"
@@ -16,7 +17,8 @@ const emit = defineEmits<{
 
 const drawerStyle = computed(() => ({
   height: "auto",
-  maxHeight: props.maxHeight
+  maxHeight: props.maxHeight,
+  minHeight: props.minHeight
 }))
 </script>
 

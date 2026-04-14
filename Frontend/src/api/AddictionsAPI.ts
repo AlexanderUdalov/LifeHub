@@ -9,7 +9,17 @@ export type AddictionResetEntryDTO = components['schemas']['AddictionResetEntryD
 export type AddictionTriggerEventDTO = components['schemas']['AddictionTriggerEventDTO']
 export type AddictionTriggerOutcome = components['schemas']['AddictionTriggerOutcome']
 export type LogTriggerEventRequest = components['schemas']['LogTriggerEventRequest']
-export type GenerateTriggerGuidanceResponse = components['schemas']['GenerateTriggerGuidanceResponse']
+export type TriggerGuidanceSlide = {
+  text: string
+  image?: string | null
+}
+
+export type GenerateTriggerGuidanceResponse = {
+  title: string
+  subtitle: string
+  tips: string[]
+  slides?: TriggerGuidanceSlide[]
+}
 
 export const addictionsApi = {
   async getAddictions(days = 14): Promise<AddictionWithResetsDTO[]> {

@@ -64,7 +64,13 @@ public record LogTriggerEventRequest(
 public record GenerateTriggerGuidanceResponse(
     string Title,
     string Subtitle,
-    IReadOnlyList<string> Tips
+    IReadOnlyList<string> Tips,
+    IReadOnlyList<TriggerGuidanceSlideDTO> Slides
+);
+
+public record TriggerGuidanceSlideDTO(
+    string Text,
+    string? Image
 );
 
 public record GenerateTriggerGuidanceRequest(

@@ -55,11 +55,20 @@ public class AddictionTriggerGuidanceService(IChatClient? chatClient = null)
             .Distinct()
             .Take(5)
             .ToList();
+        var slides = payload.Slides?
+            .Where(x => !string.IsNullOrWhiteSpace(x.Text))
+            .Select(x => new TriggerGuidanceSlideDTO(x.Text!.Trim(), NormalizeSlideImage(x.Image)))
+            .Take(6)
+            .ToList();
 
         if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(subtitle) || tips is null || tips.Count == 0)
             return null;
 
-        return new GenerateTriggerGuidanceResponse(title, subtitle, tips);
+        var normalizedSlides = slides is { Count: > 0 }
+            ? slides
+            : tips.Select((text, idx) => new TriggerGuidanceSlideDTO(text, DefaultEmojiByIndex(idx))).ToList();
+
+        return new GenerateTriggerGuidanceResponse(title, subtitle, tips, normalizedSlides);
     }
 
     private static TriggerGuidancePayload? DeserializePayload(string json)
@@ -114,14 +123,20 @@ public class AddictionTriggerGuidanceService(IChatClient? chatClient = null)
             {
               "title": "short supportive title",
               "subtitle": "one short specific sentence",
-              "tips": ["tip1", "tip2", "tip3", "tip4", "tip5"]
+              "tips": ["tip1", "tip2", "tip3", "tip4", "tip5"],
+              "slides": [
+                { "text": "slide text", "image": "emoji or image URL" }
+              ]
             }
 
             Rules:
             - Language: {{tipsLanguage}}
             - Be concrete and personalized.
             - Mention the user's motivation/description if available.
+            - Never copy the user's description verbatim; rephrase it in fresh, natural wording.
             - Keep each tip to one short sentence.
+            - Return 4-6 slides in "slides".
+            - Each slide must have "text" and "image". "image" can be an emoji (preferred) or a public image URL.
             - Do not use markdown, numbering, or extra keys.
             - Tips should be actionable in the next 1-5 minutes.
 
@@ -151,37 +166,87 @@ public class AddictionTriggerGuidanceService(IChatClient? chatClient = null)
         {
             var subtitle = string.IsNullOrWhiteSpace(addiction.Description)
                 ? $"Сейчас важны 5 спокойных минут. Текущая серия — {currentStreakDays} дн."
-                : $"Помни, зачем ты это делаешь: {addiction.Description.Trim()}";
+                : "Вспомни, какую жизнь без этой зависимости ты себе выбираешь.";
             return new GenerateTriggerGuidanceResponse(
                 $"Пауза: {addiction.Title}",
                 subtitle,
                 [
                     "Сделай 10 медленных вдохов и выдохов, считая каждый цикл.",
                     "Уйди из места-триггера на 2 минуты и смени позу тела.",
-                    $"Посмотри на серию: {currentStreakDays} дн. Ты уже вложил много усилий.",
-                    $"Запиши одной фразой, что ты чувствуешь сейчас (триггеров за 30 дн.: {triggerCount}).",
-                    $"Отложи решение на 15 минут. За этот период было срывов: {resetCount}."
+                    $"У тебя уже серия {currentStreakDays} дней — это реальный прогресс, который можно защитить сейчас.",
+                    "Назови вслух текущее состояние одной простой фразой и продолжай дышать ровно.",
+                    resetCount > triggerCount
+                        ? "Пик тяги скоро спадёт, просто отложи решение на 15 минут."
+                        : "Ты уже умеешь проходить такие моменты — выбери одно действие и повтори его сейчас."
+                ],
+                [
+                    new("Сделай 10 медленных вдохов и выдохов, считая каждый цикл.", "🫁"),
+                    new("Уйди из места-триггера на 2 минуты и смени позу тела.", "🚶"),
+                    new($"У тебя уже серия {currentStreakDays} дней — это реальный прогресс, который можно защитить сейчас.", "📈"),
+                    new("Назови вслух текущее состояние одной простой фразой и продолжай дышать ровно.", "🧠"),
+                    new(
+                        resetCount > triggerCount
+                            ? "Пик тяги скоро спадёт, просто отложи решение на 15 минут."
+                            : "Ты уже умеешь проходить такие моменты — выбери одно действие и повтори его сейчас.",
+                        "💪")
                 ]);
         }
 
         var enSubtitle = string.IsNullOrWhiteSpace(addiction.Description)
             ? $"Focus on the next five calm minutes. Current streak: {currentStreakDays} days."
-            : $"Remember your why: {addiction.Description.Trim()}";
+            : "Remember the life you are building beyond this addiction.";
         return new GenerateTriggerGuidanceResponse(
             $"Pause: {addiction.Title}",
             enSubtitle,
             [
                 "Take 10 slow breaths and count each full cycle.",
                 "Step away from the trigger place for two minutes.",
-                $"Your streak is {currentStreakDays} days, protect that progress.",
-                $"Write one sentence about what you feel now (recent triggers: {triggerCount}).",
-                $"Delay the decision for 15 minutes. Recent resets: {resetCount}."
+                $"Your streak is {currentStreakDays} days — protect that progress right now.",
+                "Name your current state in one short sentence and keep breathing steadily.",
+                resetCount > triggerCount
+                    ? "This urge wave will drop soon, delay the decision for 15 minutes."
+                    : "You have already handled moments like this before — repeat one grounding action now."
+            ],
+            [
+                new("Take 10 slow breaths and count each full cycle.", "🫁"),
+                new("Step away from the trigger place for two minutes.", "🚶"),
+                new($"Your streak is {currentStreakDays} days — protect that progress right now.", "📈"),
+                new("Name your current state in one short sentence and keep breathing steadily.", "🧠"),
+                new(
+                    resetCount > triggerCount
+                        ? "This urge wave will drop soon, delay the decision for 15 minutes."
+                        : "You have already handled moments like this before — repeat one grounding action now.",
+                    "💪")
             ]);
     }
+
+    private static string? NormalizeSlideImage(string? image)
+    {
+        if (string.IsNullOrWhiteSpace(image))
+            return null;
+        var value = image.Trim();
+        return value.Length > 64 ? value[..64] : value;
+    }
+
+    private static string DefaultEmojiByIndex(int index) =>
+        index switch
+        {
+            0 => "🫁",
+            1 => "🚶",
+            2 => "📈",
+            3 => "🧠",
+            _ => "💪"
+        };
 
     private sealed record TriggerGuidancePayload(
         string? Title,
         string? Subtitle,
-        IReadOnlyList<string>? Tips
+        IReadOnlyList<string>? Tips,
+        IReadOnlyList<TriggerGuidanceSlidePayload>? Slides
+    );
+
+    private sealed record TriggerGuidanceSlidePayload(
+        string? Text,
+        string? Image
     );
 }

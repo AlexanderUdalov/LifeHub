@@ -102,6 +102,10 @@ public class AddictionTriggerGuidanceService(IChatClient? chatClient = null)
         bool isRussian)
     {
         var tipsLanguage = isRussian ? "Russian" : "English";
+        var motivation = string.IsNullOrWhiteSpace(addiction.Description)
+            ? "(not provided)"
+            : addiction.Description.Trim();
+
         var triggerHistory = recentTriggerEvents.Count == 0
             ? "No trigger events logged recently."
             : string.Join('\n', recentTriggerEvents
@@ -115,7 +119,21 @@ public class AddictionTriggerGuidanceService(IChatClient? chatClient = null)
             : string.Join('\n', recentResets
                 .OrderByDescending(x => x.ResetAt)
                 .Take(8)
-                .Select(x => $"- {x.ResetAt:u}; journal-linked: {x.JournalEntryId.HasValue}"));
+                .Select(x =>
+                    $"- {x.ResetAt:u}; journal-linked: {x.JournalEntryId.HasValue}; journal-text: {(string.IsNullOrWhiteSpace(x.JournalEntry?.Text) ? "(no journal text)" : x.JournalEntry!.Text)}"));
+
+        var noteSignals = recentTriggerEvents
+            .Select(x => x.Note)
+            .Concat(recentResets.Select(x => x.JournalEntry?.Text))
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(10)
+            .ToList();
+
+        var noteSignalsBlock = noteSignals.Count == 0
+            ? "No user notes are available."
+            : string.Join('\n', noteSignals.Select(x => $"- {x}"));
 
         return $$"""
             You are helping a user during an active addiction trigger moment.
@@ -134,6 +152,10 @@ public class AddictionTriggerGuidanceService(IChatClient? chatClient = null)
             - Be concrete and personalized.
             - Mention the user's motivation/description if available.
             - Never copy the user's description verbatim; rephrase it in fresh, natural wording.
+            - Personalize each slide with concrete signals from recent notes/history when available.
+            - Prefer "you" language and references to specific recent patterns (time/place/situation/emotion) from notes.
+            - Avoid generic motivational quotes and generic wellness advice.
+            - If note history exists, at least 3 slides must clearly reflect those notes.
             - Keep each tip to one short sentence.
             - Return 4-6 slides in "slides".
             - Each slide must have "text" and "image". "image" can be an emoji (preferred) or a public image URL.
@@ -142,10 +164,13 @@ public class AddictionTriggerGuidanceService(IChatClient? chatClient = null)
 
             Addiction info:
             - Title: {{addiction.Title}}
-            - Description: {{(string.IsNullOrWhiteSpace(addiction.Description) ? "(not provided)" : addiction.Description)}}
+            - Description: {{motivation}}
             - Current streak days: {{currentStreakDays}}
             - Resets in last 30 days: {{recentResets.Count}}
             - Trigger events in last 30 days: {{recentTriggerEvents.Count}}
+
+            User note signals (trigger notes + reset journal texts):
+            {{noteSignalsBlock}}
 
             Recent trigger history:
             {{triggerHistory}}

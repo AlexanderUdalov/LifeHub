@@ -60,11 +60,23 @@ export const addictionsApi = {
     return data!
   },
 
-  async logTriggerEvent(addictionId: string, request: LogTriggerEventRequest): Promise<void> {
-    await api.post(`/addictions/${addictionId}/trigger-events`, {
-      outcome: request.outcome,
-      note: request.note?.trim() ? request.note.trim() : null,
-      eventAt: request.eventAt ?? null
-    })
+  async logTriggerEvent(
+    addictionId: string,
+    request: LogTriggerEventRequest,
+    language?: string | null
+  ): Promise<void> {
+    await api.post(
+      `/addictions/${addictionId}/trigger-events`,
+      {
+        outcome: request.outcome,
+        note: request.note?.trim() ? request.note.trim() : null,
+        eventAt: request.eventAt ?? null
+      },
+      {
+        params: {
+          language: language?.trim() ? language.trim() : undefined
+        }
+      }
+    )
   }
 }

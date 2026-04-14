@@ -26,6 +26,7 @@ const showSearchBar = ref(false);
 const showFilterBar = ref(false);
 const filterLifeAreaId = ref<string | null>(null);
 const filterGoalId = ref<string | null>(null);
+const filterAddictionId = ref<string | null>(null);
 
 const lifeAreaOptions = computed(() => [
   { label: t('journal.filterAll'), value: null },
@@ -35,6 +36,11 @@ const lifeAreaOptions = computed(() => [
 const goalOptions = computed(() => [
   { label: t('journal.filterAll'), value: null },
   ...goalsStore.goalsSorted.map((g) => ({ label: g.title, value: g.id }))
+]);
+
+const addictionOptions = computed(() => [
+  { label: t('journal.filterAll'), value: null },
+  ...addictionsStore.addictions.map((a) => ({ label: a.addiction.title, value: a.addiction.id }))
 ]);
 
 const filteredEntries = computed(() => {
@@ -50,6 +56,9 @@ const filteredEntries = computed(() => {
   if (filterGoalId.value) {
     list = list.filter((e) => e.goalId === filterGoalId.value);
   }
+  if (filterAddictionId.value) {
+    list = list.filter((e) => e.addictionId === filterAddictionId.value);
+  }
 
   const pinned = list.filter((e) => e.isPinned);
   const regular = list.filter((e) => !e.isPinned);
@@ -63,7 +72,7 @@ const hasFilteredResults = computed(
   () => pinnedItems.value.length > 0 || regularItems.value.length > 0
 );
 const isFilterActive = computed(
-  () => !!filterLifeAreaId.value || !!filterGoalId.value
+  () => !!filterLifeAreaId.value || !!filterGoalId.value || !!filterAddictionId.value
 );
 
 function toggleSearchBar() {
@@ -77,6 +86,7 @@ function toggleFilterBar() {
 function clearFilters() {
   filterLifeAreaId.value = null;
   filterGoalId.value = null;
+  filterAddictionId.value = null;
 }
 
 const showReflection = ref(false);
@@ -126,6 +136,9 @@ onMounted(async () => {
         <label class="journal-view__filter-label">{{ $t('journal.filterByGoal') }}</label>
         <Dropdown v-model="filterGoalId" :options="goalOptions" option-label="label" option-value="value"
           :placeholder="$t('goals.selectPlaceholder')" class="journal-view__filter-dropdown" />
+        <label class="journal-view__filter-label">{{ $t('journal.filterByAddiction') }}</label>
+        <Dropdown v-model="filterAddictionId" :options="addictionOptions" option-label="label" option-value="value"
+          :placeholder="$t('addictions.addictions')" class="journal-view__filter-dropdown" />
         <Button :label="$t('journal.clearFilters')" variant="text" size="small" class="journal-view__filter-clear"
           @click="clearFilters" />
       </div>

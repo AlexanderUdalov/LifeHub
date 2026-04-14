@@ -82,7 +82,8 @@ async function submitOutcome(outcome: AddictionTriggerOutcome) {
   try {
     await addictionsStore.logTriggerEvent(props.addiction.id, outcome, {
       note: triggerNote.value.trim() || null,
-      eventAt: new Date().toISOString()
+      eventAt: new Date().toISOString(),
+      language: locale.value
     })
     visible.value = false
   } catch (e) {

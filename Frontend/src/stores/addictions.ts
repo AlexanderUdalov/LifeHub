@@ -90,13 +90,17 @@ export const useAddictionsStore = defineStore('addictions', () => {
   async function logTriggerEvent(
     addictionId: string,
     outcome: AddictionTriggerOutcome,
-    options?: { note?: string | null; eventAt?: string | null }
+    options?: { note?: string | null; eventAt?: string | null; language?: string | null }
   ) {
-    await addictionsApi.logTriggerEvent(addictionId, {
-      outcome,
-      note: options?.note ?? null,
-      eventAt: options?.eventAt ?? null
-    })
+    await addictionsApi.logTriggerEvent(
+      addictionId,
+      {
+        outcome,
+        note: options?.note ?? null,
+        eventAt: options?.eventAt ?? null
+      },
+      options?.language ?? null
+    )
     await fetchAddictions(rangeDays.value)
   }
 

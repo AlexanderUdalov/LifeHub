@@ -266,7 +266,10 @@ public class AddictionsController(
     [HttpPost("{id:guid}/trigger-events")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> LogTriggerEvent(Guid id, [FromBody] LogTriggerEventRequest request)
+    public async Task<IActionResult> LogTriggerEvent(
+        Guid id,
+        [FromBody] LogTriggerEventRequest request,
+        [FromQuery] string? language = null)
     {
         var addiction = await context.Addictions
             .FirstOrDefaultAsync(a => a.Id == id && a.UserId == User.GetUserId());
@@ -281,7 +284,7 @@ public class AddictionsController(
         Guid? journalEntryId = null;
         if (note is not null)
         {
-            var journalText = BuildTriggerJournalText(request.Outcome, note);
+            var journalText = BuildTriggerJournalText(request.Outcome, note, NormalizeLanguage(language));
             var entry = CreateJournalEntry(addiction, journalText, eventAt);
             context.JournalEntries.Add(entry);
             journalEntryId = entry.Id;
@@ -378,11 +381,15 @@ public class AddictionsController(
     private static string? NormalizeOptionalText(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static string BuildTriggerJournalText(AddictionTriggerOutcome outcome, string note)
+    private static string BuildTriggerJournalText(
+        AddictionTriggerOutcome outcome,
+        string note,
+        string language)
     {
+        var isEnglish = string.Equals(language, "en", StringComparison.Ordinal);
         var prefix = outcome == AddictionTriggerOutcome.Overcame
-            ? "Trigger overcame"
-            : "Trigger relapsed";
+            ? (isEnglish ? "Trigger overcame" : "Триггер преодолён")
+            : (isEnglish ? "Trigger relapsed" : "Срыв после триггера");
         return $"{prefix}: {note}";
     }
 

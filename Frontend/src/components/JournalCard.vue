@@ -42,6 +42,8 @@ const addiction = computed(() => {
 })
 
 const addictionLabel = computed(() => addiction.value?.title ?? t('journal.deletedAddiction'))
+const lifeAreaLabel = computed(() => lifeArea.value?.name ?? '')
+const goalLabel = computed(() => goal.value?.title ?? '')
 
 const hasFooterMeta = computed(() => !!props.item.addictionId || !!lifeArea.value || !!goal.value)
 
@@ -70,9 +72,11 @@ const formattedDate = computed(() => {
   })
 })
 
-const wasEdited = computed(() => !!props.item.updatedAt)
-
 const renderedText = computed(() => renderMarkdown(props.item.text))
+const containsEmoji = (value: string) => /\p{Extended_Pictographic}/u.test(value)
+const showAddictionIcon = computed(() => !containsEmoji(addictionLabel.value))
+const showLifeAreaIcon = computed(() => !containsEmoji(lifeAreaLabel.value))
+const showGoalIcon = computed(() => !containsEmoji(goalLabel.value))
 
 async function onTogglePin() {
   await journalStore.togglePin(props.item.id)
@@ -91,7 +95,6 @@ async function onConfirmDelete() {
         <div class="journal-card__meta">
           <i v-if="item.isPinned" class="pi pi-thumbtack journal-card__pin-badge" />
           <span class="journal-card__date">{{ formattedDate }}</span>
-          <span v-if="wasEdited" class="journal-card__edited">{{ t('journal.edited') }}</span>
         </div>
 
         <div class="journal-card__actions" @click.stop>
@@ -147,16 +150,16 @@ async function onConfirmDelete() {
 
       <div v-if="hasFooterMeta" class="journal-card__footer">
         <span v-if="item.addictionId" class="journal-card__addiction">
-          <i class="pi pi-ban" />
+          <i v-if="showAddictionIcon" class="pi pi-ban" />
           {{ addictionLabel }}
         </span>
         <span v-if="lifeArea" class="journal-card__life-area">
-          <i class="pi pi-chart-pie" />
-          {{ lifeArea.name }}
+          <i v-if="showLifeAreaIcon" class="pi pi-chart-pie" />
+          {{ lifeAreaLabel }}
         </span>
         <span v-if="goal" class="journal-card__goal">
-          <i class="pi pi-bullseye" />
-          {{ goal.title }}
+          <i v-if="showGoalIcon" class="pi pi-bullseye" />
+          {{ goalLabel }}
         </span>
       </div>
     </template>
@@ -300,16 +303,6 @@ async function onConfirmDelete() {
 
 .journal-card__date {
   white-space: nowrap;
-}
-
-.journal-card__edited {
-  opacity: 0.65;
-  white-space: nowrap;
-}
-
-.journal-card__edited::before {
-  content: '·';
-  margin-right: 0.375rem;
 }
 
 .journal-card__actions {

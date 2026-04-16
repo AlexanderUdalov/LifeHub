@@ -104,7 +104,8 @@ async function onSave() {
         habitId: null,
         addictionId: null,
         goalId: localGoalId.value,
-        lifeAreaId: localLifeAreaId.value
+        lifeAreaId: localLifeAreaId.value,
+        aiGenerated: false
       })
     }
 
@@ -169,6 +170,13 @@ const formattedDate = computed(() => {
       </Select>
     </div>
 
+    <div v-if="isEdit && entry?.aiGenerated" class="journal-drawer-reflection-row">
+      <span class="journal-drawer-reflection-chip">
+        <i class="pi pi-sparkles" />
+        {{ t('journal.aiGeneratedChip') }}
+      </span>
+    </div>
+
     <div v-if="isEdit" class="journal-drawer-meta">
       <Button icon="pi pi-thumbtack" :label="localPinned ? t('journal.pinnedEntry') : t('journal.pin')"
         :severity="localPinned ? undefined : 'secondary'" :variant="localPinned ? 'outlined' : 'text'" size="small"
@@ -217,6 +225,23 @@ const formattedDate = computed(() => {
   margin-top: 0.25rem;
 }
 
+.journal-drawer-reflection-row {
+  padding: 0.25rem 0 0;
+}
+
+.journal-drawer-reflection-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  padding: 0.25rem 0;
+}
+
+.journal-drawer-reflection-chip .pi-sparkles {
+  font-size: 0.6875rem;
+  color: var(--p-primary-color);
+}
 
 .journal-drawer-meta {
   display: flex;

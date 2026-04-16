@@ -355,7 +355,8 @@
     "clearFilters": "Clear",
     "noResults": "No results",
     "noResultsHint": "Try changing your search or filters",
-    "deletedAddiction": "Deleted addiction"
+    "deletedAddiction": "Deleted addiction",
+    "aiGeneratedChip": "AI-generated"
   },
   "profile": "Profile",
   "reflection": {

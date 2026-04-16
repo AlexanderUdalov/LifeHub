@@ -359,7 +359,8 @@
     "clearFilters": "Сбросить",
     "noResults": "Ничего не найдено",
     "noResultsHint": "Попробуйте изменить запрос или фильтры",
-    "deletedAddiction": "Удалённая зависимость"
+    "deletedAddiction": "Удалённая зависимость",
+    "aiGeneratedChip": "Сгенерировано ИИ"
   },
   "profile": "Профиль",
   "reflection": {

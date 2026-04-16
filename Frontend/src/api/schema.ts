@@ -307,7 +307,9 @@ export interface paths {
         put?: never;
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    language?: string;
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -2060,6 +2062,8 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            /** @default false */
+            aiGenerated: boolean;
         };
         CreateLifeAreaRequest: {
             name: string;
@@ -2081,6 +2085,7 @@ export interface components {
             title: string;
             subtitle: string;
             tips: string[];
+            slides: components["schemas"]["TriggerGuidanceSlideDTO"][];
         };
         GoalDTO: {
             /** Format: uuid */
@@ -2150,6 +2155,7 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            aiGenerated: boolean;
         };
         LifeAreaDTO: {
             /** Format: uuid */
@@ -2229,6 +2235,10 @@ export interface components {
             lifeAreaId: null | string;
             /** Format: int32 */
             sortOrder: null | number | string;
+        };
+        TriggerGuidanceSlideDTO: {
+            text: string;
+            image: null | string;
         };
         UpdateGoalRequest: {
             title: null | string;

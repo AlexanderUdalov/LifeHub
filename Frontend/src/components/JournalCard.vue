@@ -45,7 +45,13 @@ const addictionLabel = computed(() => addiction.value?.title ?? t('journal.delet
 const lifeAreaLabel = computed(() => lifeArea.value?.name ?? '')
 const goalLabel = computed(() => goal.value?.title ?? '')
 
-const hasFooterMeta = computed(() => !!props.item.addictionId || !!lifeArea.value || !!goal.value)
+const hasFooterMeta = computed(
+  () =>
+    !!props.item.addictionId ||
+    !!lifeArea.value ||
+    !!goal.value ||
+    props.item.aiGenerated
+)
 
 const isExpanded = ref(false)
 const showDeleteConfirm = ref(false)
@@ -156,6 +162,10 @@ async function onConfirmDelete() {
         <span v-if="lifeArea" class="journal-card__life-area">
           <i v-if="showLifeAreaIcon" class="pi pi-chart-pie" />
           {{ lifeAreaLabel }}
+        </span>
+        <span v-if="item.aiGenerated" class="journal-card__reflection">
+          <i class="pi pi-sparkles" />
+          {{ t('journal.aiGeneratedChip') }}
         </span>
         <span v-if="goal" class="journal-card__goal">
           <i v-if="showGoalIcon" class="pi pi-bullseye" />
@@ -348,6 +358,19 @@ async function onConfirmDelete() {
 
 .journal-card__addiction i {
   font-size: 0.625rem;
+}
+
+.journal-card__reflection {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+}
+
+.journal-card__reflection i {
+  font-size: 0.625rem;
+  color: var(--p-primary-color);
 }
 
 .journal-card__goal {

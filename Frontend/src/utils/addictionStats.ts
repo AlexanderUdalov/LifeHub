@@ -1,13 +1,6 @@
 import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
-import { fromDateOnlyString, getWeekKey, toDateOnlyString } from '@/utils/dateOnly'
-
-export const TRIGGER_OUTCOME_OVERCAME = 0
-
-export type WeekTrendBin = {
-  weekKey: string
-  label: string
-  count: number
-}
+import { fromDateOnlyString, toDateOnlyString } from '@/utils/dateOnly'
+import { isTriggerOvercameOutcome } from '@/utils/triggerOutcome'
 
 export type AddictionStatsResult = {
   resetCount: number
@@ -15,7 +8,6 @@ export type AddictionStatsResult = {
   avgStreakDays: number
   cleanDaysPercentLast30: number
   daysInLast30Window: number
-  weekTrend: WeekTrendBin[]
   resetByWeekdayMonFirst: number[]
   triggerTotal: number
   triggerSuccessPercent: number | null
@@ -69,29 +61,13 @@ function computeStreakSegments(createdDay: string, resetDaysSorted: string[], to
   return out
 }
 
-function lastNWeekKeysDesc(n: number, ref: Date): string[] {
-  const monday = fromDateOnlyString(getWeekKey(ref))
-  const keys: string[] = []
-  for (let i = 0; i < n; i++) {
-    const d = new Date(monday)
-    d.setDate(monday.getDate() - i * 7)
-    keys.push(getWeekKey(d))
-  }
-  return keys.reverse()
-}
-
 function weekdayMonFirstFromDateOnly(dateStr: string): number {
   const d = fromDateOnlyString(dateStr)
   const js = d.getDay()
   return (js + 6) % 7
 }
 
-export function buildAddictionStats(
-  addiction: AddictionWithResetsDTO,
-  now: Date,
-  weekTrendCount: number,
-  intlLocale: string
-): AddictionStatsResult {
+export function buildAddictionStats(addiction: AddictionWithResetsDTO, now: Date): AddictionStatsResult {
   const todayDay = toDateOnlyString(now)
   const createdDay = toDateOnlyString(new Date(addiction.addiction.createdAt))
 
@@ -115,19 +91,6 @@ export function buildAddictionStats(
   const cleanDaysPercentLast30 =
     daysInLast30Window > 0 ? Math.round((cleanInWindow / daysInLast30Window) * 1000) / 10 : 0
 
-  const weekKeys = lastNWeekKeysDesc(weekTrendCount, now)
-  const weekCounts = new Map<string, number>()
-  for (const k of weekKeys) weekCounts.set(k, 0)
-  for (const r of addiction.resets) {
-    const wk = getWeekKey(fromDateOnlyString(r.date))
-    if (weekCounts.has(wk)) weekCounts.set(wk, (weekCounts.get(wk) ?? 0) + 1)
-  }
-  const weekTrend: WeekTrendBin[] = weekKeys.map((weekKey) => {
-    const monday = fromDateOnlyString(weekKey)
-    const label = monday.toLocaleDateString(intlLocale, { day: 'numeric', month: 'short' })
-    return { weekKey, label, count: weekCounts.get(weekKey) ?? 0 }
-  })
-
   const resetByWeekdayMonFirst = [0, 0, 0, 0, 0, 0, 0]
   for (const r of addiction.resets) {
     const idx = weekdayMonFirstFromDateOnly(r.date)
@@ -135,7 +98,7 @@ export function buildAddictionStats(
   }
 
   const triggerTotal = addiction.triggerEvents.length
-  const overcame = addiction.triggerEvents.filter((e) => e.outcome === TRIGGER_OUTCOME_OVERCAME).length
+  const overcame = addiction.triggerEvents.filter((e) => isTriggerOvercameOutcome(e.outcome)).length
   const triggerSuccessPercent =
     triggerTotal > 0 ? Math.round((overcame / triggerTotal) * 1000) / 10 : null
 
@@ -145,7 +108,6 @@ export function buildAddictionStats(
     avgStreakDays,
     cleanDaysPercentLast30,
     daysInLast30Window,
-    weekTrend,
     resetByWeekdayMonFirst,
     triggerTotal,
     triggerSuccessPercent

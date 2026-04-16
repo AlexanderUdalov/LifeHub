@@ -160,7 +160,7 @@
       "min": "min",
       "s": "s"
     },
-    "milestones": {
+    "stages": {
       "1hour": "1 hour",
       "1day": "1 day",
       "3days": "3 days",
@@ -173,7 +173,7 @@
       "6months": "6 months",
       "1year": "1 year"
     },
-    "nextMilestone": "→ {milestone}",
+    "nextStage": "→ {stage}",
     "maxStage": "Maximum stage reached",
     "resetDrawer": {
       "title": "Reset progress",
@@ -212,23 +212,19 @@
     "stats": {
       "title": "Statistics",
       "open": "Addiction statistics",
-      "close": "Close",
       "notFound": "Addiction data not found",
-      "sectionStreak": "Streak & milestones",
+      "sectionStreak": "Streak & stages",
       "sinceLastReset": "Since last reset",
-      "calendarStreak": "Streak (calendar days)",
-      "nextMilestoneHeading": "Next milestone",
+      "nextStageHeading": "Next stage",
       "maxStreak": "Longest streak",
       "avgStreak": "Average streak",
       "sectionResets": "Resets",
       "resetCount": "Total resets",
       "cleanPercent30": "Clean days in last {days} days (%)",
-      "sectionWeekTrend": "Resets by week",
       "sectionWeekday": "Resets by weekday",
       "sectionTriggers": "Triggers",
       "triggerCount": "Logged events",
-      "triggerSuccess": "Handled rate",
-      "currentStreakDays": "{count} d"
+      "triggerSuccess": "Handled rate"
     }
   },
   "lifeareas": {

@@ -70,10 +70,10 @@ const progressText = computed(() => {
   return parts.join(' ')
 })
 
-const milestoneLabel = computed(() => {
+const nextStageLabel = computed(() => {
   const ms = nextMilestone.value
   if (!ms) return t('addictions.maxStage')
-  return t('addictions.nextMilestone', { milestone: t(ms.labelKey) })
+  return t('addictions.nextStage', { stage: t(ms.labelKey) })
 })
 
 const showResetDrawer = ref(false)
@@ -174,7 +174,7 @@ function formatResetAt(iso: string) {
               }"
             />
           </div>
-          <span class="ac-milestone">{{ milestoneLabel }}</span>
+          <span class="ac-stage-hint">{{ nextStageLabel }}</span>
         </div>
 
         <AddictionCalendar
@@ -340,7 +340,7 @@ function formatResetAt(iso: string) {
   transition: width 1s linear;
 }
 
-.ac-milestone {
+.ac-stage-hint {
   font-size: 0.75rem;
   color: var(--p-text-muted-color);
   white-space: nowrap;

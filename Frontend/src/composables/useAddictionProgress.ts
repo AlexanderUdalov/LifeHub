@@ -8,17 +8,17 @@ export interface Milestone {
 }
 
 export const MILESTONES: Milestone[] = [
-  { seconds: 3_600, labelKey: 'addictions.milestones.1hour' },
-  { seconds: 86_400, labelKey: 'addictions.milestones.1day' },
-  { seconds: 259_200, labelKey: 'addictions.milestones.3days' },
-  { seconds: 604_800, labelKey: 'addictions.milestones.1week' },
-  { seconds: 864_000, labelKey: 'addictions.milestones.10days' },
-  { seconds: 1_209_600, labelKey: 'addictions.milestones.2weeks' },
-  { seconds: 2_592_000, labelKey: 'addictions.milestones.1month' },
-  { seconds: 5_184_000, labelKey: 'addictions.milestones.2months' },
-  { seconds: 7_776_000, labelKey: 'addictions.milestones.3months' },
-  { seconds: 15_552_000, labelKey: 'addictions.milestones.6months' },
-  { seconds: 31_536_000, labelKey: 'addictions.milestones.1year' },
+  { seconds: 3_600, labelKey: 'addictions.stages.1hour' },
+  { seconds: 86_400, labelKey: 'addictions.stages.1day' },
+  { seconds: 259_200, labelKey: 'addictions.stages.3days' },
+  { seconds: 604_800, labelKey: 'addictions.stages.1week' },
+  { seconds: 864_000, labelKey: 'addictions.stages.10days' },
+  { seconds: 1_209_600, labelKey: 'addictions.stages.2weeks' },
+  { seconds: 2_592_000, labelKey: 'addictions.stages.1month' },
+  { seconds: 5_184_000, labelKey: 'addictions.stages.2months' },
+  { seconds: 7_776_000, labelKey: 'addictions.stages.3months' },
+  { seconds: 15_552_000, labelKey: 'addictions.stages.6months' },
+  { seconds: 31_536_000, labelKey: 'addictions.stages.1year' },
 ]
 
 export function useAddictionProgress(

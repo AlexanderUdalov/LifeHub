@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -110,22 +109,16 @@ const progressText = computed(() => {
   return parts.join(' ')
 })
 
-const milestoneLabel = computed(() => {
+const nextStageLabel = computed(() => {
   const ms = nextMilestone.value
   if (!ms) return t('addictions.maxStage')
-  return t('addictions.nextMilestone', { milestone: t(ms.labelKey) })
-})
-
-const currentStreakDaysLabel = computed(() => {
-  const m = progressSource.value
-  if (!m) return '—'
-  return t('addictions.stats.currentStreakDays', { count: m.currentStreakDays })
+  return t('addictions.nextStage', { stage: t(ms.labelKey) })
 })
 
 const stats = computed(() => {
   const m = model.value
   if (!m) return null
-  return buildAddictionStats(m, now.value, 8, intlLocale.value)
+  return buildAddictionStats(m, now.value)
 })
 
 const avgStreakLabel = computed(() => {
@@ -134,12 +127,6 @@ const avgStreakLabel = computed(() => {
   const n = s.avgStreakDays
   if (Number.isInteger(n)) return t('addictions.daysCount', { count: n })
   return `${n} ${t('addictions.units.d')}`
-})
-
-const weekTrendMax = computed(() => {
-  const s = stats.value
-  if (!s) return 1
-  return Math.max(1, ...s.weekTrend.map((w) => w.count))
 })
 
 const weekdayMax = computed(() => {
@@ -173,14 +160,6 @@ function barHeightPx(count: number, max: number, maxPx: number): string {
     <template #header>
       <div class="stats-header">
         <span class="stats-title">{{ t('addictions.stats.title') }}</span>
-        <Button
-          icon="pi pi-times"
-          severity="secondary"
-          text
-          rounded
-          :aria-label="t('addictions.stats.close')"
-          @click="innerVisible = false"
-        />
       </div>
     </template>
 
@@ -193,24 +172,20 @@ function barHeightPx(count: number, max: number, maxPx: number): string {
         <section class="stats-section">
           <h3 class="stats-h">{{ t('addictions.stats.sectionStreak') }}</h3>
           <div class="stats-grid">
-            <div class="stat-cell">
+            <div class="stat-cell wide">
               <div class="stat-label">{{ t('addictions.stats.sinceLastReset') }}</div>
               <div class="stat-value">{{ progressText }}</div>
             </div>
-            <div class="stat-cell">
-              <div class="stat-label">{{ t('addictions.stats.calendarStreak') }}</div>
-              <div class="stat-value">{{ currentStreakDaysLabel }}</div>
-            </div>
             <div class="stat-cell wide">
-              <div class="stat-label">{{ t('addictions.stats.nextMilestoneHeading') }}</div>
-              <div class="stat-milestone-row">
+              <div class="stat-label">{{ t('addictions.stats.nextStageHeading') }}</div>
+              <div class="stat-stage-row">
                 <div class="mini-track">
                   <div
                     class="mini-fill"
                     :style="{ width: progressPercent + '%', backgroundColor: accent }"
                   />
                 </div>
-                <span class="stat-sub">{{ milestoneLabel }}</span>
+                <span class="stat-sub">{{ nextStageLabel }}</span>
               </div>
             </div>
             <div class="stat-cell">
@@ -238,23 +213,6 @@ function barHeightPx(count: number, max: number, maxPx: number): string {
                 {{ t('addictions.stats.cleanPercent30', { days: stats?.daysInLast30Window ?? 30 }) }}
               </div>
               <div class="stat-value accent">{{ stats?.cleanDaysPercentLast30 ?? 0 }}%</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="stats-section">
-          <h3 class="stats-h">{{ t('addictions.stats.sectionWeekTrend') }}</h3>
-          <div class="bar-chart bar-chart-week">
-            <div v-for="w in stats?.weekTrend ?? []" :key="w.weekKey" class="bar-col">
-              <div
-                class="bar-pill"
-                :style="{
-                  height: barHeightPx(w.count, weekTrendMax, 80),
-                  backgroundColor: accent
-                }"
-              />
-              <span class="bar-x">{{ w.label }}</span>
-              <span class="bar-n">{{ w.count }}</span>
             </div>
           </div>
         </section>
@@ -310,10 +268,8 @@ function barHeightPx(count: number, max: number, maxPx: number): string {
 .stats-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-2);
   width: 100%;
-  padding-right: 0.25rem;
+  padding-right: 2.5rem;
 }
 
 .stats-title {
@@ -322,7 +278,7 @@ function barHeightPx(count: number, max: number, maxPx: number): string {
 }
 
 .stats-body {
-  padding: 0 2px 12px;
+  padding: 0 2px calc(2rem + env(safe-area-inset-bottom, 0px));
   min-height: 120px;
 }
 
@@ -389,7 +345,7 @@ function barHeightPx(count: number, max: number, maxPx: number): string {
   color: var(--stats-accent);
 }
 
-.stat-milestone-row {
+.stat-stage-row {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -442,7 +398,6 @@ function barHeightPx(count: number, max: number, maxPx: number): string {
   transition: height 0.25s ease;
 }
 
-.bar-chart-week .bar-col,
 .bar-chart-dow .bar-col {
   min-height: 100px;
   justify-content: flex-end;

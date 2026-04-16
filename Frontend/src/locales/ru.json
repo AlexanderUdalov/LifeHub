@@ -212,6 +212,27 @@
       "slide3": "Сделай одно маленькое физическое действие: встань, умойся.",
       "slide4": "Вспомни, зачем ты начал.",
       "slide5": "Ты уже прошёл так далеко. Не сдавайся."
+    },
+    "stats": {
+      "title": "Статистика",
+      "open": "Статистика зависимости",
+      "close": "Закрыть",
+      "notFound": "Данные зависимости не найдены",
+      "sectionStreak": "Серия и этапы",
+      "sinceLastReset": "С последнего сброса",
+      "calendarStreak": "Дней подряд (календарь)",
+      "nextMilestoneHeading": "Следующая веха",
+      "maxStreak": "Самая длинная серия",
+      "avgStreak": "Средняя серия",
+      "sectionResets": "Сбросы",
+      "resetCount": "Сбросов всего",
+      "cleanPercent30": "Дней без срыва за {days} дн. (%)",
+      "sectionWeekTrend": "Сбросы по неделям",
+      "sectionWeekday": "Сбросы по дням недели",
+      "sectionTriggers": "Триггеры",
+      "triggerCount": "Записей",
+      "triggerSuccess": "Доля «переборол»",
+      "currentStreakDays": "{count} дн."
     }
   },
   "lifeareas": {

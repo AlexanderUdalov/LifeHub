@@ -22,6 +22,12 @@ export const useAddictionsStore = defineStore('addictions', () => {
     }
   }
 
+  /** Expands loaded history window when the UI needs deeper stats (API max 365 days). */
+  async function ensureMinHistoryDays(minDays: number) {
+    const capped = Math.min(365, Math.max(1, minDays))
+    if (rangeDays.value < capped) await fetchAddictions(capped)
+  }
+
   const addictionsSorted = computed(() =>
     [...addictions.value].sort((a, b) => a.addiction.title.localeCompare(b.addiction.title))
   )
@@ -110,6 +116,7 @@ export const useAddictionsStore = defineStore('addictions', () => {
     isLoading,
     rangeDays,
     fetchAddictions,
+    ensureMinHistoryDays,
     setReset,
     removeReset,
     logTriggerEvent,

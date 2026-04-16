@@ -3,6 +3,7 @@ import Button from 'primevue/button'
 import AddictionCalendar from './AddictionCalendar.vue'
 import AddictionResetModal from './AddictionResetModal.vue'
 import AddictionTriggerModal from './AddictionTriggerModal.vue'
+import AddictionStatsDrawer from './AddictionStatsDrawer.vue'
 import type { AddictionDTO, AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { parseUtcIso, toDateOnlyString } from '@/utils/dateOnly'
@@ -80,6 +81,7 @@ const resetPrefilledDate = ref<Date | null>(null)
 const showTriggerDrawer = ref(false)
 const showResetInfoDrawer = ref(false)
 const resetInfoDate = ref<Date | null>(null)
+const showStatsDrawer = ref(false)
 
 function openResetDrawer(date?: Date) {
   resetPrefilledDate.value = date ?? null
@@ -192,6 +194,14 @@ function formatResetAt(iso: string) {
             @click="openTriggerDrawer"
           />
           <Button
+            icon="pi pi-chart-bar"
+            severity="secondary"
+            outlined
+            size="small"
+            :aria-label="t('addictions.stats.open')"
+            @click="showStatsDrawer = true"
+          />
+          <Button
             :label="t('addictions.reset')"
             icon="pi pi-undo"
             severity="danger"
@@ -215,6 +225,13 @@ function formatResetAt(iso: string) {
     v-if="showTriggerDrawer"
     :addiction="addiction.addiction"
     @close="showTriggerDrawer = false"
+  />
+
+  <AddictionStatsDrawer
+    v-model:visible="showStatsDrawer"
+    :addiction-id="addiction.addiction.id"
+    :initial-addiction="addiction"
+    :accent-color="displayColor"
   />
 
   <BaseDrawer

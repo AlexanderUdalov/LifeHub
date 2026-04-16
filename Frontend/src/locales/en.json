@@ -208,6 +208,27 @@
       "slide3": "Do one small physical action: stand up, wash your face.",
       "slide4": "Remember why you started.",
       "slide5": "You've come so far. Don't give up."
+    },
+    "stats": {
+      "title": "Statistics",
+      "open": "Addiction statistics",
+      "close": "Close",
+      "notFound": "Addiction data not found",
+      "sectionStreak": "Streak & milestones",
+      "sinceLastReset": "Since last reset",
+      "calendarStreak": "Streak (calendar days)",
+      "nextMilestoneHeading": "Next milestone",
+      "maxStreak": "Longest streak",
+      "avgStreak": "Average streak",
+      "sectionResets": "Resets",
+      "resetCount": "Total resets",
+      "cleanPercent30": "Clean days in last {days} days (%)",
+      "sectionWeekTrend": "Resets by week",
+      "sectionWeekday": "Resets by weekday",
+      "sectionTriggers": "Triggers",
+      "triggerCount": "Logged events",
+      "triggerSuccess": "Handled rate",
+      "currentStreakDays": "{count} d"
     }
   },
   "lifeareas": {

@@ -1,4 +1,4 @@
-import { computed, type Ref } from 'vue'
+import { computed, unref, type MaybeRef, type Ref } from 'vue'
 import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import { getTimeSinceDetailed, parseUtcIso } from '@/utils/dateOnly'
 
@@ -22,14 +22,15 @@ export const MILESTONES: Milestone[] = [
 ]
 
 export function useAddictionProgress(
-  addiction: Ref<AddictionWithResetsDTO>,
+  addiction: MaybeRef<AddictionWithResetsDTO>,
   now: Ref<Date>
 ) {
   const referenceDate = computed(() => {
-    const lastResetAt = addiction.value.lastResetAt
+    const a = unref(addiction)
+    const lastResetAt = a.lastResetAt
     if (lastResetAt) return parseUtcIso(lastResetAt)
 
-    const createdAt = addiction.value.addiction.createdAt
+    const createdAt = a.addiction.createdAt
     if (createdAt) return new Date(createdAt)
 
     return now.value

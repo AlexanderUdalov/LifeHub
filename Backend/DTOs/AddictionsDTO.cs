@@ -9,7 +9,8 @@ public record AddictionDTO(
     string Color,
     DateTime CreatedAt,
     Guid? GoalId,
-    Guid? LifeAreaId
+    Guid? LifeAreaId,
+    bool IsNsfw
 );
 
 public record AddictionResetEntryDTO(
@@ -43,8 +44,9 @@ public record AddictionUpsertRequest(
     string Color,
     Guid? GoalId,
     Guid? LifeAreaId,
+    bool IsNsfw = false,
     /// <summary>Optional. When creating, adds one reset at this moment (UTC). Ignored on update.</summary>
-    DateTime? LastRelapseAt
+    DateTime? LastRelapseAt = null
 );
 
 public record SetResetRequest(
@@ -93,7 +95,8 @@ public static class AddictionMapping
             addiction.Color,
             addiction.CreatedAt,
             addiction.GoalId,
-            addiction.LifeAreaId
+            addiction.LifeAreaId,
+            addiction.IsNsfw
         );
 
     public static int CalculateCurrentStreakDays(Addiction addiction, DateTime? lastResetAtUtc)

@@ -8,14 +8,17 @@ import Password from 'primevue/password'
 import SelectButton from 'primevue/selectbutton'
 import Dialog from 'primevue/dialog'
 import Divider from 'primevue/divider'
+import ToggleSwitch from 'primevue/toggleswitch'
 import IftaLabel from 'primevue/iftalabel'
 import Message from 'primevue/message'
 import router from "@/router";
 import { deleteUser, getUser, logout as apiLogout, updateUser, type UpdateRequest, type User } from "@/api/AuthAPI";
 
 import { useI18n } from 'vue-i18n'
+import { useNsfwContentStore } from '@/stores/nsfwContent'
 type Language = 'en' | 'ru'
 const { t, locale } = useI18n()
+const nsfwContentStore = useNsfwContentStore()
 
 import { useApiError } from "@/composables/useApiError";
 const apiError = useApiError();
@@ -272,6 +275,17 @@ onMounted(async () => {
 
                 <Divider />
 
+                <div class="selector selector--nsfw">
+                    <div class="selector-label">
+                        <label>{{ $t('profile-view.nsfw-mode') }}</label>
+                        <span class="selector-hint">{{ $t('profile-view.nsfw-mode-hint') }}</span>
+                    </div>
+                    <ToggleSwitch :model-value="nsfwContentStore.showNsfwContent"
+                        @update:model-value="nsfwContentStore.setShowNsfwContent" />
+                </div>
+
+                <Divider />
+
                 <div class="actions">
                     <Button :label="t('profile-view.change-password')" severity="secondary"
                         @click="isPasswordDialogVisible = true" />
@@ -318,7 +332,21 @@ onMounted(async () => {
 
 .selector-label {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: center;
+    gap: 0.25rem;
+    max-width: min(100%, 20rem);
+}
+
+.selector--nsfw {
     align-items: center;
+}
+
+.selector-hint {
+    font-size: 0.8rem;
+    color: var(--p-text-muted-color);
+    line-height: 1.3;
 }
 
 .selector {

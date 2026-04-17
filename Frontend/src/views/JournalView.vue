@@ -11,14 +11,16 @@ import { useJournalStore } from '@/stores/journal';
 import { useLifeAreasStore } from '@/stores/lifeAreas';
 import { useGoalsStore } from '@/stores/goals';
 import { useAddictionsStore } from '@/stores/addictions';
+import { useNsfwContentStore } from '@/stores/nsfwContent';
 import { useI18n } from 'vue-i18n';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import type { JournalEntryDTO } from '@/api/JournalAPI';
 
 const journalStore = useJournalStore();
 const lifeAreasStore = useLifeAreasStore();
 const goalsStore = useGoalsStore();
 const addictionsStore = useAddictionsStore();
+const nsfwContentStore = useNsfwContentStore();
 const { t } = useI18n();
 
 const searchQuery = ref('');
@@ -40,8 +42,23 @@ const goalOptions = computed(() => [
 
 const addictionOptions = computed(() => [
   { label: t('journal.filterAll'), value: null },
-  ...addictionsStore.addictions.map((a) => ({ label: a.addiction.title, value: a.addiction.id }))
+  ...addictionsStore.addictions
+    .filter((a) => nsfwContentStore.addictionVisible(a.addiction))
+    .map((a) => ({ label: a.addiction.title, value: a.addiction.id }))
 ]);
+
+watch(
+  () =>
+    `${nsfwContentStore.showNsfwContent}|${addictionsStore.addictions
+      .map((a) => `${a.addiction.id}:${a.addiction.isNsfw ? 1 : 0}`)
+      .join(',')}`,
+  () => {
+    const id = filterAddictionId.value;
+    if (!id) return;
+    const row = addictionsStore.addictions.find((a) => a.addiction.id === id);
+    if (row && !nsfwContentStore.addictionVisible(row.addiction)) filterAddictionId.value = null;
+  }
+);
 
 const filteredEntries = computed(() => {
   let list = journalStore.entries;

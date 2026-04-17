@@ -32,10 +32,10 @@ onMounted(async () => {
       </div>
     </div>
 
-    <EmptyState v-else-if="addictionsStore.addictions.length === 0" icon="pi pi-shield"
+    <EmptyState v-else-if="addictionsStore.addictionsSortedVisible.length === 0" icon="pi pi-shield"
       :title="$t('addictions.empty')" :subtitle="$t('addictions.emptySubtitle')" />
 
-    <AddictionCard v-else v-for="a in addictionsStore.addictionsSorted" :key="a.addiction.id" :addiction="a"
+    <AddictionCard v-else v-for="a in addictionsStore.addictionsSortedVisible" :key="a.addiction.id" :addiction="a"
       @edit="(addiction) => emit('edit-addiction', addiction)" />
   </div>
 </template>

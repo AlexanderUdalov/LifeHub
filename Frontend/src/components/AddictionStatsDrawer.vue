@@ -84,7 +84,8 @@ const progressModel = computed(() => {
         color: '#888',
         createdAt: now.value.toISOString(),
         goalId: null,
-        lifeAreaId: null
+        lifeAreaId: null,
+        isNsfw: false
       },
       resets: [],
       triggerEvents: [],

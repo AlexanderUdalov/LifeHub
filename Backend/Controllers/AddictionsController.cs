@@ -125,7 +125,8 @@ public class AddictionsController(
             Color = request.Color.Trim(),
             CreatedAt = DateTime.UtcNow,
             GoalId = request.GoalId,
-            LifeAreaId = request.LifeAreaId
+            LifeAreaId = request.LifeAreaId,
+            IsNsfw = request.IsNsfw
         };
 
         context.Addictions.Add(addiction);
@@ -199,6 +200,7 @@ public class AddictionsController(
         addiction.Color = request.Color.Trim();
         addiction.GoalId = request.GoalId;
         addiction.LifeAreaId = request.LifeAreaId;
+        addiction.IsNsfw = request.IsNsfw;
 
         await context.SaveChangesAsync();
         return addiction.ToDTO();

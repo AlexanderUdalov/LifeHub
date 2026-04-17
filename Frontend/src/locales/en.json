@@ -141,6 +141,8 @@
       "lastRelapseDatePlaceholder": "Not set",
       "lastRelapseDateTime": "Last relapse date & time",
       "lastRelapseDateTimePlaceholder": "Not set",
+      "nsfw": "NSFW",
+      "nsfwHint": "Hide this addiction when NSFW mode is off in profile.",
       "save": "Save",
       "create": "Create",
       "delete": "Delete"
@@ -322,7 +324,9 @@
     "change-password": "Change password",
     "logout": "Logout",
     "delete-account": "Delete account",
-    "delete-confirmation": "Are you sure? This action cannot be undone."
+    "delete-confirmation": "Are you sure? This action cannot be undone.",
+    "nsfw-mode": "NSFW mode",
+    "nsfw-mode-hint": "When enabled, dependencies marked as NSFW are shown. Stored only on this device."
   },
   "cancel": "Cancel",
   "change": "Change",
@@ -355,7 +359,8 @@
     "clearFilters": "Clear",
     "noResults": "No results",
     "noResultsHint": "Try changing your search or filters",
-    "deletedAddiction": "Deleted addiction"
+    "deletedAddiction": "Deleted addiction",
+    "aiGeneratedChip": "AI-generated"
   },
   "profile": "Profile",
   "reflection": {

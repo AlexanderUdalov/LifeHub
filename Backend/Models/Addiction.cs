@@ -16,6 +16,8 @@ public class Addiction
     public Guid? LifeAreaId { get; set; }
     public LifeArea? LifeArea { get; set; }
 
+    public bool IsNsfw { get; set; }
+
     public List<AddictionReset> Resets { get; } = [];
     public List<AddictionTriggerEvent> TriggerEvents { get; } = [];
 }

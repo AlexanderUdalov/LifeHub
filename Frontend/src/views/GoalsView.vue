@@ -8,6 +8,7 @@ import { useGoalsStore } from '@/stores/goals'
 import { useTasksStore } from '@/stores/tasks'
 import { useHabitsStore } from '@/stores/habits'
 import { useAddictionsStore } from '@/stores/addictions'
+import { useNsfwContentStore } from '@/stores/nsfwContent'
 import { useJournalStore } from '@/stores/journal'
 import type { GoalDTO } from '@/api/GoalsAPI'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
@@ -27,6 +28,7 @@ const goalsStore = useGoalsStore()
 const tasksStore = useTasksStore()
 const habitsStore = useHabitsStore()
 const addictionsStore = useAddictionsStore()
+const nsfwContentStore = useNsfwContentStore()
 const journalStore = useJournalStore()
 const showCompletedGoals = ref(false)
 
@@ -69,6 +71,7 @@ const habitsByGoalId = computed(() => {
 const addictionsByGoalId = computed(() => {
   const grouped: Record<string, typeof addictionsStore.addictions> = {}
   for (const addiction of addictionsStore.addictions) {
+    if (!nsfwContentStore.addictionVisible(addiction.addiction)) continue
     if (!addiction.addiction.goalId) continue
     grouped[addiction.addiction.goalId] ??= []
     const bucket = grouped[addiction.addiction.goalId]

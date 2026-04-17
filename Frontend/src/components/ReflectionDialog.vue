@@ -138,7 +138,8 @@ async function saveToJournal() {
       habitId: null,
       addictionId: null,
       goalId: null,
-      lifeAreaId: null
+      lifeAreaId: null,
+      aiGenerated: true
     })
     emit('close')
   } catch {

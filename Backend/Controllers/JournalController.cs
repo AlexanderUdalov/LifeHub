@@ -69,7 +69,8 @@ public class JournalController(ApplicationContext context) : ControllerBase
             HabitId = request.HabitId,
             AddictionId = request.AddictionId,
             GoalId = request.GoalId,
-            LifeAreaId = request.LifeAreaId
+            LifeAreaId = request.LifeAreaId,
+            AiGenerated = request.AiGenerated
         };
 
         context.JournalEntries.Add(entry);

@@ -6,9 +6,11 @@ import {
   type AddictionUpsertRequest,
   type AddictionWithResetsDTO
 } from '@/api/AddictionsAPI'
+import { useNsfwContentStore } from '@/stores/nsfwContent'
 
 export const useAddictionsStore = defineStore('addictions', () => {
   const addictions = ref<AddictionWithResetsDTO[]>([])
+  const nsfwContentStore = useNsfwContentStore()
   const isLoading = ref(false)
   const rangeDays = ref(60)
 
@@ -30,6 +32,10 @@ export const useAddictionsStore = defineStore('addictions', () => {
 
   const addictionsSorted = computed(() =>
     [...addictions.value].sort((a, b) => a.addiction.title.localeCompare(b.addiction.title))
+  )
+
+  const addictionsSortedVisible = computed(() =>
+    addictionsSorted.value.filter((x) => nsfwContentStore.addictionVisible(x.addiction))
   )
 
   async function setReset(
@@ -113,6 +119,7 @@ export const useAddictionsStore = defineStore('addictions', () => {
   return {
     addictions,
     addictionsSorted,
+    addictionsSortedVisible,
     isLoading,
     rangeDays,
     fetchAddictions,

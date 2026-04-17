@@ -145,6 +145,8 @@
       "lastRelapseDatePlaceholder": "Не задано",
       "lastRelapseDateTime": "Дата и время последнего срыва",
       "lastRelapseDateTimePlaceholder": "Не задано",
+      "nsfw": "Метка NSFW",
+      "nsfwHint": "Скрывать эту зависимость, когда в профиле режим NSFW выключен.",
       "save": "Сохранить",
       "create": "Создать",
       "delete": "Удалить"
@@ -326,7 +328,9 @@
     "change-password": "Сменить пароль",
     "delete-account": "Удалить аккаунт",
     "logout": "Выйти из аккаунта",
-    "delete-confirmation": "Вы уверены? Это действие невозможно отменить."
+    "delete-confirmation": "Вы уверены? Это действие невозможно отменить.",
+    "nsfw-mode": "Режим NSFW",
+    "nsfw-mode-hint": "Когда включён, зависимости с меткой NSFW отображаются как обычно. Настройка хранится только на этом устройстве."
   },
   "cancel": "Отмена",
   "current-password": "Текущий пароль",
@@ -359,7 +363,8 @@
     "clearFilters": "Сбросить",
     "noResults": "Ничего не найдено",
     "noResultsHint": "Попробуйте изменить запрос или фильтры",
-    "deletedAddiction": "Удалённая зависимость"
+    "deletedAddiction": "Удалённая зависимость",
+    "aiGeneratedChip": "Сгенерировано ИИ"
   },
   "profile": "Профиль",
   "reflection": {

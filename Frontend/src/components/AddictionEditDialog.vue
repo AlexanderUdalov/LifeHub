@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
+import ToggleSwitch from 'primevue/toggleswitch'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
@@ -43,6 +44,14 @@ const localColor = ref(props.addiction?.color ?? ADDICTION_COLOR_OPTIONS[0] ?? '
 const localGoalId = ref<string | null>(props.addiction?.goalId ?? null)
 const localLifeAreaId = ref<string | null>(props.addiction?.lifeAreaId ?? null)
 const localLastRelapseAt = ref<Date | null>(null)
+const localIsNsfw = ref(!!props.addiction?.isNsfw)
+
+watch(
+  () => props.addiction?.id,
+  () => {
+    localIsNsfw.value = !!props.addiction?.isNsfw
+  }
+)
 
 const isEdit = computed(() => !!props.addiction)
 const canSave = computed(() => localTitle.value.trim().length > 0)
@@ -104,6 +113,7 @@ async function onSave() {
       color: effectiveColor.value,
       goalId: localGoalId.value,
       lifeAreaId: localLifeAreaId.value,
+      isNsfw: localIsNsfw.value,
       lastRelapseAt:
         !isEdit.value && localLastRelapseAt.value ? localLastRelapseAt.value.toISOString() : null
     }
@@ -177,6 +187,14 @@ async function onDelete() {
       </div>
     </div>
 
+    <div class="addiction-drawer-section addiction-drawer-section--row">
+      <div class="addiction-nsfw-label">
+        <label class="addiction-drawer-label" for="addiction-nsfw">{{ t('addictions.editdialog.nsfw') }}</label>
+        <span class="addiction-nsfw-hint">{{ t('addictions.editdialog.nsfwHint') }}</span>
+      </div>
+      <ToggleSwitch id="addiction-nsfw" v-model="localIsNsfw" />
+    </div>
+
     <div class="addiction-drawer-section">
       <label class="addiction-drawer-label">{{ t('addictions.editdialog.description') }}</label>
       <Textarea
@@ -214,5 +232,25 @@ async function onDelete() {
 .addiction-description-textarea {
   width: 100%;
   min-height: 6rem;
+}
+
+.addiction-drawer-section--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.addiction-nsfw-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.addiction-nsfw-hint {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.3;
 }
 </style>

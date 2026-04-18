@@ -80,9 +80,17 @@ const addictionsByGoalId = computed(() => {
   return grouped
 })
 
+const addictionsById = computed(
+  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction]))
+)
+
 const entriesByGoalId = computed(() => {
   const grouped: Record<string, JournalEntryDTO[]> = {}
   for (const entry of journalStore.entries) {
+    if (entry.addictionId) {
+      const addiction = addictionsById.value.get(entry.addictionId)
+      if (addiction && !nsfwContentStore.addictionVisible(addiction)) continue
+    }
     if (!entry.goalId) continue
     let bucket = grouped[entry.goalId]
     if (!bucket) {

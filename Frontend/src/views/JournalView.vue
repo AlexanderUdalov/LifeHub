@@ -47,6 +47,17 @@ const addictionOptions = computed(() => [
     .map((a) => ({ label: a.addiction.title, value: a.addiction.id }))
 ]);
 
+const addictionsById = computed(
+  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction]))
+);
+
+function journalEntryVisible(entry: JournalEntryDTO) {
+  if (!entry.addictionId) return true;
+  const addiction = addictionsById.value.get(entry.addictionId);
+  if (!addiction) return true;
+  return nsfwContentStore.addictionVisible(addiction);
+}
+
 watch(
   () =>
     `${nsfwContentStore.showNsfwContent}|${addictionsStore.addictions
@@ -61,7 +72,7 @@ watch(
 );
 
 const filteredEntries = computed(() => {
-  let list = journalStore.entries;
+  let list = journalStore.entries.filter(journalEntryVisible);
 
   const q = searchQuery.value.trim().toLowerCase();
   if (q) {

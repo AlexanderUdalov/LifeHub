@@ -6,10 +6,9 @@ export type AddictionDTO = components['schemas']['AddictionDTO']
 export type AddictionWithResetsDTO = components['schemas']['AddictionWithResetsDTO']
 export type AddictionUpsertRequest = components['schemas']['AddictionUpsertRequest']
 export type AddictionResetEntryDTO = components['schemas']['AddictionResetEntryDTO']
-export type AddictionTriggerEventDTO = components['schemas']['AddictionTriggerEventDTO']
 export type AddictionTriggerOutcome = components['schemas']['AddictionTriggerOutcome']
-export type LogTriggerEventRequest = components['schemas']['LogTriggerEventRequest']
-export type TriggerGuidanceSlide = {
+type LogTriggerEventRequest = components['schemas']['LogTriggerEventRequest']
+type TriggerGuidanceSlide = {
   text: string
   image?: string | null
 }

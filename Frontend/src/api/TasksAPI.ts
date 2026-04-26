@@ -7,7 +7,7 @@ export type CreateTaskRequest = components["schemas"]["CreateTaskRequest"];
 export type UpdateTaskRequest = components["schemas"]["UpdateTaskRequest"];
 
 /** Response of GET /tasks/completed (paginated). Re-export from schema after api:gen. */
-export interface CompletedTasksPageResponse {
+interface CompletedTasksPageResponse {
     items: TaskDTO[];
     total: number;
 }

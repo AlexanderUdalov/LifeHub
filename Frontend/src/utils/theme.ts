@@ -31,7 +31,7 @@ export function getStoredPrimaryColor(): string | null {
   return raw && /^#[0-9A-Fa-f]{6}$/.test(raw) ? raw : null
 }
 
-export function setStoredPrimaryColor(hex: string | null): void {
+function setStoredPrimaryColor(hex: string | null): void {
   if (hex) localStorage.setItem(PRIMARY_COLOR_STORAGE_KEY, hex)
   else localStorage.removeItem(PRIMARY_COLOR_STORAGE_KEY)
 }
@@ -41,7 +41,7 @@ export function getStoredSurfaceColor(): string | null {
   return raw && /^#[0-9A-Fa-f]{6}$/.test(raw) ? raw : null
 }
 
-export function setStoredSurfaceColor(hex: string | null): void {
+function setStoredSurfaceColor(hex: string | null): void {
   if (hex) localStorage.setItem(SURFACE_COLOR_STORAGE_KEY, hex)
   else localStorage.removeItem(SURFACE_COLOR_STORAGE_KEY)
 }

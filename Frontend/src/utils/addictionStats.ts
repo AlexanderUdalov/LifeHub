@@ -2,7 +2,7 @@ import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import { fromDateOnlyString, toDateOnlyString } from '@/utils/dateOnly'
 import { isTriggerOvercameOutcome } from '@/utils/triggerOutcome'
 
-export type AddictionStatsResult = {
+type AddictionStatsResult = {
   resetCount: number
   maxStreakDays: number
   avgStreakDays: number

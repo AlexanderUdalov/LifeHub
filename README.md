@@ -86,6 +86,45 @@ npm run dev
 - `npm run dev:backend` — только бэкенд
 - `npm run dev:frontend` — только фронтенд
 
+После изменений моделей EF примените миграции (остановите бэкенд, если он держит файлы сборки):
+
+```bash
+cd Backend
+dotnet ef database update --project LifeHub-Backend.csproj
+```
+
+Если в SQLite уже есть колонка `Note` у `AddictionResets` (старая тестовая миграция), перед `database update` удалите её:  
+`ALTER TABLE AddictionResets DROP COLUMN Note;` (SQLite 3.35+).
+
+Для SQLite в миграции `AddictionResets.JournalEntryId` **не создаётся ограничение FOREIGN KEY** в БД (ограничение провайдера EF); связь задаётся только в модели приложения.
+
+#### Зависание на `Acquiring an exclusive lock` / `__EFMigrationsLock`
+
+В EF Core 9+ для SQLite миграции защищаются «блокировкой» через таблицу `__EFMigrationsLock`. Если миграция оборвалась (процесс убит, сбой) или одновременно открыт тот же файл БД, строка в этой таблице может остаться — тогда `dotnet ef database update` снова и снова выполняет `INSERT OR IGNORE` и **не продвигается**. Официально: [Concurrent migrations protection (SQLite)](https://learn.microsoft.com/en-us/ef/core/providers/sqlite/limitations#concurrent-migrations-protection).
+
+**Что сделать:**
+
+1. Остановите бэкенд и любые программы, которые держат `lifehub.db` открытым.
+2. Удалите таблицу блокировки (путь к файлу совпадает с рантаймом: обычно `Backend/bin/Debug/net10.0/../database/lifehub.db` → `Backend/bin/Debug/database/lifehub.db`):
+
+```bash
+sqlite3 Backend/bin/Debug/database/lifehub.db "DROP TABLE IF EXISTS \"__EFMigrationsLock\";"
+```
+
+Без установленного `sqlite3` (типично для Windows) можно из корня репозитория:
+
+```bash
+python Backend/scripts/drop_migrations_lock.py
+```
+
+(Необязательный аргумент — полный путь к `.db`, если файл не в `Backend/bin/Debug/database/lifehub.db`.)
+
+(Если у вас другой путь к БД — укажите его; при необходимости задайте тот же файл, что и в `Program.cs`, через `--connection` у `dotnet ef database update`.)
+
+3. Повторите `dotnet ef database update`.
+
+Затем при необходимости обновите клиентский OpenAPI: `npm run api:gen` из папки `Frontend` (бэкенд должен отдавать `/openapi/v1.json`).
+
 ---
 
 ## 📐 Architecture (draft)

@@ -5,6 +5,21 @@ import { toDateOnlyString } from '@/utils/dateOnly'
 export type AddictionDTO = components['schemas']['AddictionDTO']
 export type AddictionWithResetsDTO = components['schemas']['AddictionWithResetsDTO']
 export type AddictionUpsertRequest = components['schemas']['AddictionUpsertRequest']
+export type AddictionResetEntryDTO = components['schemas']['AddictionResetEntryDTO']
+export type AddictionTriggerEventDTO = components['schemas']['AddictionTriggerEventDTO']
+export type AddictionTriggerOutcome = components['schemas']['AddictionTriggerOutcome']
+export type LogTriggerEventRequest = components['schemas']['LogTriggerEventRequest']
+export type TriggerGuidanceSlide = {
+  text: string
+  image?: string | null
+}
+
+export type GenerateTriggerGuidanceResponse = {
+  title: string
+  subtitle: string
+  tips: string[]
+  slides?: TriggerGuidanceSlide[]
+}
 
 export const addictionsApi = {
   async getAddictions(days = 14): Promise<AddictionWithResetsDTO[]> {
@@ -26,13 +41,52 @@ export const addictionsApi = {
     await api.delete(`/addictions/${id}`)
   },
 
-  async setReset(addictionId: string, date: Date): Promise<void> {
+  async setReset(
+    addictionId: string,
+    date: Date,
+    body?: { note?: string | null; resetAt?: Date | null }
+  ): Promise<void> {
     const dateOnly = toDateOnlyString(date)
-    await api.put(`/addictions/${addictionId}/resets/${dateOnly}`)
+    await api.put(`/addictions/${addictionId}/resets/${dateOnly}`, {
+      note: body?.note?.trim() ? body.note.trim() : null,
+      resetAt: body?.resetAt ? body.resetAt.toISOString() : null
+    })
   },
 
   async removeReset(addictionId: string, date: Date): Promise<void> {
     const dateOnly = toDateOnlyString(date)
     await api.delete(`/addictions/${addictionId}/resets/${dateOnly}`)
+  },
+
+  async getTriggerGuidance(
+    addictionId: string,
+    language?: string | null
+  ): Promise<GenerateTriggerGuidanceResponse> {
+    const { data } = await api.get<GenerateTriggerGuidanceResponse>(`/addictions/${addictionId}/trigger-guidance`, {
+      params: {
+        language: language?.trim() ? language.trim() : undefined
+      }
+    })
+    return data!
+  },
+
+  async logTriggerEvent(
+    addictionId: string,
+    request: LogTriggerEventRequest,
+    language?: string | null
+  ): Promise<void> {
+    await api.post(
+      `/addictions/${addictionId}/trigger-events`,
+      {
+        outcome: request.outcome,
+        note: request.note?.trim() ? request.note.trim() : null,
+        eventAt: request.eventAt ?? null
+      },
+      {
+        params: {
+          language: language?.trim() ? language.trim() : undefined
+        }
+      }
+    )
   }
 }

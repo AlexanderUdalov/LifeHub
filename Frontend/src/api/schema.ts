@@ -230,7 +230,13 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": null | components["schemas"]["SetResetRequest"];
+                    "text/json": null | components["schemas"]["SetResetRequest"];
+                    "application/*+json": null | components["schemas"]["SetResetRequest"];
+                };
+            };
             responses: {
                 /** @description OK */
                 200: {
@@ -285,6 +291,112 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/addictions/{id}/trigger-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    language?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LogTriggerEventRequest"];
+                    "text/json": components["schemas"]["LogTriggerEventRequest"];
+                    "application/*+json": components["schemas"]["LogTriggerEventRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/addictions/{id}/trigger-guidance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    language?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GenerateTriggerGuidanceResponse"];
+                        "application/json": components["schemas"]["GenerateTriggerGuidanceResponse"];
+                        "text/json": components["schemas"]["GenerateTriggerGuidanceResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -729,7 +841,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    includeCompleted?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -921,6 +1035,56 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/goals/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDTO"];
+                        "application/json": components["schemas"]["GoalDTO"];
+                        "text/json": components["schemas"]["GoalDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1813,6 +1977,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             title: string;
+            description: null | string;
             color: string;
             /** Format: date-time */
             createdAt: string;
@@ -1820,20 +1985,48 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            isNsfw: boolean;
         };
+        AddictionResetEntryDTO: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            date: string;
+            /** Format: date-time */
+            resetAt: string;
+            /** Format: uuid */
+            journalEntryId: null | string;
+            journalText: null | string;
+        };
+        AddictionTriggerEventDTO: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            eventAt: string;
+            outcome: components["schemas"]["AddictionTriggerOutcome"];
+            note: null | string;
+            /** Format: uuid */
+            journalEntryId: null | string;
+            journalText: null | string;
+        };
+        AddictionTriggerOutcome: number;
         AddictionUpsertRequest: {
             title: string;
+            description: null | string;
             color: string;
             /** Format: uuid */
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
-            /** Format: date */
-            lastRelapseDate: null | string;
+            /** @default false */
+            isNsfw: boolean;
+            /** Format: date-time */
+            lastRelapseAt?: null | string;
         };
         AddictionWithResetsDTO: {
             addiction: components["schemas"]["AddictionDTO"];
-            resetDates: string[];
+            resets: components["schemas"]["AddictionResetEntryDTO"][];
+            triggerEvents: components["schemas"]["AddictionTriggerEventDTO"][];
             /** Format: date-time */
             lastResetAt: null | string;
             /** Format: int32 */
@@ -1872,6 +2065,8 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            /** @default false */
+            aiGenerated: boolean;
         };
         CreateLifeAreaRequest: {
             name: string;
@@ -1889,6 +2084,12 @@ export interface components {
             /** Format: uuid */
             lifeAreaId: null | string;
         };
+        GenerateTriggerGuidanceResponse: {
+            title: string;
+            subtitle: string;
+            tips: string[];
+            slides: components["schemas"]["TriggerGuidanceSlideDTO"][];
+        };
         GoalDTO: {
             /** Format: uuid */
             id: string;
@@ -1898,6 +2099,8 @@ export interface components {
             dueDate: string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            /** Format: date-time */
+            completedAt: null | string;
         };
         HabitDayDTO: {
             /** Format: date */
@@ -1955,6 +2158,7 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            aiGenerated: boolean;
         };
         LifeAreaDTO: {
             /** Format: uuid */
@@ -1966,6 +2170,12 @@ export interface components {
         LoginRequest: {
             email: string;
             password: string;
+        };
+        LogTriggerEventRequest: {
+            outcome: components["schemas"]["AddictionTriggerOutcome"];
+            note: null | string;
+            /** Format: date-time */
+            eventAt: null | string;
         };
         ProblemDetails: {
             type?: null | string;
@@ -1996,9 +2206,15 @@ export interface components {
         SetDayStatusRequest: {
             status: string;
         };
+        SetResetRequest: {
+            note: null | string;
+            /** Format: date-time */
+            resetAt: null | string;
+        };
         StartReflectionRequest: {
             /** Format: int32 */
             periodDays: number | string;
+            language?: null | string;
         };
         StartReflectionResponse: {
             /** Format: uuid */
@@ -2022,6 +2238,10 @@ export interface components {
             lifeAreaId: null | string;
             /** Format: int32 */
             sortOrder: null | number | string;
+        };
+        TriggerGuidanceSlideDTO: {
+            text: string;
+            image: null | string;
         };
         UpdateGoalRequest: {
             title: null | string;

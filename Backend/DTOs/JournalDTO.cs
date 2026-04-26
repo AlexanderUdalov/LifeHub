@@ -13,7 +13,8 @@ public record JournalEntryDTO(
     Guid? HabitId,
     Guid? AddictionId,
     Guid? GoalId,
-    Guid? LifeAreaId
+    Guid? LifeAreaId,
+    bool AiGenerated
 );
 
 public record CreateJournalEntryRequest(
@@ -22,7 +23,8 @@ public record CreateJournalEntryRequest(
     Guid? HabitId,
     Guid? AddictionId,
     Guid? GoalId,
-    Guid? LifeAreaId
+    Guid? LifeAreaId,
+    bool AiGenerated = false
 );
 
 public record UpdateJournalEntryRequest(
@@ -50,7 +52,8 @@ public static class JournalEntryMapping
             entry.HabitId,
             entry.AddictionId,
             entry.GoalId,
-            entry.LifeAreaId
+            entry.LifeAreaId,
+            entry.AiGenerated
         );
 }
 

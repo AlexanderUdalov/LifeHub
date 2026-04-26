@@ -14,13 +14,20 @@ public class GoalsController(ApplicationContext context) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GoalDTO>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<GoalDTO>>> GetAll()
+    public async Task<ActionResult<IEnumerable<GoalDTO>>> GetAll([FromQuery] bool includeCompleted = false)
     {
         var userId = User.GetUserId();
-        var goals = await context.Goals
+        var query = context.Goals
             .AsNoTracking()
-            .Where(x => x.UserId == userId)
-            .OrderBy(x => x.DueDate)
+            .Where(x => x.UserId == userId);
+
+        if (!includeCompleted)
+            query = query.Where(x => x.CompletedAt == null);
+
+        var goals = await query
+            .OrderBy(x => x.CompletedAt != null)
+            .ThenByDescending(x => x.CompletedAt)
+            .ThenBy(x => x.DueDate)
             .Select(x => x.ToDTO())
             .ToListAsync();
 
@@ -109,6 +116,22 @@ public class GoalsController(ApplicationContext context) : ControllerBase
         }
         goal.LifeAreaId = request.LifeAreaId;
 
+        await context.SaveChangesAsync();
+        return Ok(goal.ToDTO());
+    }
+
+    [HttpPost("{id:guid}/complete")]
+    [ProducesResponseType(typeof(GoalDTO), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GoalDTO>> Complete(Guid id)
+    {
+        var userId = User.GetUserId();
+        var goal = await context.Goals.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+
+        if (goal is null)
+            return NotFound();
+
+        goal.CompletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
         return Ok(goal.ToDTO());
     }

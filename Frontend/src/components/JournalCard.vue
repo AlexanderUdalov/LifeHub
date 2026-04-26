@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import Card from 'primevue/card'
 import Button from 'primevue/button'
 import { computed, ref } from 'vue'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useJournalStore } from '@/stores/journal'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
+import { useAddictionsStore } from '@/stores/addictions'
 import { useI18n } from 'vue-i18n'
 import { renderMarkdown } from '@/composables/useMarkdown'
+import BaseCard from '@/components/base/BaseCard.vue'
 
 const props = withDefaults(
   defineProps<{ item: JournalEntryDTO; noBorder?: boolean }>(),
@@ -22,13 +23,8 @@ const { t, locale } = useI18n()
 const journalStore = useJournalStore()
 const lifeAreasStore = useLifeAreasStore()
 const goalsStore = useGoalsStore()
+const addictionsStore = useAddictionsStore()
 const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.item.lifeAreaId))
-const cardBorderStyle = computed(() => {
-  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
-  return areaColor.value
-    ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value }
-    : { borderLeftWidth: 0 }
-})
 
 const lifeArea = computed(() => {
   if (!props.item.lifeAreaId) return null
@@ -37,7 +33,25 @@ const lifeArea = computed(() => {
 
 const goal = computed(() => goalsStore.getGoalById(props.item.goalId))
 
-const hasLifeAreaOrGoal = computed(() => !!lifeArea.value || !!goal.value)
+const addiction = computed(() => {
+  if (!props.item.addictionId) return null
+  return (
+    addictionsStore.addictions.find((a) => a.addiction.id === props.item.addictionId)?.addiction ??
+    null
+  )
+})
+
+const addictionLabel = computed(() => addiction.value?.title ?? t('journal.deletedAddiction'))
+const lifeAreaLabel = computed(() => lifeArea.value?.name ?? '')
+const goalLabel = computed(() => goal.value?.title ?? '')
+
+const hasFooterMeta = computed(
+  () =>
+    !!props.item.addictionId ||
+    !!lifeArea.value ||
+    !!goal.value ||
+    props.item.aiGenerated
+)
 
 const isExpanded = ref(false)
 const showDeleteConfirm = ref(false)
@@ -105,9 +119,11 @@ const formattedDate = computed(() => {
   })
 })
 
-const wasEdited = computed(() => !!props.item.updatedAt)
-
 const renderedText = computed(() => renderMarkdown(props.item.text))
+const containsEmoji = (value: string) => /\p{Extended_Pictographic}/u.test(value)
+const showAddictionIcon = computed(() => !containsEmoji(addictionLabel.value))
+const showLifeAreaIcon = computed(() => !containsEmoji(lifeAreaLabel.value))
+const showGoalIcon = computed(() => !containsEmoji(goalLabel.value))
 
 async function onTogglePin() {
   await journalStore.togglePin(props.item.id)
@@ -120,13 +136,12 @@ async function onConfirmDelete() {
 </script>
 
 <template>
-  <Card class="journal-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
+  <BaseCard class="journal-card" :borderless="noBorder" :accent-color="areaColor">
     <template #content>
       <div class="journal-card__header">
         <div class="journal-card__meta">
           <i v-if="item.isPinned" class="pi pi-thumbtack journal-card__pin-badge" />
           <span class="journal-card__date">{{ formattedDate }}</span>
-          <span v-if="wasEdited" class="journal-card__edited">{{ t('journal.edited') }}</span>
         </div>
 
         <div class="journal-card__actions" @click.stop>
@@ -172,6 +187,16 @@ async function onConfirmDelete() {
         </div>
       </div>
 
+      <Transition name="journal-card-slide">
+        <div v-if="showDeleteConfirm" class="journal-card__confirm" @click.stop>
+          <span class="journal-card__confirm-text">{{ t('journal.deleteConfirm') }}</span>
+          <div class="journal-card__confirm-btns">
+            <Button :label="t('cancel')" variant="text" size="small" @click="showDeleteConfirm = false" />
+            <Button :label="t('journal.delete')" severity="danger" size="small" @click="onConfirmDelete" />
+          </div>
+        </div>
+      </Transition>
+
       <div class="journal-card__body" @click="emit('edit-journal', item)">
         <div
           class="journal-card__text"
@@ -182,34 +207,31 @@ async function onConfirmDelete() {
         </div>
       </div>
 
-      <div v-if="hasLifeAreaOrGoal" class="journal-card__footer">
-        <span v-if="lifeArea" class="journal-card__life-area">
-          <i class="pi pi-chart-pie" />
-          {{ lifeArea.name }}
+      <div v-if="hasFooterMeta" class="journal-card__footer">
+        <span v-if="item.addictionId" class="journal-card__addiction">
+          <i v-if="showAddictionIcon" class="pi pi-ban" />
+          {{ addictionLabel }}
         </span>
-        <span v-else />
+        <span v-if="lifeArea" class="journal-card__life-area">
+          <i v-if="showLifeAreaIcon" class="pi pi-chart-pie" />
+          {{ lifeAreaLabel }}
+        </span>
+        <span v-if="item.aiGenerated" class="journal-card__reflection">
+          <i class="pi pi-sparkles" />
+          {{ t('journal.aiGeneratedChip') }}
+        </span>
         <span v-if="goal" class="journal-card__goal">
-          <i class="pi pi-bullseye" />
-          {{ goal.title }}
+          <i v-if="showGoalIcon" class="pi pi-bullseye" />
+          {{ goalLabel }}
         </span>
       </div>
-
-      <Transition name="journal-card-slide">
-        <div v-if="showDeleteConfirm" class="journal-card__confirm" @click.stop>
-          <span class="journal-card__confirm-text">{{ t('journal.deleteConfirm') }}</span>
-          <div class="journal-card__confirm-btns">
-            <Button :label="t('cancel')" variant="text" size="small" @click="showDeleteConfirm = false" />
-            <Button :label="t('journal.delete')" severity="danger" size="small" @click="onConfirmDelete" />
-          </div>
-        </div>
-      </Transition>
     </template>
-  </Card>
+  </BaseCard>
 </template>
 
 <style scoped>
 .journal-card {
-  border-radius: 16px;
+  border-radius: var(--ds-radius-lg);
   overflow: hidden;
   transition: box-shadow 0.2s ease, transform 0.15s ease;
   position: relative;
@@ -217,15 +239,6 @@ async function onConfirmDelete() {
 
 .journal-card:active {
   transform: scale(0.985);
-}
-
-.journal-card.no-border {
-  box-shadow: none;
-}
-
-.journal-card.no-border :deep(.p-card) {
-  border: none;
-  background: transparent;
 }
 
 :deep(.p-card-body) {
@@ -355,16 +368,6 @@ async function onConfirmDelete() {
   white-space: nowrap;
 }
 
-.journal-card__edited {
-  opacity: 0.65;
-  white-space: nowrap;
-}
-
-.journal-card__edited::before {
-  content: '·';
-  margin-right: 0.375rem;
-}
-
 .journal-card__actions {
   display: flex;
   gap: 0;
@@ -392,9 +395,35 @@ async function onConfirmDelete() {
 .journal-card__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.25rem 0;
+}
+
+.journal-card__addiction {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+}
+
+.journal-card__addiction i {
+  font-size: 0.625rem;
+}
+
+.journal-card__reflection {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+}
+
+.journal-card__reflection i {
+  font-size: 0.625rem;
+  color: var(--p-primary-color);
 }
 
 .journal-card__goal {
@@ -415,8 +444,7 @@ async function onConfirmDelete() {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--p-content-border-color);
+  padding: 0.25rem 0 0.125rem;
 }
 
 .journal-card__confirm-text {

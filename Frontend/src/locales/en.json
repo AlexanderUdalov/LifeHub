@@ -93,7 +93,17 @@
     "habits": "Habits",
     "empty": "No habits yet",
     "emptySubtitle": "Add a habit to track your daily progress",
-    "currentStreakLabel": "Current streak: {count}",
+    "currentStreakLabel": "Current streak: {count} {unit}",
+    "streakUnits": {
+      "day": {
+        "one": "day",
+        "other": "days"
+      },
+      "week": {
+        "one": "week",
+        "other": "weeks"
+      }
+    },
     "weeklyRow": {
       "thisWeek": "This week",
       "weekOfTooltip": "Week of {date}: {count}/{goal}",
@@ -124,16 +134,100 @@
     "editdialog": {
       "newAddiction": "New addiction",
       "title": "Title",
+      "description": "Why I want to quit",
+      "descriptionPlaceholder": "What matters to you? Why do you want to overcome this addiction?",
       "color": "Color",
       "lastRelapseDate": "Last relapse date",
       "lastRelapseDatePlaceholder": "Not set",
+      "lastRelapseDateTime": "Last relapse date & time",
+      "lastRelapseDateTimePlaceholder": "Not set",
+      "nsfw": "NSFW",
+      "nsfwHint": "Hide this addiction when NSFW mode is off in profile.",
       "save": "Save",
       "create": "Create",
       "delete": "Delete"
     },
     "calendar": "Calendar",
     "collapse": "Collapse",
-    "reset": "Reset"
+    "reset": "Reset",
+    "trigger": "Trigger",
+    "calendarLegend": {
+      "cleanDay": "No reset day",
+      "resetDay": "Reset day"
+    },
+    "units": {
+      "mo": "mo",
+      "d": "d",
+      "h": "h",
+      "min": "min",
+      "s": "s"
+    },
+    "stages": {
+      "1hour": "1 hour",
+      "1day": "1 day",
+      "3days": "3 days",
+      "1week": "1 week",
+      "10days": "10 days",
+      "2weeks": "2 weeks",
+      "1month": "1 month",
+      "2months": "2 months",
+      "3months": "3 months",
+      "6months": "6 months",
+      "1year": "1 year"
+    },
+    "nextStage": "→ {stage}",
+    "maxStage": "Maximum stage reached",
+    "resetDrawer": {
+      "title": "Reset progress",
+      "confirm": "Reset",
+      "date": "Date",
+      "time": "Time",
+      "dateTime": "Date & time",
+      "note": "Journal entry",
+      "notePlaceholder": "What happened? What can you do differently next time?"
+    },
+    "resetInfo": {
+      "title": "Resets: {date}",
+      "count": "Number of resets: {count}",
+      "notesPlaceholder": "Notes will be available later",
+      "noNote": "No note",
+      "empty": "No entries for this day",
+      "addAnother": "Add another reset on this day"
+    },
+    "triggerDrawer": {
+      "title": "Pause. Breathe.",
+      "subtitle": "You're not weak. Urges pass. Stay with it for a few minutes.",
+      "dismiss": "I'm okay now",
+      "note": "Trigger note",
+      "notePlaceholder": "What happened now? What helped or made it harder?",
+      "noteStepTitle": "Quick note",
+      "saveAction": "Save",
+      "loading": "Preparing support...",
+      "overcame": "I handled it",
+      "relapsed": "I slipped",
+      "slide1": "Breathe slowly for 60 seconds.",
+      "slide2": "This urge will peak and fade.",
+      "slide3": "Do one small physical action: stand up, wash your face.",
+      "slide4": "Remember why you started.",
+      "slide5": "You've come so far. Don't give up."
+    },
+    "stats": {
+      "title": "Statistics",
+      "open": "Addiction statistics",
+      "notFound": "Addiction data not found",
+      "sectionStreak": "Streak & stages",
+      "sinceLastReset": "Since last reset",
+      "nextStageHeading": "Next stage",
+      "maxStreak": "Longest streak",
+      "avgStreak": "Average streak",
+      "sectionResets": "Resets",
+      "resetCount": "Total resets",
+      "cleanPercent30": "Clean days in last {days} days (%)",
+      "sectionWeekday": "Resets by weekday",
+      "sectionTriggers": "Triggers",
+      "triggerCount": "Logged events",
+      "triggerSuccess": "Handled rate"
+    }
   },
   "lifeareas": {
     "title": "Life Areas",
@@ -172,7 +266,43 @@
     "addictionsCount": "Addictions ({count})",
     "journalCount": "Notes ({count})",
     "showCompleted": "Show completed ({count})",
-    "hideCompleted": "Hide completed"
+    "hideCompleted": "Hide completed",
+    "showCompletedGoals": "Show completed",
+    "hideCompletedGoals": "Hide completed",
+    "showCompletedGoalsInline": "Show completed ({count})",
+    "hideCompletedGoalsInline": "Hide completed ({count})",
+    "completedSection": "Completed goals",
+    "completeDrawer": {
+      "open": "Complete goal",
+      "title": "Complete goal: {goal}",
+      "back": "Back",
+      "next": "Next",
+      "complete": "Complete goal",
+      "completeAnyway": "Complete anyway",
+      "steps": {
+        "review": {
+          "title": "Review progress",
+          "text": "Before completing the goal, make sure your key steps are done."
+        },
+        "tasks": {
+          "title": "Task check",
+          "text": "Open tasks: {count}. It is better to finish them before completing the goal."
+        },
+        "streak": {
+          "title": "Streak check",
+          "text": "For habits and addictions, we recommend at least 3 weeks without breaks (21 days)."
+        }
+      },
+      "warnings": {
+        "openTasks": "There are still open tasks: {count}.",
+        "habitsLead": "These habits have a streak below 21 days:",
+        "habitItem": "{title} - {days} days.",
+        "habitsHint": "Reminder: a habit usually forms in 21 days.",
+        "addictionsLead": "These addictions have a streak below 21 days:",
+        "addictionItem": "{title} - {days} days.",
+        "addictionsHint": "Reminder: stable progress usually forms in 21 days."
+      }
+    }
   },
   "toasts": {
     "logged-out": "You have logged out",
@@ -194,7 +324,9 @@
     "change-password": "Change password",
     "logout": "Logout",
     "delete-account": "Delete account",
-    "delete-confirmation": "Are you sure? This action cannot be undone."
+    "delete-confirmation": "Are you sure? This action cannot be undone.",
+    "nsfw-mode": "NSFW mode",
+    "nsfw-mode-hint": "When enabled, dependencies marked as NSFW are shown. Stored only on this device."
   },
   "cancel": "Cancel",
   "change": "Change",
@@ -223,10 +355,13 @@
     "filter": "Filter",
     "filterByLifeArea": "Life area",
     "filterByGoal": "Goal",
+    "filterByAddiction": "Addiction",
     "filterAll": "All",
     "clearFilters": "Clear",
     "noResults": "No results",
-    "noResultsHint": "Try changing your search or filters"
+    "noResultsHint": "Try changing your search or filters",
+    "deletedAddiction": "Deleted addiction",
+    "aiGeneratedChip": "AI-generated"
   },
   "profile": "Profile",
   "reflection": {

@@ -6,6 +6,7 @@ export interface GoalDTO {
   description: string | null
   dueDate: string
   lifeAreaId: string | null
+  completedAt: string | null
 }
 
 export interface CreateGoalRequest {
@@ -23,8 +24,8 @@ export interface UpdateGoalRequest {
 }
 
 export const goalsApi = {
-  async getGoals(): Promise<GoalDTO[]> {
-    const { data } = await api.get<GoalDTO[]>('/goals')
+  async getGoals(includeCompleted = false): Promise<GoalDTO[]> {
+    const { data } = await api.get<GoalDTO[]>('/goals', { params: { includeCompleted } })
     return data ?? []
   },
 
@@ -45,5 +46,10 @@ export const goalsApi = {
 
   async deleteGoal(id: string): Promise<void> {
     await api.delete(`/goals/${id}`)
+  },
+
+  async completeGoal(id: string): Promise<GoalDTO> {
+    const { data } = await api.post<GoalDTO>(`/goals/${id}/complete`)
+    return data
   }
 }

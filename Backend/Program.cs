@@ -48,7 +48,7 @@ builder.Services
     });
 
 var aiApiKey = builder.Configuration["Ai:ApiKey"] ?? "";
-var aiModel = builder.Configuration["Ai:Model"] ?? "gpt-4o-mini";
+var aiModel = builder.Configuration["Ai:Model"] ?? "gpt-5.4-mini";
 
 if (!string.IsNullOrWhiteSpace(aiApiKey))
 {
@@ -58,6 +58,7 @@ if (!string.IsNullOrWhiteSpace(aiApiKey))
 
 builder.Services.AddScoped<ReflectionContextService>();
 builder.Services.AddScoped<AiChatService>();
+builder.Services.AddScoped<AddictionTriggerGuidanceService>();
 
 builder.Services
     .AddAuthorization()

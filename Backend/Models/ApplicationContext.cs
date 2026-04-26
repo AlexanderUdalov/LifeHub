@@ -13,6 +13,7 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<HabitDay> HabitDays => Set<HabitDay>();
     public DbSet<Addiction> Addictions => Set<Addiction>();
     public DbSet<AddictionReset> AddictionResets => Set<AddictionReset>();
+    public DbSet<AddictionTriggerEvent> AddictionTriggerEvents => Set<AddictionTriggerEvent>();
     public DbSet<LifeArea> LifeAreas => Set<LifeArea>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
@@ -106,6 +107,24 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
             .WithMany(x => x.Resets)
             .HasForeignKey(x => x.AddictionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AddictionReset>()
+            .HasOne(x => x.JournalEntry)
+            .WithMany()
+            .HasForeignKey(x => x.JournalEntryId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<AddictionTriggerEvent>()
+            .HasOne(x => x.Addiction)
+            .WithMany(x => x.TriggerEvents)
+            .HasForeignKey(x => x.AddictionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AddictionTriggerEvent>()
+            .HasOne(x => x.JournalEntry)
+            .WithMany()
+            .HasForeignKey(x => x.JournalEntryId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Goal>()
             .HasOne(x => x.LifeFocus)

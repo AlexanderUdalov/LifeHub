@@ -1,183 +1,406 @@
 <script setup lang="ts">
-import Card from 'primevue/card'
 import Button from 'primevue/button'
-import AddictionDayRow from './AddictionDayRow.vue'
+import AddictionCalendar from './AddictionCalendar.vue'
+import AddictionResetModal from './AddictionResetModal.vue'
+import AddictionTriggerModal from './AddictionTriggerModal.vue'
+import AddictionStatsDrawer from './AddictionStatsDrawer.vue'
 import type { AddictionDTO, AddictionWithResetsDTO } from '@/api/AddictionsAPI'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { getTimeSince, fromDateOnlyString, toDateOnlyString, isSameDateOnly, startOfDay, parseUtcIso } from '@/utils/dateOnly'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { parseUtcIso, toDateOnlyString } from '@/utils/dateOnly'
 import { useI18n } from 'vue-i18n'
 import { useAddictionsStore } from '@/stores/addictions'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
+import { useAddictionProgress } from '@/composables/useAddictionProgress'
+import BaseCard from '@/components/base/BaseCard.vue'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const props = withDefaults(
   defineProps<{ addiction: AddictionWithResetsDTO; noBorder?: boolean }>(),
   { noBorder: false }
 )
-const lifeAreasStore = useLifeAreasStore()
-const goalsStore = useGoalsStore()
-const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.addiction.addiction.lifeAreaId))
-const cardBorderStyle = computed(() => {
-  if (props.noBorder) return { border: 'none', borderLeftWidth: 0 }
-  return areaColor.value ? { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: areaColor.value } : { borderLeftWidth: 0 }
-})
-const goalTitle = computed(() => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null)
-
-const cleanStreak = computed(() => {
-  const raw = props.addiction.currentStreakDays
-  const n = typeof raw === 'number' ? raw : Number(raw ?? 0)
-  if (!Number.isFinite(n) || n <= 0) return null
-  return n
-})
 
 const emit = defineEmits<{
   (e: 'edit', addiction: AddictionDTO): void
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const addictionsStore = useAddictionsStore()
+const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
 
-/** Updated every minute so the "time since" counter refreshes. */
+const intlLocale = computed(() => (locale.value === 'ru' ? 'ru-RU' : 'en-US'))
+
+const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.addiction.addiction.lifeAreaId))
+
+const displayColor = computed(() => {
+  const fromArea = areaColor.value
+  if (fromArea?.trim()) return fromArea.trim()
+  const c = props.addiction.addiction.color?.trim()
+  return c && c.length > 0 ? c : '#ef4444'
+})
+
+const goalTitle = computed(() => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null)
+
+const resetsList = computed(() => props.addiction.resets ?? [])
+
+// --- Timer (ticks every second) ---
 const now = ref(new Date())
 let tickInterval: ReturnType<typeof setInterval> | undefined
 onMounted(() => {
   tickInterval = setInterval(() => {
     now.value = new Date()
-  }, 60_000)
+  }, 1_000)
 })
 onUnmounted(() => {
   if (tickInterval) clearInterval(tickInterval)
 })
 
-function onReset() {
-  addictionsStore.setReset(props.addiction.addiction.id, new Date())
+const addictionRef = computed(() => props.addiction)
+const { elapsed, nextMilestone, progressPercent } = useAddictionProgress(addictionRef, now)
+
+const progressText = computed(() => {
+  const e = elapsed.value
+  const parts: string[] = []
+  if (e.months > 0) parts.push(`${e.months}${t('addictions.units.mo')}`)
+  if (e.days > 0) parts.push(`${e.days}${t('addictions.units.d')}`)
+  if (e.hours > 0) parts.push(`${e.hours}${t('addictions.units.h')}`)
+  parts.push(`${e.minutes}${t('addictions.units.min')}`)
+  parts.push(`${e.seconds}${t('addictions.units.s')}`)
+  return parts.join(' ')
+})
+
+const nextStageLabel = computed(() => {
+  const ms = nextMilestone.value
+  if (!ms) return t('addictions.maxStage')
+  return t('addictions.nextStage', { stage: t(ms.labelKey) })
+})
+
+const showResetDrawer = ref(false)
+const resetPrefilledDate = ref<Date | null>(null)
+const showTriggerDrawer = ref(false)
+const showResetInfoDrawer = ref(false)
+const resetInfoDate = ref<Date | null>(null)
+const showStatsDrawer = ref(false)
+
+function openResetDrawer(date?: Date) {
+  resetPrefilledDate.value = date ?? null
+  showResetDrawer.value = true
 }
 
-/** Date of the most recent reset (last in list, since API returns ordered by ResetAt). */
-const lastResetDateKey = computed(() =>
-  props.addiction.resetDates.length ? props.addiction.resetDates[props.addiction.resetDates.length - 1]! : null
-)
+function openTriggerDrawer() {
+  showTriggerDrawer.value = true
+}
 
-/** Reference moment for "time since": when last reset is today use lastResetAt (exact time), otherwise start of that day. */
-const timeSinceRef = computed(() => {
-  const key = lastResetDateKey.value
-  if (!key) return null
-  const lastResetAt = props.addiction.lastResetAt
-  const refDate = fromDateOnlyString(key)
-  if (lastResetAt && isSameDateOnly(parseUtcIso(lastResetAt), now.value)) {
-    return parseUtcIso(lastResetAt)
+async function onResetConfirm(payload: { addiction: AddictionDTO; resetAt: Date; note: string }) {
+  showResetDrawer.value = false
+  await addictionsStore.setReset(payload.addiction.id, payload.resetAt, {
+    note: payload.note,
+    resetAt: payload.resetAt
+  })
+}
+
+function onCalendarCellClick(date: Date, hasReset: boolean) {
+  if (hasReset) {
+    resetInfoDate.value = date
+    showResetInfoDrawer.value = true
+  } else {
+    openResetDrawer(date)
   }
-  return startOfDay(refDate)
+}
+
+async function onAddAnotherResetForDay() {
+  if (!resetInfoDate.value) return
+  const d = new Date(
+    resetInfoDate.value.getFullYear(),
+    resetInfoDate.value.getMonth(),
+    resetInfoDate.value.getDate()
+  )
+  showResetInfoDrawer.value = false
+  await nextTick()
+  openResetDrawer(d)
+}
+
+const resetInfoDateLabel = computed(() => {
+  if (!resetInfoDate.value) return ''
+  return resetInfoDate.value.toLocaleDateString(intlLocale.value, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
 })
 
-const timeSince = computed(() => {
-  const ref = timeSinceRef.value
-  if (!ref) return null
-  return getTimeSince(ref, now.value)
+const resetsForInfoDay = computed(() => {
+  if (!resetInfoDate.value) return []
+  const key = toDateOnlyString(resetInfoDate.value)
+  return [...resetsList.value]
+    .filter((r) => r.date === key)
+    .sort((a, b) => a.resetAt.localeCompare(b.resetAt))
 })
 
-/** If days >= 5 show only days count; if days < 5 show full time (days, hours, minutes). */
-const timeSinceText = computed(() => {
-  const ts = timeSince.value
-  if (!ts) return null
-  if (ts.days >= 5) {
-    return t('addictions.daysCount', { count: ts.days })
-  }
-  return t('addictions.timeSince', { days: ts.days, hours: ts.hours, minutes: ts.minutes })
-})
+function formatResetAt(iso: string) {
+  return parseUtcIso(iso).toLocaleTimeString(intlLocale.value, {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 </script>
 
 <template>
-  <Card class="addiction-card" :class="{ 'no-border': noBorder }" :style="cardBorderStyle">
+  <BaseCard class="addiction-card" :borderless="noBorder" :accent-color="displayColor">
     <template #title>
-      <div class="addiction-card-header">
-        <div class="addiction-title-wrap">
-          <div class="addiction-title" @click="emit('edit', addiction.addiction)">
+      <div class="ac-header">
+        <div class="ac-title-wrap">
+          <div class="ac-title" @click="emit('edit', addiction.addiction)">
             {{ addiction.addiction.title }}
           </div>
-          <div v-if="cleanStreak" class="addiction-streak-chip">
-            {{ t('addictions.currentStreakLabel', { count: cleanStreak }) }}
-          </div>
+          <div v-if="goalTitle" class="ac-goal">{{ goalTitle }}</div>
         </div>
-        <Button :label="t('addictions.reset')" icon="pi pi-undo" severity="danger" size="small" @click="onReset" />
       </div>
     </template>
 
     <template #content>
-      <div v-if="timeSinceText" class="time-since">
-        {{ timeSinceText }}
-      </div>
-      <div v-if="goalTitle" class="goal-text">
-        {{ goalTitle }}
-      </div>
+      <div class="ac-content">
+        <div class="ac-timer">{{ progressText }}</div>
 
-      <AddictionDayRow :addiction="addiction" />
+        <div class="ac-progress-row">
+          <div class="ac-progress-track">
+            <div
+              class="ac-progress-fill"
+              :style="{
+                width: progressPercent + '%',
+                backgroundColor: displayColor
+              }"
+            />
+          </div>
+          <span class="ac-stage-hint">{{ nextStageLabel }}</span>
+        </div>
+
+        <AddictionCalendar
+          :resets="resetsList"
+          :created-at="addiction.addiction.createdAt"
+          :color="displayColor"
+          @cell-click="onCalendarCellClick"
+        />
+
+        <div class="ac-actions">
+          <Button
+            :label="t('addictions.trigger')"
+            icon="pi pi-bolt"
+            severity="warn"
+            outlined
+            size="small"
+            @click="openTriggerDrawer"
+          />
+          <Button
+            icon="pi pi-chart-bar"
+            severity="secondary"
+            outlined
+            size="small"
+            :aria-label="t('addictions.stats.open')"
+            @click="showStatsDrawer = true"
+          />
+          <Button
+            :label="t('addictions.reset')"
+            icon="pi pi-undo"
+            severity="danger"
+            size="small"
+            @click="openResetDrawer()"
+          />
+        </div>
+      </div>
     </template>
-  </Card>
+  </BaseCard>
+
+  <AddictionResetModal
+    v-if="showResetDrawer"
+    :addiction="addiction.addiction"
+    :prefilled-date="resetPrefilledDate"
+    @confirm="onResetConfirm"
+    @close="showResetDrawer = false"
+  />
+
+  <AddictionTriggerModal
+    v-if="showTriggerDrawer"
+    :addiction="addiction.addiction"
+    @close="showTriggerDrawer = false"
+  />
+
+  <AddictionStatsDrawer
+    v-model:visible="showStatsDrawer"
+    :addiction-id="addiction.addiction.id"
+    :initial-addiction="addiction"
+    :accent-color="displayColor"
+  />
+
+  <BaseDrawer
+    v-model:visible="showResetInfoDrawer"
+    class="addiction-drawer"
+    max-height="85vh"
+    min-height="55vh"
+  >
+    <template #header>
+      <div class="reset-info-drawer-title">
+        {{ t('addictions.resetInfo.title', { date: resetInfoDateLabel }) }}
+      </div>
+    </template>
+
+    <div v-if="resetsForInfoDay.length === 0" class="reset-info-empty">
+      {{ t('addictions.resetInfo.empty') }}
+    </div>
+    <div v-else class="reset-info-cards">
+      <div v-for="r in resetsForInfoDay" :key="r.id" class="reset-info-card">
+        <div class="reset-info-card-time">{{ formatResetAt(r.resetAt) }}</div>
+        <div class="reset-info-card-note">
+          {{ r.journalText?.trim() ? r.journalText.trim() : t('addictions.resetInfo.noNote') }}
+        </div>
+      </div>
+    </div>
+    <template #footer>
+      <div class="reset-info-drawer-footer">
+        <Button
+          class="reset-info-add-btn"
+          icon="pi pi-plus"
+          :label="t('addictions.resetInfo.addAnother')"
+          @click="onAddAnotherResetForDay"
+        />
+      </div>
+    </template>
+  </BaseDrawer>
 </template>
 
 <style scoped>
 .addiction-card {
-  border-radius: 16px;
-  border-left-width: 4px;
-  border-left-style: solid;
+  border-radius: var(--ds-radius-lg);
 }
 
-.addiction-card.no-border {
-  border: none;
-  border-left-width: 0;
-}
-
-.addiction-card.no-border :deep(.p-card) {
-  border: none;
-  box-shadow: none;
-}
-
-.addiction-card-header {
+.ac-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--ds-space-2);
   width: 100%;
 }
 
-.addiction-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.ac-title-wrap {
   min-width: 0;
+  flex: 1;
 }
 
-.addiction-title {
+.ac-title {
   cursor: pointer;
   user-select: none;
-  flex: 1;
-  min-width: 0;
-}
-
-.addiction-streak-chip {
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background-color: var(--p-primary-100);
-  color: var(--p-primary-700);
-  font-size: 0.75rem;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.time-since {
-  font-size: 0.875rem;
+.ac-goal {
+  font-size: var(--ds-font-size-xs);
   color: var(--p-text-muted-color);
-  margin-bottom: 8px;
+  margin-top: var(--ds-space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.time-since.no-reset {
-  font-style: italic;
+.ac-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
 }
 
-.goal-text {
-  font-size: 0.875rem;
+.ac-timer {
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--p-text-color);
+}
+
+.ac-progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.ac-progress-track {
+  flex: 1;
+  height: 0.375rem;
+  border-radius: var(--ds-radius-sm);
+  background-color: var(--p-content-border-color);
+  overflow: hidden;
+}
+
+.ac-progress-fill {
+  height: 100%;
+  border-radius: var(--ds-radius-sm);
+  transition: width 1s linear;
+}
+
+.ac-stage-hint {
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
-  margin-bottom: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ac-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.reset-info-drawer-title {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.3;
+  padding-right: 0.5rem;
+}
+
+.reset-info-empty {
+  color: var(--p-text-muted-color);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.reset-info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.reset-info-card {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--p-content-background);
+}
+
+.reset-info-card-time {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.reset-info-card-note {
+  font-size: 0.875rem;
+  color: var(--p-text-color);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.reset-info-drawer-footer {
+  display: flex;
+  justify-content: stretch;
+  width: 100%;
+}
+
+.reset-info-add-btn {
+  width: 100%;
 }
 </style>

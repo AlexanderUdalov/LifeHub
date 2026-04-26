@@ -93,7 +93,21 @@
     "habits": "Привычки",
     "empty": "Привычек пока нет",
     "emptySubtitle": "Добавьте привычку и отслеживайте свой прогресс",
-    "currentStreakLabel": "Текущий серия: {count}",
+    "currentStreakLabel": "Текущая серия: {count} {unit}",
+    "streakUnits": {
+      "day": {
+        "one": "день",
+        "few": "дня",
+        "many": "дней",
+        "other": "дня"
+      },
+      "week": {
+        "one": "неделя",
+        "few": "недели",
+        "many": "недель",
+        "other": "недели"
+      }
+    },
     "weeklyRow": {
       "thisWeek": "На этой неделе",
       "weekOfTooltip": "Неделя с {date}: {count}/{goal}",
@@ -124,16 +138,100 @@
     "editdialog": {
       "newAddiction": "Новая зависимость",
       "title": "Название",
+      "description": "Описание и мотивация",
+      "descriptionPlaceholder": "Почему ты хочешь побороть эту зависимость? Что для тебя изменится?",
       "color": "Цвет",
       "lastRelapseDate": "Дата последнего срыва",
       "lastRelapseDatePlaceholder": "Не задано",
+      "lastRelapseDateTime": "Дата и время последнего срыва",
+      "lastRelapseDateTimePlaceholder": "Не задано",
+      "nsfw": "Метка NSFW",
+      "nsfwHint": "Скрывать эту зависимость, когда в профиле режим NSFW выключен.",
       "save": "Сохранить",
       "create": "Создать",
       "delete": "Удалить"
     },
     "calendar": "Календарь",
     "collapse": "Свернуть",
-    "reset": "Сброс"
+    "reset": "Сброс",
+    "trigger": "Триггер",
+    "calendarLegend": {
+      "cleanDay": "Без сброса",
+      "resetDay": "Со сбросом"
+    },
+    "units": {
+      "mo": "мес",
+      "d": "д",
+      "h": "ч",
+      "min": "мин",
+      "s": "с"
+    },
+    "stages": {
+      "1hour": "1 час",
+      "1day": "1 день",
+      "3days": "3 дня",
+      "1week": "1 неделю",
+      "10days": "10 дней",
+      "2weeks": "2 недели",
+      "1month": "1 месяц",
+      "2months": "2 месяца",
+      "3months": "3 месяца",
+      "6months": "6 месяцев",
+      "1year": "1 год"
+    },
+    "nextStage": "→ {stage}",
+    "maxStage": "Максимальный этап достигнут",
+    "resetDrawer": {
+      "title": "Сброс прогресса",
+      "confirm": "Сбросить",
+      "date": "Дата",
+      "time": "Время",
+      "dateTime": "Дата и время",
+      "note": "Запись в журнале",
+      "notePlaceholder": "Что произошло? Что можно сделать иначе?"
+    },
+    "resetInfo": {
+      "title": "Сбросы: {date}",
+      "count": "Количество сбросов: {count}",
+      "notesPlaceholder": "Заметки будут доступны позже",
+      "noNote": "Без заметки",
+      "empty": "Нет записей за этот день",
+      "addAnother": "Добавить сброс в этот день"
+    },
+    "triggerDrawer": {
+      "title": "Пауза. Дыши.",
+      "subtitle": "Ты не слабый. Желание пройдёт. Побудь с этим пару минут.",
+      "dismiss": "Мне лучше",
+      "overcame": "Я справился",
+      "relapsed": "Я сорвался",
+      "note": "Заметка по триггеру",
+      "notePlaceholder": "Что помогло (или не помогло) в этот момент?",
+      "noteStepTitle": "Короткая заметка",
+      "saveAction": "Сохранить",
+      "loading": "Подбираю поддержку...",
+      "slide1": "Дыши медленно 60 секунд.",
+      "slide2": "Это желание достигнет пика и пройдёт.",
+      "slide3": "Сделай одно маленькое физическое действие: встань, умойся.",
+      "slide4": "Вспомни, зачем ты начал.",
+      "slide5": "Ты уже прошёл так далеко. Не сдавайся."
+    },
+    "stats": {
+      "title": "Статистика",
+      "open": "Статистика зависимости",
+      "notFound": "Данные зависимости не найдены",
+      "sectionStreak": "Серия и этапы",
+      "sinceLastReset": "С последнего сброса",
+      "nextStageHeading": "Следующий этап",
+      "maxStreak": "Самая длинная серия",
+      "avgStreak": "Средняя серия",
+      "sectionResets": "Сбросы",
+      "resetCount": "Сбросов всего",
+      "cleanPercent30": "Дней без срыва за {days} дн. (%)",
+      "sectionWeekday": "Сбросы по дням недели",
+      "sectionTriggers": "Триггеры",
+      "triggerCount": "Записей",
+      "triggerSuccess": "Доля «переборол»"
+    }
   },
   "lifeareas": {
     "title": "Сферы жизни",
@@ -172,7 +270,43 @@
     "addictionsCount": "Зависимости ({count})",
     "journalCount": "Заметки ({count})",
     "showCompleted": "Показать выполненные ({count})",
-    "hideCompleted": "Скрыть выполненные"
+    "hideCompleted": "Скрыть выполненные",
+    "showCompletedGoals": "Показать завершённые",
+    "hideCompletedGoals": "Скрыть завершённые",
+    "showCompletedGoalsInline": "Показать выполненные ({count})",
+    "hideCompletedGoalsInline": "Скрыть выполненные ({count})",
+    "completedSection": "Завершённые цели",
+    "completeDrawer": {
+      "open": "Закрыть цель",
+      "title": "Закрытие цели: {goal}",
+      "back": "Назад",
+      "next": "Далее",
+      "complete": "Закрыть цель",
+      "completeAnyway": "Закрыть всё равно",
+      "steps": {
+        "review": {
+          "title": "Проверьте прогресс",
+          "text": "Перед закрытием убедитесь, что вы завершили ключевые шаги по этой цели."
+        },
+        "tasks": {
+          "title": "Проверка задач",
+          "text": "Незакрытых задач: {count}. Лучше завершить их до закрытия цели."
+        },
+        "streak": {
+          "title": "Проверка серии",
+          "text": "Для привычек и зависимостей рекомендуем минимум 3 недели без срывов (21 день)."
+        }
+      },
+      "warnings": {
+        "openTasks": "Остались незакрытые задачи: {count}.",
+        "habitsLead": "У этих привычек серия меньше 21 дня:",
+        "habitItem": "{title} - {days} дн.",
+        "habitsHint": "Напоминание: привычка обычно формируется за 21 день.",
+        "addictionsLead": "У этих зависимостей серия меньше 21 дня:",
+        "addictionItem": "{title} - {days} дн.",
+        "addictionsHint": "Напоминание: устойчивый прогресс формируется за 21 день."
+      }
+    }
   },
   "toasts": {
     "logged-out": "Вы вышли из аккаунта",
@@ -194,7 +328,9 @@
     "change-password": "Сменить пароль",
     "delete-account": "Удалить аккаунт",
     "logout": "Выйти из аккаунта",
-    "delete-confirmation": "Вы уверены? Это действие невозможно отменить."
+    "delete-confirmation": "Вы уверены? Это действие невозможно отменить.",
+    "nsfw-mode": "Режим NSFW",
+    "nsfw-mode-hint": "Когда включён, зависимости с меткой NSFW отображаются как обычно. Настройка хранится только на этом устройстве."
   },
   "cancel": "Отмена",
   "current-password": "Текущий пароль",
@@ -223,10 +359,13 @@
     "filter": "Фильтр",
     "filterByLifeArea": "Сфера жизни",
     "filterByGoal": "Цель",
+    "filterByAddiction": "Зависимость",
     "filterAll": "Все",
     "clearFilters": "Сбросить",
     "noResults": "Ничего не найдено",
-    "noResultsHint": "Попробуйте изменить запрос или фильтры"
+    "noResultsHint": "Попробуйте изменить запрос или фильтры",
+    "deletedAddiction": "Удалённая зависимость",
+    "aiGeneratedChip": "Сгенерировано ИИ"
   },
   "profile": "Профиль",
   "reflection": {

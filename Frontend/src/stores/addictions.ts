@@ -2,13 +2,15 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
   addictionsApi,
+  type AddictionTriggerOutcome,
   type AddictionUpsertRequest,
   type AddictionWithResetsDTO
 } from '@/api/AddictionsAPI'
-import { toDateOnlyString } from '@/utils/dateOnly'
+import { useNsfwContentStore } from '@/stores/nsfwContent'
 
 export const useAddictionsStore = defineStore('addictions', () => {
   const addictions = ref<AddictionWithResetsDTO[]>([])
+  const nsfwContentStore = useNsfwContentStore()
   const isLoading = ref(false)
   const rangeDays = ref(60)
 
@@ -22,67 +24,48 @@ export const useAddictionsStore = defineStore('addictions', () => {
     }
   }
 
+  /** Expands loaded history window when the UI needs deeper stats (API max 365 days). */
+  async function ensureMinHistoryDays(minDays: number) {
+    const capped = Math.min(365, Math.max(1, minDays))
+    if (rangeDays.value < capped) await fetchAddictions(capped)
+  }
+
   const addictionsSorted = computed(() =>
     [...addictions.value].sort((a, b) => a.addiction.title.localeCompare(b.addiction.title))
   )
 
-  async function setReset(addictionId: string, date: Date) {
-    const a = addictions.value.find((x) => x.addiction.id === addictionId)
-    if (!a) return
+  const addictionsSortedVisible = computed(() =>
+    addictionsSorted.value.filter((x) => nsfwContentStore.addictionVisible(x.addiction))
+  )
 
-    const dateKey = toDateOnlyString(date)
-    const prev = [...a.resetDates]
-    a.resetDates.push(dateKey)
-    a.resetDates.sort()
-
+  async function setReset(
+    addictionId: string,
+    date: Date,
+    options?: { note?: string; resetAt?: Date }
+  ) {
     try {
-      await addictionsApi.setReset(addictionId, date)
-      if (toDateOnlyString(date) === toDateOnlyString(new Date())) {
-        a.lastResetAt = new Date().toISOString()
-      }
-      // Обновляем список, чтобы currentStreakDays пересчитался на бэке.
+      await addictionsApi.setReset(addictionId, date, {
+        note: options?.note ?? null,
+        resetAt: options?.resetAt ?? null
+      })
       await fetchAddictions(rangeDays.value)
     } catch (e) {
-      a.resetDates = prev
       throw e
     }
   }
 
   async function removeReset(addictionId: string, date: Date) {
-    const a = addictions.value.find((x) => x.addiction.id === addictionId)
-    if (!a) return
-
-    const dateKey = toDateOnlyString(date)
-    const prev = [...a.resetDates]
-    const idx = a.resetDates.lastIndexOf(dateKey)
-    if (idx === -1) return
-
-    a.resetDates.splice(idx, 1)
-
     try {
       await addictionsApi.removeReset(addictionId, date)
-      if (toDateOnlyString(date) === toDateOnlyString(new Date())) {
-        a.lastResetAt = null
-      }
-      // Обновляем список, чтобы currentStreakDays пересчитался на бэке.
       await fetchAddictions(rangeDays.value)
     } catch (e) {
-      a.resetDates = prev
       throw e
     }
   }
 
   async function createAddiction(request: AddictionUpsertRequest) {
-    const created = await addictionsApi.createAddiction(request)
-    const lastRelapse = request.lastRelapseDate ?? null
-    const resetDates = lastRelapse ? [lastRelapse] : []
-    const lastResetAt = lastRelapse ? new Date(lastRelapse + 'T00:00:00Z').toISOString() : null
-    addictions.value.push({
-      addiction: created,
-      resetDates,
-      lastResetAt,
-      currentStreakDays: 0
-    })
+    await addictionsApi.createAddiction(request)
+    await fetchAddictions(rangeDays.value)
   }
 
   async function updateAddiction(id: string, request: AddictionUpsertRequest) {
@@ -116,14 +99,34 @@ export const useAddictionsStore = defineStore('addictions', () => {
     }
   }
 
+  async function logTriggerEvent(
+    addictionId: string,
+    outcome: AddictionTriggerOutcome,
+    options?: { note?: string | null; eventAt?: string | null; language?: string | null }
+  ) {
+    await addictionsApi.logTriggerEvent(
+      addictionId,
+      {
+        outcome,
+        note: options?.note ?? null,
+        eventAt: options?.eventAt ?? null
+      },
+      options?.language ?? null
+    )
+    await fetchAddictions(rangeDays.value)
+  }
+
   return {
     addictions,
     addictionsSorted,
+    addictionsSortedVisible,
     isLoading,
     rangeDays,
     fetchAddictions,
+    ensureMinHistoryDays,
     setReset,
     removeReset,
+    logTriggerEvent,
     createAddiction,
     updateAddiction,
     deleteAddiction

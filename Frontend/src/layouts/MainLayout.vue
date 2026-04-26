@@ -255,7 +255,7 @@ const createPrimary = () => {
     flex: 1;
     overflow-x: hidden;
     overflow-y: auto;
-    max-height: calc(100dvh - 62px);
+    max-height: calc(100dvh - 80px);
 }
 
 .tab-list {

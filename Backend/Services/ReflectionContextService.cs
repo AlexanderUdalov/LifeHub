@@ -7,7 +7,8 @@ public record ReflectionContext(
     TasksSummary Tasks,
     HabitsSummary Habits,
     AddictionsSummary Addictions,
-    List<string> RecentJournalExcerpts
+    List<string> RecentJournalExcerpts,
+    List<string> PreviousReflectionSummaries
 );
 
 public record TasksSummary(
@@ -33,7 +34,10 @@ public record HabitsSummary(
 
 public record AddictionSummary(
     string Title,
+    string? Description,
     int ResetsInPeriod,
+    int TriggerOvercameInPeriod,
+    int TriggerRelapsedInPeriod,
     int CurrentStreakDays
 );
 
@@ -52,8 +56,9 @@ public class ReflectionContextService(ApplicationContext context)
         var habits = await GatherHabitsAsync(userId, dateStart, today);
         var addictions = await GatherAddictionsAsync(userId, dateStart, today);
         var journal = await GatherJournalAsync(userId, periodStart);
+        var previousReflections = await GatherPreviousReflectionsAsync(userId, periodStart);
 
-        return new ReflectionContext(tasks, habits, addictions, journal);
+        return new ReflectionContext(tasks, habits, addictions, journal, previousReflections);
     }
 
     private async Task<TasksSummary> GatherTasksAsync(Guid userId, DateTimeOffset periodStart, DateTimeOffset now)
@@ -115,15 +120,32 @@ public class ReflectionContextService(ApplicationContext context)
 
     private async Task<AddictionsSummary> GatherAddictionsAsync(Guid userId, DateOnly dateStart, DateOnly today)
     {
+        var periodStartUtc = DateTime.SpecifyKind(dateStart.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
         var addictions = await context.Addictions
             .AsNoTracking()
             .Include(a => a.Resets)
             .Where(a => a.UserId == userId)
             .ToListAsync();
+        var addictionIds = addictions.Select(a => a.Id).ToArray();
+
+        var triggerStats = await context.AddictionTriggerEvents
+            .AsNoTracking()
+            .Where(t => addictionIds.Contains(t.AddictionId) && t.EventAt >= periodStartUtc)
+            .GroupBy(t => new { t.AddictionId, t.Outcome })
+            .Select(g => new { g.Key.AddictionId, g.Key.Outcome, Count = g.Count() })
+            .ToListAsync();
 
         var items = addictions.Select(a =>
         {
             int resetsInPeriod = a.Resets.Count(r => r.Date >= dateStart && r.Date <= today);
+            var overcameCount = triggerStats
+                .Where(x => x.AddictionId == a.Id && x.Outcome == AddictionTriggerOutcome.Overcame)
+                .Select(x => x.Count)
+                .FirstOrDefault();
+            var relapsedCount = triggerStats
+                .Where(x => x.AddictionId == a.Id && x.Outcome == AddictionTriggerOutcome.Relapsed)
+                .Select(x => x.Count)
+                .FirstOrDefault();
 
             var lastReset = a.Resets
                 .OrderByDescending(r => r.ResetAt)
@@ -133,7 +155,13 @@ public class ReflectionContextService(ApplicationContext context)
                 ? (DateTime.UtcNow - lastReset.ResetAt).Days
                 : (DateTime.UtcNow - a.CreatedAt).Days;
 
-            return new AddictionSummary(a.Title, resetsInPeriod, streakDays);
+            return new AddictionSummary(
+                a.Title,
+                a.Description,
+                resetsInPeriod,
+                overcameCount,
+                relapsedCount,
+                streakDays);
         }).ToList();
 
         return new AddictionsSummary(items);
@@ -152,6 +180,23 @@ public class ReflectionContextService(ApplicationContext context)
             .OrderByDescending(e => e.CreatedAt)
             .Take(5)
             .Select(e => e.Text.Length > 200 ? e.Text[..200] + "..." : e.Text)
+            .ToList();
+    }
+
+    private async Task<List<string>> GatherPreviousReflectionsAsync(Guid userId, DateTimeOffset periodStart)
+    {
+        // SQLite does not support DateTimeOffset in WHERE/ORDER BY; load and sort/filter in memory
+        var entries = await context.JournalEntries
+            .AsNoTracking()
+            .Where(e => e.UserId == userId)
+            .ToListAsync();
+
+        return entries
+            .Where(e => e.CreatedAt < periodStart)
+            .OrderByDescending(e => e.CreatedAt)
+            .Take(3)
+            .Select(e => e.Text.Length > 220 ? e.Text[..220] + "..." : e.Text)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
             .ToList();
     }
 
@@ -180,7 +225,14 @@ public class ReflectionContextService(ApplicationContext context)
         lines.Add("=== ADDICTIONS ===");
         foreach (var a in ctx.Addictions.Items)
         {
-            lines.Add($"- {a.Title}: {a.ResetsInPeriod} resets in period, current streak {a.CurrentStreakDays} days");
+            var descriptionPart = string.IsNullOrWhiteSpace(a.Description)
+                ? ""
+                : $", motivation: {a.Description}";
+            lines.Add(
+                $"- {a.Title}: {a.ResetsInPeriod} resets in period, " +
+                $"{a.TriggerOvercameInPeriod} overcame triggers, " +
+                $"{a.TriggerRelapsedInPeriod} relapsed after triggers, " +
+                $"current streak {a.CurrentStreakDays} days{descriptionPart}");
         }
 
         if (ctx.RecentJournalExcerpts.Count > 0)
@@ -190,6 +242,16 @@ public class ReflectionContextService(ApplicationContext context)
             foreach (var excerpt in ctx.RecentJournalExcerpts)
             {
                 lines.Add($"- {excerpt}");
+            }
+        }
+
+        if (ctx.PreviousReflectionSummaries.Count > 0)
+        {
+            lines.Add("");
+            lines.Add("=== PREVIOUS REFLECTION SUMMARIES ===");
+            foreach (var summary in ctx.PreviousReflectionSummaries)
+            {
+                lines.Add($"- {summary}");
             }
         }
 

@@ -1,60 +1,74 @@
-import { computed, type Ref } from 'vue'
-import type { AddictionDTO } from '@/api/AddictionsAPI'
+import { computed, unref, type MaybeRef, type Ref } from 'vue'
+import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
+import { getTimeSinceDetailed, parseUtcIso } from '@/utils/dateOnly'
 
-const STAGES_HOURS = [24, 48, 72, 168, 240, 720]
+export interface Milestone {
+  seconds: number
+  labelKey: string
+}
 
-export function useAddictionProgress(addiction: Ref<AddictionDTO>) {
-    const lastResetDate = computed(() => new Date(addiction.value.createdAt))
+export const MILESTONES: Milestone[] = [
+  { seconds: 3_600, labelKey: 'addictions.stages.1hour' },
+  { seconds: 86_400, labelKey: 'addictions.stages.1day' },
+  { seconds: 259_200, labelKey: 'addictions.stages.3days' },
+  { seconds: 604_800, labelKey: 'addictions.stages.1week' },
+  { seconds: 864_000, labelKey: 'addictions.stages.10days' },
+  { seconds: 1_209_600, labelKey: 'addictions.stages.2weeks' },
+  { seconds: 2_592_000, labelKey: 'addictions.stages.1month' },
+  { seconds: 5_184_000, labelKey: 'addictions.stages.2months' },
+  { seconds: 7_776_000, labelKey: 'addictions.stages.3months' },
+  { seconds: 15_552_000, labelKey: 'addictions.stages.6months' },
+  { seconds: 31_536_000, labelKey: 'addictions.stages.1year' },
+]
 
-    const elapsedMs = computed(() => Date.now() - lastResetDate.value.getTime())
-    const elapsedHours = computed(() =>
-        Math.floor(elapsedMs.value / 1000 / 60 / 60)
-    )
+export function useAddictionProgress(
+  addiction: MaybeRef<AddictionWithResetsDTO>,
+  now: Ref<Date>
+) {
+  const referenceDate = computed(() => {
+    const a = unref(addiction)
+    const lastResetAt = a.lastResetAt
+    if (lastResetAt) return parseUtcIso(lastResetAt)
 
-    const elapsedText = computed(() => {
-        const hours = elapsedHours.value
-        const days = Math.floor(hours / 24)
-        const remainingHours = hours % 24
+    const createdAt = a.addiction.createdAt
+    if (createdAt) return new Date(createdAt)
 
-        if (days > 0) {
-            return `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''} clean`
-        }
+    return now.value
+  })
 
-        return `${hours} hour${hours !== 1 ? 's' : ''} clean`
-    })
+  const elapsed = computed(() => getTimeSinceDetailed(referenceDate.value, now.value))
 
-    const currentStage = computed(() =>
-        STAGES_HOURS.find(stage => elapsedHours.value < stage)
-    )
+  const currentMilestoneIndex = computed(() => {
+    const total = elapsed.value.totalSeconds
+    return MILESTONES.findIndex((m) => total < m.seconds)
+  })
 
-    const previousStage = computed(() => {
-        const index = STAGES_HOURS.indexOf(currentStage.value ?? 24)
-        return index > 0 ? STAGES_HOURS[index - 1] : 0
-    })
+  const nextMilestone = computed((): Milestone | null => {
+    const idx = currentMilestoneIndex.value
+    if (idx === -1) return null
+    return MILESTONES[idx]!
+  })
 
-    const progressPercent = computed(() => {
-        if (!currentStage.value || !previousStage.value) return 100
-        const stageRange = currentStage.value - previousStage.value
-        const progressInStage = elapsedHours.value - previousStage.value
-        return Math.min(100, Math.floor((progressInStage / stageRange) * 100))
-    })
+  const prevMilestoneSeconds = computed(() => {
+    const idx = currentMilestoneIndex.value
+    if (idx <= 0) return 0
+    return MILESTONES[idx - 1]!.seconds
+  })
 
-    const nextStageText = computed(() => {
-        if (!currentStage.value) return 'Maximum stage reached'
+  const progressPercent = computed(() => {
+    const next = nextMilestone.value
+    if (!next) return 100
+    const prev = prevMilestoneSeconds.value
+    const range = next.seconds - prev
+    if (range <= 0) return 100
+    const current = elapsed.value.totalSeconds - prev
+    return Math.min(100, Math.max(0, Math.floor((current / range) * 100)))
+  })
 
-        const remainingHours = currentStage.value - elapsedHours.value
-        if (remainingHours >= 24) {
-            const days = Math.ceil(remainingHours / 24)
-            return `Next stage in ${days} day${days > 1 ? 's' : ''}`
-        }
-        return `Next stage in ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
-    })
-
-    return {
-        elapsedHours,
-        elapsedText,
-        progressPercent,
-        currentStage,
-        nextStageText
-    }
+  return {
+    referenceDate,
+    elapsed,
+    nextMilestone,
+    progressPercent,
+  }
 }

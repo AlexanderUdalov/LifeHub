@@ -27,5 +27,10 @@ public class JournalEntry
 
     public Guid? LifeAreaId { get; set; }
     public LifeArea? LifeArea { get; set; }
+
+    /// <summary>
+    /// True when the journal text was saved from the AI-assisted reflection summary.
+    /// </summary>
+    public bool AiGenerated { get; set; }
 }
 

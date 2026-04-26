@@ -155,7 +155,7 @@ export const useTasksStore = defineStore('tasks', () => {
         completedTasks.value.filter((t): t is TaskDTO => t !== undefined && t !== null)
     )
     const inboxTasks = computed(() => {
-        const list = tasks.value.filter(t => !overdueTasks.value.includes(t) && !todayTasks.value.includes(t) && !weekTasks.value.includes(t))
+        const list = tasks.value.filter(t => !t.completionDate && !t.dueDate)
         return list.sort((a, b) => sortByOrder(a.sortOrder as number, b.sortOrder as number))
     })
 

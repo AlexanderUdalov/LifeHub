@@ -37,7 +37,10 @@ const taskViewModeOptions = computed(() => [
   { label: t('profile-view.task-list-view-calendar'), value: 'calendar' as TaskViewMode, icon: 'pi pi-calendar' },
 ])
 
-function onTaskViewModeChange(mode: TaskViewMode) {
+function onTaskViewModeChange(mode: TaskViewMode | null | undefined) {
+  if (!mode) {
+    return
+  }
   setStoredTaskViewMode(mode)
   taskViewMode.value = mode
 }
@@ -49,6 +52,31 @@ const taskSections = computed(() => [
   { key: 'inbox', title: t('tasks.list.inbox'), tasks: tasksStore.inboxTasks, draggable: true },
   { key: 'completed', title: t('tasks.list.completed'), tasks: [] as TaskDTO[], draggable: false, isCompleted: true },
 ])
+
+/** Keys (by panel index) for the panels that are actually rendered via `v-if`. */
+const visibleSectionKeys = computed(() => {
+  const keys: string[] = []
+  for (const [index, section] of taskSections.value.entries()) {
+    const isVisible = section.tasks.length > 0 || (section.isCompleted && tasksStore.completedTotal > 0)
+    if (isVisible) keys.push(String(index))
+  }
+  return keys
+})
+
+const activeAccordionValue = ref<string[]>([])
+
+// Ensure at least one visible panel is opened (e.g. when panel "0" isn't rendered).
+watch(visibleSectionKeys, (keys) => {
+  const currentlyVisible = activeAccordionValue.value.filter(k => keys.includes(k))
+  if (!keys.length) {
+    activeAccordionValue.value = []
+    return
+  }
+
+  if (!currentlyVisible.length) {
+    activeAccordionValue.value = [keys[0]!]
+  }
+}, { immediate: true })
 
 const hasAnyTasks = computed(() => tasksStore.tasks.length > 0 || tasksStore.completedTotal > 0)
 
@@ -72,12 +100,27 @@ const hasMoreCompleted = computed(
 
 const loadMoreCompletedSentinel = ref<HTMLElement | null>(null)
 
-function loadMoreCompleted() {
+async function loadMoreCompleted() {
   if (tasksStore.isLoadingMoreCompleted || !hasMoreCompleted.value) return
   const first = firstUnloadedCompletedIndex.value
   const last = Math.min(first + COMPLETED_PAGE_SIZE - 1, tasksStore.completedTotal - 1)
   if (first > last) return
-  tasksStore.fetchMoreCompletedTasks(first, last)
+  await tasksStore.fetchMoreCompletedTasks(first, last)
+}
+
+function isSentinelNearViewport(): boolean {
+  const el = loadMoreCompletedSentinel.value
+  if (!el) return false
+  const rect = el.getBoundingClientRect()
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+  // Keep loading while sentinel stays near viewport bottom.
+  return rect.top <= viewportHeight + 100
+}
+
+async function loadMoreCompletedUntilNotVisible() {
+  while (!tasksStore.isLoadingMoreCompleted && hasMoreCompleted.value && isSentinelNearViewport()) {
+    await loadMoreCompleted()
+  }
 }
 
 let loadMoreObserver: IntersectionObserver | null = null
@@ -86,7 +129,7 @@ onMounted(() => {
   loadMoreObserver = new IntersectionObserver(
     (entries) => {
       if (!entries[0]?.isIntersecting) return
-      loadMoreCompleted()
+      void loadMoreCompletedUntilNotVisible()
     },
     { root: null, rootMargin: '100px', threshold: 0 }
   )
@@ -241,9 +284,10 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
 <template>
   <div class="tasks-view-root">
     <header class="tasks-view-header">
-      <h1 class="view-page-header">{{ $t('tasks.tasks') }}</h1>
+      <h1 class="ds-page-header">{{ $t('tasks.tasks') }}</h1>
       <SelectButton v-model="taskViewMode" :options="taskViewModeOptions" option-label="label" option-value="value"
-        :aria-label="$t('profile-view.task-list-view')" @change="onTaskViewModeChange(taskViewMode)">
+        :allow-empty="false" :aria-label="$t('profile-view.task-list-view')"
+        @change="onTaskViewModeChange($event.value)">
         <template #option="slotProps">
           <i :class="slotProps.option.icon" :aria-hidden="true" />
         </template>
@@ -257,7 +301,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
     <EmptyState v-else-if="!hasAnyTasks" icon="pi pi-list-check" :title="$t('tasks.empty')"
       :subtitle="$t('tasks.emptySubtitle')" />
 
-    <Accordion v-else-if="taskViewMode === 'standard'" :value="['0']" multiple>
+    <Accordion v-else-if="taskViewMode === 'standard'" v-model:value="activeAccordionValue" multiple>
       <template v-for="(section, index) in taskSections" :key="section.key">
         <AccordionPanel v-if="section.tasks.length || (section.isCompleted && tasksStore.completedTotal > 0)"
           :value="String(index)" class="tasks-list">
@@ -308,7 +352,7 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
       </template>
     </Accordion>
 
-    <Accordion v-else-if="taskViewMode === 'compact'" :value="['0']" multiple>
+    <Accordion v-else-if="taskViewMode === 'compact'" v-model:value="activeAccordionValue" multiple>
       <template v-for="(section, index) in taskSections" :key="section.key">
         <AccordionPanel v-if="section.tasks.length || (section.isCompleted && tasksStore.completedTotal > 0)"
           :value="String(index)" class="tasks-list">
@@ -412,14 +456,8 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   flex-wrap: wrap;
 }
 
-.view-page-header {
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
-}
-
 .tasks-list {
-  font-size: large;
+  font-size: var(--ds-font-size-lg);
 }
 
 .tasks-list-header {
@@ -529,6 +567,6 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-  font-size: large;
+  font-size: var(--ds-font-size-lg);
 }
 </style>

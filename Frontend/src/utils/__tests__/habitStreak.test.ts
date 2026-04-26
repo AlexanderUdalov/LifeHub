@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calcTimesPerWeekStreak, calcFixedDaysStreak, getCurrentDayBasedStreakFallback, type HabitCompletion } from '../habitStreak'
+import { calcTimesPerWeekStreak, calcFixedDaysStreak, getCurrentDayBasedStreakFallback, getCurrentWeeksStreak, type HabitCompletion } from '../habitStreak'
 import { getWeekKey } from '../dateOnly'
 
 /** Create a Date for a given YYYY-MM-DD string (local timezone). */
@@ -400,5 +400,75 @@ describe('getCurrentDayBasedStreakFallback', () => {
     ]
 
     expect(getCurrentDayBasedStreakFallback(history, d('2026-03-20'))).toBe(2)
+  })
+})
+
+describe('getCurrentWeeksStreak', () => {
+  const today = d('2026-03-05') // Thu, week starts at 2026-03-02
+
+  it('returns 0 when goal is outside allowed range', () => {
+    expect(getCurrentWeeksStreak([], 0, today)).toBe(0)
+    expect(getCurrentWeeksStreak([], 8, today)).toBe(0)
+  })
+
+  it('counts from current week when current week already meets the goal', () => {
+    const history = [
+      // Current week (Mar 2): 3 full (goal met)
+      { date: '2026-03-02', status: 'full' },
+      { date: '2026-03-03', status: 'full' },
+      { date: '2026-03-05', status: 'full' },
+      // Previous week (Feb 23): 3 full (goal met)
+      { date: '2026-02-23', status: 'full' },
+      { date: '2026-02-25', status: 'full' },
+      { date: '2026-02-27', status: 'full' },
+    ]
+
+    expect(getCurrentWeeksStreak(history, 3, today)).toBe(2)
+  })
+
+  it('falls back to previous week when current week is still in progress', () => {
+    const history = [
+      // Current week: only 1 full (goal=3 not met yet)
+      { date: '2026-03-04', status: 'full' },
+      // Previous week: 3 full (goal met)
+      { date: '2026-02-23', status: 'full' },
+      { date: '2026-02-25', status: 'full' },
+      { date: '2026-02-27', status: 'full' },
+    ]
+
+    expect(getCurrentWeeksStreak(history, 3, today)).toBe(1)
+  })
+
+  it('continues counting older completed weeks during fallback', () => {
+    const history = [
+      // Current week: not met
+      { date: '2026-03-04', status: 'full' },
+      // Previous week: met
+      { date: '2026-02-23', status: 'full' },
+      { date: '2026-02-25', status: 'full' },
+      { date: '2026-02-27', status: 'full' },
+      // Week before previous: met
+      { date: '2026-02-16', status: 'full' },
+      { date: '2026-02-18', status: 'full' },
+      { date: '2026-02-20', status: 'full' },
+    ]
+
+    expect(getCurrentWeeksStreak(history, 3, today)).toBe(2)
+  })
+
+  it('returns 0 when neither current nor previous week meet the goal', () => {
+    const history = [
+      // Current week: not met
+      { date: '2026-03-04', status: 'full' },
+      // Previous week: not met
+      { date: '2026-02-23', status: 'full' },
+      { date: '2026-02-25', status: 'full' },
+      // Older week met, but streak should still be 0 because previous week breaks chain
+      { date: '2026-02-16', status: 'full' },
+      { date: '2026-02-18', status: 'full' },
+      { date: '2026-02-20', status: 'full' },
+    ]
+
+    expect(getCurrentWeeksStreak(history, 3, today)).toBe(0)
   })
 })

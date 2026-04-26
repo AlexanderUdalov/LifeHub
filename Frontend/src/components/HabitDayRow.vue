@@ -2,6 +2,7 @@
 import HabitDayCell from './HabitDayCell.vue'
 import type { HabitWithHistoryDTO } from '@/api/HabitsAPI'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { rrulestr, RRule } from 'rrule'
 import { useHabitsStore } from '@/stores/habits'
 import { toDateOnlyString, startOfDay, isToday, getWeekKey, fromDateOnlyString } from '@/utils/dateOnly'
@@ -12,6 +13,7 @@ const props = defineProps<{
 }>()
 
 const habitsStore = useHabitsStore()
+const { locale } = useI18n()
 
 function getCompletion(day: Date): HabitCompletion {
   const key = toDateOnlyString(day)
@@ -130,6 +132,10 @@ onMounted(() => {
 function onUpdate(date: Date, value: HabitCompletion) {
   habitsStore.setDayStatus(props.habit.habit.id, date, value)
 }
+
+function formatWeekday(date: Date): string {
+  return date.toLocaleDateString(locale.value, { weekday: 'short' })
+}
 </script>
 
 <template>
@@ -138,7 +144,7 @@ function onUpdate(date: Date, value: HabitCompletion) {
       <div v-for="day in days" :key="toDateOnlyString(day)" class="legend-cell" :class="{ today: isToday(day) }">
         <div class="legend-date">{{ day.getDate() }}</div>
         <div class="legend-weekday" :class="{ today: isToday(day) }">
-          {{ day.toLocaleDateString(undefined, { weekday: 'short' }) }}
+          {{ formatWeekday(day) }}
         </div>
       </div>
     </div>

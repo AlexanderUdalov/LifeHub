@@ -30,8 +30,14 @@ namespace LifeHub_Backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("GoalId")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsNsfw")
+                        .HasColumnType("INTEGER");
 
                     b.Property<Guid?>("LifeAreaId")
                         .HasColumnType("TEXT");
@@ -66,6 +72,9 @@ namespace LifeHub_Backend.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("ResetAt")
                         .HasColumnType("TEXT");
 
@@ -73,13 +82,48 @@ namespace LifeHub_Backend.Migrations
 
                     b.HasIndex("AddictionId");
 
+                    b.HasIndex("JournalEntryId");
+
                     b.ToTable("AddictionResets");
+                });
+
+            modelBuilder.Entity("LifeHub.Models.AddictionTriggerEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AddictionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EventAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Outcome")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddictionId");
+
+                    b.HasIndex("JournalEntryId");
+
+                    b.ToTable("AddictionTriggerEvents");
                 });
 
             modelBuilder.Entity("LifeHub.Models.Goal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -184,6 +228,9 @@ namespace LifeHub_Backend.Migrations
 
                     b.Property<Guid?>("AddictionId")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("AiGenerated")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -417,7 +464,32 @@ namespace LifeHub_Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("LifeHub.Models.JournalEntry", "JournalEntry")
+                        .WithMany()
+                        .HasForeignKey("JournalEntryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Addiction");
+
+                    b.Navigation("JournalEntry");
+                });
+
+            modelBuilder.Entity("LifeHub.Models.AddictionTriggerEvent", b =>
+                {
+                    b.HasOne("LifeHub.Models.Addiction", "Addiction")
+                        .WithMany("TriggerEvents")
+                        .HasForeignKey("AddictionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LifeHub.Models.JournalEntry", "JournalEntry")
+                        .WithMany()
+                        .HasForeignKey("JournalEntryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Addiction");
+
+                    b.Navigation("JournalEntry");
                 });
 
             modelBuilder.Entity("LifeHub.Models.Goal", b =>
@@ -576,6 +648,8 @@ namespace LifeHub_Backend.Migrations
             modelBuilder.Entity("LifeHub.Models.Addiction", b =>
                 {
                     b.Navigation("Resets");
+
+                    b.Navigation("TriggerEvents");
                 });
 
             modelBuilder.Entity("LifeHub.Models.Goal", b =>

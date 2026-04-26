@@ -71,7 +71,7 @@ function onEditArea(area: LifeAreaDTO) {
 
 <template>
   <div class="lifeareas-view">
-    <h1 class="view-page-header">{{ $t('lifeareas.title') }}</h1>
+    <h1 class="ds-page-header">{{ $t('lifeareas.title') }}</h1>
 
     <div v-if="lifeAreasStore.isLoading && lifeAreasStore.lifeAreas.length === 0" class="lifeareas-skeleton">
       <Skeleton shape="circle" size="170px" class="skeleton-wheel" />
@@ -88,7 +88,7 @@ function onEditArea(area: LifeAreaDTO) {
       <div class="wheel" :style="wheelStyle" aria-hidden="true" />
       <div v-if="sortedAreas.length" class="wheel-emojis" aria-hidden="true">
         <span v-for="(area, index) in sortedAreas" :key="area.id" class="wheel-emoji" :class="{ 'wheel-emoji--text': !area.emoji?.trim() }" :style="{
-          transform: `rotate(${getSectorCenterAngle(index)}deg) translate(0, -150%) rotate(${-getSectorCenterAngle(index)}deg)`
+          transform: `rotate(${getSectorCenterAngle(index)}deg) translate(0, -200%) rotate(${-getSectorCenterAngle(index)}deg)`
         }">{{ getSegmentLabel(area) }}</span>
       </div>
     </div>
@@ -142,12 +142,6 @@ function onEditArea(area: LifeAreaDTO) {
   border-radius: var(--p-border-radius);
 }
 
-.view-page-header {
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
-}
-
 .wheel-wrap {
   position: relative;
   width: min(72vw, 170px);
@@ -183,12 +177,27 @@ function onEditArea(area: LifeAreaDTO) {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 9999px;
   font-size: 1.25rem;
   line-height: 1;
+  z-index: 0;
+}
+
+.wheel-emoji::before {
+  content: '';
+  position: absolute;
+  inset: -0.2em;
+  border-radius: inherit;
+  background: radial-gradient(circle at 30% 30%,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.18) 45%,
+      rgba(0, 0, 0, 0.3) 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.24);
+  z-index: -1;
 }
 
 .wheel-emoji--text {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--p-text-color);
   text-shadow: 0 0 1px var(--p-content-background), 0 1px 2px rgba(0, 0, 0, 0.15);

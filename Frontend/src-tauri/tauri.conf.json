@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "LifeHub",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "identifier": "com.alexanderudalov.lifehub",
   "build": {
     "frontendDist": "../dist",
@@ -13,8 +13,12 @@
     "windows": [
       {
         "title": "LifeHub",
-        "width": 350,
-        "height": 600,
+        "width": 400,
+        "height": 800,
+        "minWidth": 300,
+        "minHeight": 600,
+        "maxWidth": 800,
+        "maxHeight": 1200,
         "resizable": true,
         "fullscreen": false
       }

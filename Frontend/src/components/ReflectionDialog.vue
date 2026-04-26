@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import ProgressBar from 'primevue/progressbar'
@@ -13,8 +12,9 @@ import {
   sendReflectionMessage,
   type ChatMessageDTO
 } from '@/api/ReflectionAPI'
+import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const journalStore = useJournalStore()
 
 const emit = defineEmits<{
@@ -71,7 +71,8 @@ async function selectPeriod(days: number) {
   errorText.value = ''
 
   try {
-    const res = await startReflection(days)
+    const language = locale.value === 'en' ? 'en' : 'ru'
+    const res = await startReflection(days, language)
     contextId.value = res.contextId!
     messages.value = [{ role: 'assistant', content: res.message ?? '' }]
     journalSummary.value = null
@@ -137,7 +138,8 @@ async function saveToJournal() {
       habitId: null,
       addictionId: null,
       goalId: null,
-      lifeAreaId: null
+      lifeAreaId: null,
+      aiGenerated: true
     })
     emit('close')
   } catch {
@@ -149,7 +151,7 @@ async function saveToJournal() {
 </script>
 
 <template>
-  <Drawer v-model:visible="visible" position="bottom" class="reflection-drawer" style="height: 85vh">
+  <BaseDrawer v-model:visible="visible" class="reflection-drawer" max-height="85vh">
     <template #header>
       <span class="reflection-drawer__title">
         <i class="pi pi-sparkles" />
@@ -266,31 +268,10 @@ async function saveToJournal() {
         </div>
       </div>
     </template>
-  </Drawer>
+  </BaseDrawer>
 </template>
 
 <style>
-.p-drawer.reflection-drawer {
-  border-radius: 1rem 1rem 0 0;
-}
-
-.reflection-drawer .p-drawer-header {
-  position: relative;
-  padding: 0.75rem 1.25rem;
-  padding-top: 1.5rem;
-}
-
-.reflection-drawer .p-drawer-header::before {
-  content: '';
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2.5rem;
-  height: 0.25rem;
-  background: var(--p-content-border-color);
-  border-radius: 999px;
-}
 
 .reflection-drawer__title {
   font-size: 1.125rem;
@@ -305,13 +286,7 @@ async function saveToJournal() {
   color: var(--p-primary-color);
 }
 
-.reflection-drawer .p-drawer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-bottom: 0.25rem;
-  overflow: hidden;
-}
+.reflection-drawer .p-drawer-content { overflow: hidden; }
 
 .reflection-drawer .p-drawer-footer {
   border-top: 1px solid var(--p-content-border-color);

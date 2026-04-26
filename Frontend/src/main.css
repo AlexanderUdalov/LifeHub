@@ -5,3 +5,151 @@ html {
 body {
     margin: 0;
 }
+
+/* Shared bottom drawers: addictions edit / reset / trigger / details */
+.p-drawer.addiction-drawer {
+    border-radius: 1rem 1rem 0 0;
+}
+
+.addiction-drawer .p-drawer-header {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    padding-top: 1.5rem;
+}
+
+.addiction-drawer .p-drawer-header::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.5rem;
+    height: 0.25rem;
+    background: var(--p-content-border-color);
+    border-radius: 999px;
+}
+
+.addiction-drawer-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.p-inputtext.addiction-drawer-title-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    box-shadow: none !important;
+    background: transparent;
+    font-size: 1.125rem;
+    font-weight: 600;
+    padding: 0.5rem 0;
+}
+
+.addiction-drawer .p-drawer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-bottom: 0.25rem;
+}
+
+.addiction-drawer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.addiction-drawer-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--p-text-muted-color);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.addiction-drawer-colors {
+    display: flex;
+    justify-content: space-between;
+}
+
+.addiction-color-chip {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+}
+
+.addiction-color-chip:hover {
+    transform: scale(1.1);
+}
+
+.addiction-color-chip.selected {
+    border-color: var(--p-text-color);
+    box-shadow: 0 0 0 1px var(--p-content-border-color);
+}
+
+.addiction-drawer-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--p-content-border-color);
+}
+
+.addiction-chip-select.p-select {
+    border-radius: 999px;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    font-size: 0.8125rem;
+    height: auto;
+    padding-right: 0.5rem;
+}
+
+.addiction-chip-select.p-select .p-select-label {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--p-text-muted-color);
+}
+
+.addiction-chip-select.p-select .p-select-dropdown {
+    display: none;
+}
+
+.addiction-chip-select--active.p-select {
+    border-color: var(--p-primary-color);
+    --p-select-clear-icon-color: var(--p-primary-color);
+}
+
+.addiction-chip-select--active.p-select .p-select-label {
+    color: var(--p-primary-color);
+}
+
+.addiction-chip-select-value {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+}
+
+.addiction-chip-select-value i {
+    font-size: 0.75rem;
+}
+
+.addiction-drawer .p-drawer-footer {
+    border-top: 1px solid var(--p-content-border-color);
+}
+
+.addiction-drawer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}

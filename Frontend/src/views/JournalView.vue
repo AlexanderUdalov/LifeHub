@@ -10,13 +10,17 @@ import Dropdown from 'primevue/dropdown';
 import { useJournalStore } from '@/stores/journal';
 import { useLifeAreasStore } from '@/stores/lifeAreas';
 import { useGoalsStore } from '@/stores/goals';
+import { useAddictionsStore } from '@/stores/addictions';
+import { useNsfwContentStore } from '@/stores/nsfwContent';
 import { useI18n } from 'vue-i18n';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import type { JournalEntryDTO } from '@/api/JournalAPI';
 
 const journalStore = useJournalStore();
 const lifeAreasStore = useLifeAreasStore();
 const goalsStore = useGoalsStore();
+const addictionsStore = useAddictionsStore();
+const nsfwContentStore = useNsfwContentStore();
 const { t } = useI18n();
 
 const searchQuery = ref('');
@@ -24,6 +28,7 @@ const showSearchBar = ref(false);
 const showFilterBar = ref(false);
 const filterLifeAreaId = ref<string | null>(null);
 const filterGoalId = ref<string | null>(null);
+const filterAddictionId = ref<string | null>(null);
 
 const lifeAreaOptions = computed(() => [
   { label: t('journal.filterAll'), value: null },
@@ -35,8 +40,39 @@ const goalOptions = computed(() => [
   ...goalsStore.goalsSorted.map((g) => ({ label: g.title, value: g.id }))
 ]);
 
+const addictionOptions = computed(() => [
+  { label: t('journal.filterAll'), value: null },
+  ...addictionsStore.addictions
+    .filter((a) => nsfwContentStore.addictionVisible(a.addiction))
+    .map((a) => ({ label: a.addiction.title, value: a.addiction.id }))
+]);
+
+const addictionsById = computed(
+  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction]))
+);
+
+function journalEntryVisible(entry: JournalEntryDTO) {
+  if (!entry.addictionId) return true;
+  const addiction = addictionsById.value.get(entry.addictionId);
+  if (!addiction) return true;
+  return nsfwContentStore.addictionVisible(addiction);
+}
+
+watch(
+  () =>
+    `${nsfwContentStore.showNsfwContent}|${addictionsStore.addictions
+      .map((a) => `${a.addiction.id}:${a.addiction.isNsfw ? 1 : 0}`)
+      .join(',')}`,
+  () => {
+    const id = filterAddictionId.value;
+    if (!id) return;
+    const row = addictionsStore.addictions.find((a) => a.addiction.id === id);
+    if (row && !nsfwContentStore.addictionVisible(row.addiction)) filterAddictionId.value = null;
+  }
+);
+
 const filteredEntries = computed(() => {
-  let list = journalStore.entries;
+  let list = journalStore.entries.filter(journalEntryVisible);
 
   const q = searchQuery.value.trim().toLowerCase();
   if (q) {
@@ -47,6 +83,9 @@ const filteredEntries = computed(() => {
   }
   if (filterGoalId.value) {
     list = list.filter((e) => e.goalId === filterGoalId.value);
+  }
+  if (filterAddictionId.value) {
+    list = list.filter((e) => e.addictionId === filterAddictionId.value);
   }
 
   const pinned = list.filter((e) => e.isPinned);
@@ -61,7 +100,7 @@ const hasFilteredResults = computed(
   () => pinnedItems.value.length > 0 || regularItems.value.length > 0
 );
 const isFilterActive = computed(
-  () => !!filterLifeAreaId.value || !!filterGoalId.value
+  () => !!filterLifeAreaId.value || !!filterGoalId.value || !!filterAddictionId.value
 );
 
 function toggleSearchBar() {
@@ -75,6 +114,7 @@ function toggleFilterBar() {
 function clearFilters() {
   filterLifeAreaId.value = null;
   filterGoalId.value = null;
+  filterAddictionId.value = null;
 }
 
 const showReflection = ref(false);
@@ -84,14 +124,17 @@ const emit = defineEmits<{
 }>();
 
 onMounted(async () => {
-  await journalStore.loadEntries();
+  await Promise.all([
+    journalStore.loadEntries(),
+    addictionsStore.fetchAddictions(60).catch(() => undefined)
+  ]);
 });
 </script>
 
 <template>
   <div class="journal-view">
     <header class="journal-view__header">
-      <h1 class="view-page-header">{{ $t('journal.title') }}</h1>
+      <h1 class="ds-page-header">{{ $t('journal.title') }}</h1>
       <div class="journal-view__actions">
         <Button icon="pi pi-sparkles" variant="text" rounded size="small"
           class="journal-view__action-btn"
@@ -121,6 +164,9 @@ onMounted(async () => {
         <label class="journal-view__filter-label">{{ $t('journal.filterByGoal') }}</label>
         <Dropdown v-model="filterGoalId" :options="goalOptions" option-label="label" option-value="value"
           :placeholder="$t('goals.selectPlaceholder')" class="journal-view__filter-dropdown" />
+        <label class="journal-view__filter-label">{{ $t('journal.filterByAddiction') }}</label>
+        <Dropdown v-model="filterAddictionId" :options="addictionOptions" option-label="label" option-value="value"
+          :placeholder="$t('addictions.addictions')" class="journal-view__filter-dropdown" />
         <Button :label="$t('journal.clearFilters')" variant="text" size="small" class="journal-view__filter-clear"
           @click="clearFilters" />
       </div>
@@ -177,14 +223,10 @@ onMounted(async () => {
   min-height: 3rem;
 }
 
-.view-page-header {
+.journal-view__header .ds-page-header {
   position: absolute;
   left: 0;
   right: 0;
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
-  margin: 0;
   pointer-events: none;
   line-height: 1.2;
 }

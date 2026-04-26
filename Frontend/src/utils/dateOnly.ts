@@ -107,3 +107,36 @@ export function getTimeSince(reference: Date, now: Date = new Date()): {
   return { days, hours, minutes }
 }
 
+/**
+ * Detailed elapsed time with months and seconds.
+ * Months are approximated as 30-day periods.
+ */
+export function getTimeSinceDetailed(reference: Date, now: Date = new Date()): {
+  months: number
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+  totalSeconds: number
+} {
+  const diffMs = now.getTime() - reference.getTime()
+  if (diffMs < 0) return { months: 0, days: 0, hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 }
+
+  const totalSeconds = Math.floor(diffMs / 1000)
+  const SEC_IN_MONTH = 30 * 24 * 3600
+  const SEC_IN_DAY = 24 * 3600
+  const SEC_IN_HOUR = 3600
+
+  let remainder = totalSeconds
+  const months = Math.floor(remainder / SEC_IN_MONTH)
+  remainder %= SEC_IN_MONTH
+  const days = Math.floor(remainder / SEC_IN_DAY)
+  remainder %= SEC_IN_DAY
+  const hours = Math.floor(remainder / SEC_IN_HOUR)
+  remainder %= SEC_IN_HOUR
+  const minutes = Math.floor(remainder / 60)
+  const seconds = remainder % 60
+
+  return { months, days, hours, minutes, seconds, totalSeconds }
+}
+

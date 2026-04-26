@@ -20,7 +20,7 @@ onMounted(async () => {
 
 <template>
     <div class="habits-view">
-        <h1 class="view-page-header">{{ $t('habits.habits') }}</h1>
+        <h1 class="ds-page-header">{{ $t('habits.habits') }}</h1>
 
         <div v-if="habitsStore.isLoading && habitsStore.habits.length === 0" class="habits-skeleton">
             <div v-for="i in 4" :key="i" class="skeleton-card">
@@ -75,9 +75,4 @@ onMounted(async () => {
     flex: 1;
 }
 
-.view-page-header {
-  font-size: var(--p-card-title-font-size);
-  font-weight: 600;
-  text-align: center;
-}
 </style>

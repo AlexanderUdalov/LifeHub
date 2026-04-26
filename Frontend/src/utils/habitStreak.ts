@@ -47,13 +47,15 @@ export function getWeekSummaries(
 
 /**
  * Current streak in weeks for "N times per week" habits.
- * Counts consecutive weeks (current week first, then past) where each has >= goal full completions.
- * Shown until reset (e.g. Monday); does not require today to be marked.
+ * Counts consecutive completed weeks where each has >= goal full completions.
+ * If the current week has not met the goal yet, falls back to previous week
+ * (similar to day-based streak fallback when today is unmarked).
  * goal must be 1–7.
  */
 export function getCurrentWeeksStreak(
   history: Array<{ date: string; status?: string | null }>,
   goal: number,
+  todayDate: Date = new Date(),
 ): number {
   if (goal < 1 || goal > 7) return 0
 
@@ -64,10 +66,12 @@ export function getCurrentWeeksStreak(
     fullCountByWeek.set(weekKey, (fullCountByWeek.get(weekKey) ?? 0) + 1)
   }
 
-  const today = startOfDay(new Date())
-  let streak = 0
+  const today = startOfDay(todayDate)
+  const currentWeekCount = fullCountByWeek.get(getWeekKey(today)) ?? 0
+  const startOffset = currentWeekCount >= goal ? 0 : 1
 
-  for (let i = 0; i < 52; i++) {
+  let streak = 0
+  for (let i = startOffset; i < startOffset + 52; i++) {
     const d = new Date(today)
     d.setDate(today.getDate() - 7 * i)
     const weekKey = getWeekKey(d)

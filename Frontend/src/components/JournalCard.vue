@@ -41,6 +41,47 @@ const hasLifeAreaOrGoal = computed(() => !!lifeArea.value || !!goal.value)
 
 const isExpanded = ref(false)
 const showDeleteConfirm = ref(false)
+const copySucceeded = ref(false)
+let copyResetTimer: ReturnType<typeof setTimeout> | null = null
+
+function fallbackCopyToClipboard(text: string) {
+  const ta = document.createElement('textarea')
+  ta.value = text
+  ta.setAttribute('readonly', '')
+  ta.style.position = 'fixed'
+  ta.style.left = '-9999px'
+  document.body.appendChild(ta)
+  ta.select()
+  document.execCommand('copy')
+  document.body.removeChild(ta)
+}
+
+async function copyEntryText() {
+  const text = props.item.text ?? ''
+  const markSuccess = () => {
+    copySucceeded.value = true
+    if (copyResetTimer) clearTimeout(copyResetTimer)
+    copyResetTimer = setTimeout(() => {
+      copySucceeded.value = false
+      copyResetTimer = null
+    }, 1500)
+  }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      fallbackCopyToClipboard(text)
+    }
+    markSuccess()
+  } catch {
+    try {
+      fallbackCopyToClipboard(text)
+      markSuccess()
+    } catch {
+      // Clipboard unavailable (permissions / non-secure context)
+    }
+  }
+}
 
 const formattedDate = computed(() => {
   const date = new Date(props.item.createdAt)
@@ -99,12 +140,24 @@ async function onConfirmDelete() {
             @click="onTogglePin"
           />
           <Button
+            :icon="copySucceeded ? 'pi pi-check' : 'pi pi-copy'"
+            variant="text"
+            rounded
+            size="small"
+            :severity="copySucceeded ? 'success' : 'secondary'"
+            class="journal-card__action-btn"
+            :aria-label="t('journal.copyText')"
+            :title="t('journal.copyText')"
+            @click="copyEntryText"
+          />
+          <Button
             icon="pi pi-pencil"
             variant="text"
             rounded
             size="small"
             severity="secondary"
             class="journal-card__action-btn"
+            :aria-label="t('journal.editNote')"
             @click="emit('edit-journal', item)"
           />
           <Button

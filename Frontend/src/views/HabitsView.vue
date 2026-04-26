@@ -2,6 +2,7 @@
 defineOptions({ name: 'HabitsView' })
 import EmptyState from '@/components/EmptyState.vue'
 import HabitCard from '@/components/HabitCard.vue'
+import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { onMounted } from 'vue'
 import { useHabitsStore } from '@/stores/habits'
@@ -10,7 +11,7 @@ import type { HabitDTO } from '@/api/HabitsAPI'
 const habitsStore = useHabitsStore()
 
 const emit = defineEmits<{
-    (e: 'edit-habit', habit: HabitDTO): void
+    (e: 'edit-habit', habit: HabitDTO | null): void
 }>()
 
 onMounted(async () => {
@@ -20,7 +21,11 @@ onMounted(async () => {
 
 <template>
     <div class="habits-view">
-        <h1 class="ds-page-header">{{ $t('habits.habits') }}</h1>
+        <header class="habits-view__header">
+            <h1 class="ds-page-header">{{ $t('habits.habits') }}</h1>
+            <Button :label="$t('habits.editdialog.newHabit')" icon="pi pi-plus" class="desktop-create-btn"
+                @click="emit('edit-habit', null)" />
+        </header>
 
         <div v-if="habitsStore.isLoading && habitsStore.habits.length === 0" class="habits-skeleton">
             <div v-for="i in 4" :key="i" class="skeleton-card">
@@ -54,6 +59,14 @@ onMounted(async () => {
     gap: 12px;
 }
 
+.habits-view__header {
+    display: contents;
+}
+
+.desktop-create-btn {
+    display: none;
+}
+
 .skeleton-card {
     display: flex;
     align-items: center;
@@ -75,4 +88,42 @@ onMounted(async () => {
     flex: 1;
 }
 
+@media (min-width: 900px) {
+    .habits-view {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+        align-items: start;
+        gap: 1rem;
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .habits-view__header,
+    .habits-skeleton,
+    .habits-view :deep(.empty-state) {
+        grid-column: 1 / -1;
+    }
+
+    .habits-view__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .desktop-create-btn {
+        display: inline-flex;
+    }
+
+    .habits-view :deep(.empty-state) {
+        justify-self: center;
+    }
+
+    .habits-skeleton {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+        gap: 1rem;
+    }
+}
 </style>

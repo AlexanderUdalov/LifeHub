@@ -3,6 +3,7 @@ defineOptions({ name: 'GoalsView' })
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import EmptyState from '@/components/EmptyState.vue'
 import GoalCard from '@/components/GoalCard.vue'
+import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { useGoalsStore } from '@/stores/goals'
 import { useTasksStore } from '@/stores/tasks'
@@ -17,7 +18,7 @@ import type { HabitDTO } from '@/api/HabitsAPI'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 
 const emit = defineEmits<{
-  (e: 'edit-goal', goal: GoalDTO): void
+  (e: 'edit-goal', goal: GoalDTO | null): void
   (e: 'edit-task', task: TaskDTO): void
   (e: 'edit-habit', habit: HabitDTO): void
   (e: 'edit-addiction', addiction: AddictionDTO): void
@@ -116,7 +117,11 @@ async function onCompleteGoal(goalId: string) {
 
 <template>
   <div class="goals-view">
-    <h1 class="ds-page-header">{{ $t('goals.title') }}</h1>
+    <header class="goals-view__header">
+      <h1 class="ds-page-header">{{ $t('goals.title') }}</h1>
+      <Button :label="$t('goals.newGoal')" icon="pi pi-plus" class="desktop-create-btn"
+        @click="emit('edit-goal', null)" />
+    </header>
 
     <div v-if="goalsStore.isLoading && goalsStore.goals.length === 0" class="goals-skeleton">
       <div v-for="i in 3" :key="i" class="skeleton-card">
@@ -170,6 +175,14 @@ async function onCompleteGoal(goalId: string) {
   gap: 12px;
 }
 
+.goals-view__header {
+  display: contents;
+}
+
+.desktop-create-btn {
+  display: none;
+}
+
 .skeleton-card {
   display: flex;
   flex-direction: column;
@@ -209,5 +222,50 @@ async function onCompleteGoal(goalId: string) {
   color: var(--p-text-muted-color);
   font-size: 0.9rem;
   padding-left: 1.1rem;
+}
+
+@media (min-width: 900px) {
+  .goals-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+    align-items: start;
+    gap: 1rem;
+    max-width: 78rem;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .goals-view__header,
+  .goals-skeleton,
+  .completed-goals-text-block,
+  .goals-view :deep(.empty-state) {
+    grid-column: 1 / -1;
+  }
+
+  .goals-view__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .desktop-create-btn {
+    display: inline-flex;
+  }
+
+  .goals-view :deep(.empty-state) {
+    justify-self: center;
+  }
+
+  .goals-skeleton {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+    gap: 1rem;
+  }
+
+  .completed-goals-text-block {
+    align-items: flex-start;
+    padding: 0.5rem 0 0;
+  }
 }
 </style>

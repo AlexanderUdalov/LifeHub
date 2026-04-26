@@ -136,6 +136,8 @@ onMounted(async () => {
     <header class="journal-view__header">
       <h1 class="ds-page-header">{{ $t('journal.title') }}</h1>
       <div class="journal-view__actions">
+        <Button :label="$t('journal.newNote')" icon="pi pi-plus" class="journal-view__create-btn"
+          @click="emit('edit-journal', null)" />
         <Button icon="pi pi-sparkles" variant="text" rounded size="small"
           class="journal-view__action-btn"
           :aria-label="$t('reflection.title')" @click="showReflection = true" />
@@ -247,6 +249,10 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 
+.journal-view__create-btn {
+  display: none;
+}
+
 .journal-view__search-bar {
   display: flex;
   align-items: center;
@@ -353,5 +359,79 @@ onMounted(async () => {
 .journal-list-leave-to {
   opacity: 0;
   transform: scale(0.95);
+}
+
+@media (min-width: 900px) {
+  .journal-view {
+    max-width: 78rem;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .journal-view__header {
+    justify-content: space-between;
+    min-height: auto;
+    margin-bottom: 1rem;
+  }
+
+  .journal-view__header .ds-page-header {
+    position: static;
+    pointer-events: auto;
+  }
+
+  .journal-view__actions {
+    gap: 0.25rem;
+  }
+
+  .journal-view__create-btn {
+    display: inline-flex;
+    margin-right: 0.25rem;
+  }
+
+  .journal-view :deep(.empty-state) {
+    margin-top: 3rem;
+  }
+
+  .journal-view__search-bar {
+    max-width: 34rem;
+    padding: 0 0 1rem;
+  }
+
+  .journal-view__filter-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(12rem, 1fr)) auto;
+    align-items: end;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: var(--ds-radius-lg);
+    background: var(--p-card-background);
+  }
+
+  .journal-view__filter-label {
+    display: none;
+  }
+
+  .journal-view__filter-clear {
+    align-self: center;
+    margin-top: 0;
+  }
+
+  .journal-skeleton,
+  .journal-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .journal-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .journal-section__header {
+    padding: 0 0 0.75rem;
+  }
 }
 </style>

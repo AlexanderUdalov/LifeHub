@@ -263,6 +263,7 @@ async function onConfirmDelete() {
   color: var(--p-text-color);
   word-break: break-word;
   display: -webkit-box;
+  line-clamp: 5;
   -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -270,6 +271,7 @@ async function onConfirmDelete() {
 
 .journal-card__text--expanded {
   display: block;
+  line-clamp: unset;
   -webkit-line-clamp: unset;
   -webkit-box-orient: unset;
   overflow: visible;
@@ -468,5 +470,31 @@ async function onConfirmDelete() {
 .journal-card-slide-leave-to {
   opacity: 0;
   transform: translateY(8px);
+}
+
+@media (min-width: 900px) {
+  .journal-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.75rem 1.75rem rgba(0, 0, 0, 0.08);
+  }
+
+  .journal-card:active {
+    transform: translateY(-1px);
+  }
+
+  ::deep(.p-card-body) {
+    padding: 1.125rem 1.25rem;
+  }
+
+  .journal-card__text {
+    font-size: 0.975rem;
+    line-clamp: 7;
+    -webkit-line-clamp: 7;
+  }
+
+  .journal-card__action-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
 }
 </style>

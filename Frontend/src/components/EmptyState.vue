@@ -57,4 +57,33 @@ defineProps<{
   max-width: 260px;
   line-height: 1.45;
 }
+
+@media (min-width: 900px) {
+  .empty-state {
+    width: min(100%, 34rem);
+    min-height: 18rem;
+    margin: 0 auto;
+    justify-content: center;
+    padding: 4rem 2rem;
+    box-sizing: border-box;
+  }
+
+  .empty-state-icon-wrap {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .empty-state-icon-wrap i {
+    font-size: 1.875rem;
+  }
+
+  .empty-state-title {
+    font-size: 1.2rem;
+  }
+
+  .empty-state-subtitle {
+    max-width: 30rem;
+    font-size: 0.95rem;
+  }
+}
 </style>

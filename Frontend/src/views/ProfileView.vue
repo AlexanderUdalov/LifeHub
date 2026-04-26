@@ -397,4 +397,40 @@ onMounted(async () => {
     justify-content: center;
     padding: 0.5rem;
 }
+
+@media (min-width: 900px) {
+    .profile-view-root {
+        max-width: 48rem;
+        margin: 0 auto;
+    }
+
+    .profile-view-root .ds-page-header {
+        margin-bottom: 1rem;
+    }
+
+    .selector {
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .color-selector {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .submit-button {
+        justify-content: flex-end;
+        padding-right: 0;
+    }
+
+    :deep(.p-dialog) {
+        width: min(30rem, calc(100vw - 2rem));
+    }
+}
 </style>

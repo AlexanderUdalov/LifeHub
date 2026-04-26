@@ -78,7 +78,8 @@
         "weeklyWithDay": "Еженедельно ({weekday})",
         "monthlyWithDay": "Ежемесячно ({day}-го)",
         "yearlyWithDate": "Ежегодно ({day} {month} {year})",
-        "weekdays": "По будням"
+        "weekdays": "По будням",
+        "byWeekdays": "По дням недели"
       },
       "noDate": "Без даты",
       "noRepeat": "Без повтора",

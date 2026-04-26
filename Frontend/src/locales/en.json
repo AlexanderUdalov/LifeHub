@@ -78,7 +78,8 @@
         "weeklyWithDay": "Weekly ({weekday})",
         "monthlyWithDay": "Monthly (day {day})",
         "yearlyWithDate": "Yearly ({day} {month} {year})",
-        "weekdays": "Weekdays"
+        "weekdays": "Weekdays",
+        "byWeekdays": "By weekdays"
       },
       "noDate": "No date",
       "noRepeat": "No repeat",

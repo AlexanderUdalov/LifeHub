@@ -5,7 +5,6 @@
     "processing": "Processing",
     "registerToLogin": "Already have an account? Sign In",
     "loginToRegister": "Need an account? Register",
-    "nickname": "Nickname",
     "email": "Email",
     "password": "Password",
     "requiredField": "Required field"
@@ -311,7 +310,6 @@
   },
   "profile-view": {
     "profile": "Profile",
-    "name": "Name",
     "email": "Email",
     "theme": "Theme",
     "primary-color": "Primary color",

@@ -25,7 +25,7 @@ const apiError = useApiError();
 
 const currentUser = ref<User>();
 const updateForm = reactive<UpdateRequest>({
-    name: '',
+    name: null,
     email: '',
     currentPassword: '',
     newPassword: ''
@@ -34,7 +34,6 @@ const isDirty = computed(() => {
     if (!currentUser.value) return false
 
     return (
-        updateForm.name !== currentUser.value.name ||
         updateForm.email !== currentUser.value.email
     )
 })
@@ -48,14 +47,13 @@ const submitUserData = async () => {
         if (!currentUser.value) return
 
         await updateUser({
-            name: updateForm.name,
+            name: null,
             email: updateForm.email,
             currentPassword: null,
             newPassword: null
         })
 
         Object.assign(currentUser.value, {
-            name: updateForm.name,
             email: updateForm.email
         })
     }
@@ -211,11 +209,6 @@ onMounted(async () => {
         <h1 class="ds-page-header">{{ $t('profile-view.profile') }}</h1>
         <Card>
             <template #content>
-                <IftaLabel>
-                    <InputText id="name" v-model="updateForm.name" fluid />
-                    <label for="name">{{ $t('profile-view.name') }}</label>
-                </IftaLabel>
-
                 <IftaLabel>
                     <InputText id="email" v-model="updateForm.email" fluid />
                     <label for="email">{{ $t('profile-view.email') }}</label>

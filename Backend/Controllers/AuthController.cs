@@ -31,7 +31,7 @@ public class AuthController(ApplicationContext context, IConfiguration config) :
         var user = new User
         {
             Id = Guid.NewGuid(),
-            Name = request.Name,
+            Name = request.Email.Split('@')[0],
             Email = request.Email,
             PasswordHash = _passwordHasher.HashPassword(null!, request.Password)
         };

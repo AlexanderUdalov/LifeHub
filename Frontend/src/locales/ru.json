@@ -5,7 +5,6 @@
     "processing": "Загрузка",
     "registerToLogin": "Уже есть аккаунт? Войти",
     "loginToRegister": "Нет аккаунта? Зарегистрироваться",
-    "nickname": "Никнейм",
     "password": "Пароль",
     "email": "Email",
     "requiredField": "Обязательное поле"
@@ -317,7 +316,6 @@
     "profile": "Профиль",
     "email": "Email",
     "language": "Язык",
-    "name": "Никнейм",
     "theme": "Тема",
     "primary-color": "Основной цвет",
     "surface-color": "Цвет поверхностей",

@@ -832,6 +832,92 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/day-feedback/{date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    date: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["DayFeedbackDTO"];
+                        "application/json": components["schemas"]["DayFeedbackDTO"];
+                        "text/json": components["schemas"]["DayFeedbackDTO"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    date: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SaveDayFeedbackRequest"];
+                    "text/json": components["schemas"]["SaveDayFeedbackRequest"];
+                    "application/*+json": components["schemas"]["SaveDayFeedbackRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["DayFeedbackDTO"];
+                        "application/json": components["schemas"]["DayFeedbackDTO"];
+                        "text/json": components["schemas"]["DayFeedbackDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/goals": {
         parameters: {
             query?: never;
@@ -2084,6 +2170,15 @@ export interface components {
             /** Format: uuid */
             lifeAreaId: null | string;
         };
+        DayFeedbackDTO: {
+            /** Format: date */
+            date: string;
+            /** Format: int32 */
+            score: number | string;
+            note: null | string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
         GenerateTriggerGuidanceResponse: {
             title: string;
             subtitle: string;
@@ -2197,6 +2292,11 @@ export interface components {
             name: string;
             email: string;
             password: string;
+        };
+        SaveDayFeedbackRequest: {
+            /** Format: int32 */
+            score: null | number | string;
+            note?: null | string;
         };
         SendReflectionMessageRequest: {
             /** Format: uuid */

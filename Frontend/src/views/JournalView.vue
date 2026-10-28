@@ -2,6 +2,7 @@
 defineOptions({ name: 'JournalView' })
 import EmptyState from '@/components/EmptyState.vue';
 import JournalCard from '@/components/JournalCard.vue';
+import DayFeedbackCard from '@/components/DayFeedbackCard.vue';
 import ReflectionDialog from '@/components/ReflectionDialog.vue';
 import Skeleton from 'primevue/skeleton';
 import Button from 'primevue/button';
@@ -136,6 +137,8 @@ onMounted(async () => {
           :aria-label="$t('journal.filter')" @click="toggleFilterBar" />
       </div>
     </header>
+
+    <DayFeedbackCard />
 
     <Transition name="journal-search-slide">
       <div v-if="showSearchBar" class="journal-view__search-bar">

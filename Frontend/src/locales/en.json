@@ -1,4 +1,20 @@
 {
+  "dayFeedback": {
+    "title": "How was your day?",
+    "subtitle": "Rate how well you spent this day.",
+    "date": "Day feedback date",
+    "score": "Day success",
+    "worst": "😭 0 — terrible or wasted",
+    "best": "🥳 10 — a day well spent",
+    "note": "Note (optional)",
+    "notePlaceholder": "What stood out? What went well, or what would you change?",
+    "save": "Save",
+    "saved": "Feedback saved",
+    "loading": "Loading feedback…",
+    "retry": "Retry",
+    "loadError": "Could not load this day's feedback. Please try again.",
+    "saveError": "Could not save feedback. Your note is still in the form — please try again."
+  },
   "auth": {
     "login": "Login",
     "registration": "Register",

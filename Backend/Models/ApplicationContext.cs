@@ -17,10 +17,28 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<LifeArea> LifeAreas => Set<LifeArea>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
+    public DbSet<DayFeedback> DayFeedbacks => Set<DayFeedback>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<DayFeedback>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DayFeedback>()
+            .HasIndex(x => new { x.UserId, x.Date })
+            .IsUnique();
+
+        modelBuilder.Entity<DayFeedback>()
+            .Property(x => x.Note)
+            .HasMaxLength(1000);
+
+        modelBuilder.Entity<DayFeedback>()
+            .ToTable(t => t.HasCheckConstraint("CK_DayFeedbacks_Score", "Score >= 0 AND Score <= 10"));
 
         // Keep delete behaviors explicit for consistency across the model.
 

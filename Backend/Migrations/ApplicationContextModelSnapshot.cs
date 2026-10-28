@@ -117,6 +117,39 @@ namespace LifeHub_Backend.Migrations
                     b.ToTable("AddictionTriggerEvents");
                 });
 
+            modelBuilder.Entity("LifeHub.Models.DayFeedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("DayFeedbacks", t =>
+                        {
+                            t.HasCheckConstraint("CK_DayFeedbacks_Score", "Score >= 0 AND Score <= 10");
+                        });
+                });
+
             modelBuilder.Entity("LifeHub.Models.Goal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -490,6 +523,15 @@ namespace LifeHub_Backend.Migrations
                     b.Navigation("Addiction");
 
                     b.Navigation("JournalEntry");
+                });
+
+            modelBuilder.Entity("LifeHub.Models.DayFeedback", b =>
+                {
+                    b.HasOne("LifeHub.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("LifeHub.Models.Goal", b =>

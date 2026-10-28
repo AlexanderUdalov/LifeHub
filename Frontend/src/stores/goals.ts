@@ -23,6 +23,8 @@ export const useGoalsStore = defineStore('goals', () => {
     })
   )
 
+  const activeGoalsSorted = computed(() => goalsSorted.value.filter(goal => !goal.completedAt))
+
   function getGoalById(goalId: string | null | undefined): GoalDTO | null {
     if (!goalId) return null
     return goals.value.find(x => x.id === goalId) ?? null
@@ -92,6 +94,7 @@ export const useGoalsStore = defineStore('goals', () => {
   return {
     goals,
     goalsSorted,
+    activeGoalsSorted,
     isLoading,
     fetchGoals,
     createGoal,

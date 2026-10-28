@@ -166,7 +166,7 @@ async function onDelete() {
         </template>
       </Select>
 
-      <Select v-model="localGoalId" :options="goalsStore.goalsSorted" option-label="title" option-value="id"
+      <Select v-model="localGoalId" :options="goalsStore.activeGoalsSorted" option-label="title" option-value="id"
         show-clear :placeholder="t('goals.field')" class="ds-chip-select"
         :class="{ 'ds-chip-select--active': hasGoal }">
         <template #value>

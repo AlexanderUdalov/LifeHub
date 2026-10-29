@@ -5,6 +5,13 @@ on:
     branches:
       - main
 
+concurrency:
+  group: lifehub-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,9 +26,15 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Publish Backend
+    - name: Test and publish Backend
       run: |
+        dotnet test Backend.Tests/LifeHub.Backend.Tests.csproj -c Release
         dotnet publish Backend/LifeHub-Backend.csproj -c Release -o publish/backend
+
+    - name: Build migration bundle
+      run: |
+        dotnet tool install --global dotnet-ef --version 10.0.2
+        dotnet ef migrations bundle --project Backend/LifeHub-Backend.csproj --runtime linux-x64 --configuration Release --output publish/migrate
 
     # -------- FRONTEND --------
     - name: Setup Node
@@ -32,6 +45,7 @@ jobs:
     - name: Build Frontend
       run: |
         npm ci --prefix Frontend
+        npm test --prefix Frontend
         npm run build --prefix Frontend
 
         mkdir -p publish/frontend
@@ -54,9 +68,25 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_KEY }}
         script: |
-          mkdir -p /var/www/lifehub/backend /var/www/lifehub/frontend
+          set -eu
+          mkdir -p /var/www/lifehub/backend /var/www/lifehub/frontend /var/www/lifehub/database/backups
 
-          rsync -av --delete ~/publish/backend/ /var/www/lifehub/backend/
+          # SQLite's online backup includes committed WAL changes while the app runs.
+          python3 - <<'PY'
+          import sqlite3
+          from datetime import datetime, timezone
+          from pathlib import Path
+          db = Path('/var/www/lifehub/database/lifehub.db')
+          if db.is_file():
+              backup = db.parent / 'backups' / ('before-deploy-' + datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S') + '.db')
+              with sqlite3.connect(db) as source, sqlite3.connect(backup) as target:
+                  source.backup(target)
+          PY
+
+          chmod +x ~/publish/migrate
+          ~/publish/migrate --connection 'Data Source=/var/www/lifehub/database/lifehub.db'
+
+          rsync -av --delete --exclude=.env ~/publish/backend/ /var/www/lifehub/backend/
           rsync -av --delete ~/publish/frontend/ /var/www/lifehub/frontend/
 
     - name: Update .env file on VPS
@@ -76,4 +106,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_KEY }}
         script: |
+          set -eu
           sudo systemctl restart lifehub-backend
+          sleep 3
+          sudo systemctl is-active --quiet lifehub-backend

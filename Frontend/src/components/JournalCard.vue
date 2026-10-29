@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { useClampedContent } from '@/composables/useClampedContent'
 import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useJournalStore } from '@/stores/journal'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
@@ -10,10 +11,9 @@ import { useI18n } from 'vue-i18n'
 import { renderMarkdown } from '@/composables/useMarkdown'
 import BaseCard from '@/components/base/BaseCard.vue'
 
-const props = withDefaults(
-  defineProps<{ item: JournalEntryDTO; noBorder?: boolean }>(),
-  { noBorder: false }
-)
+const props = withDefaults(defineProps<{ item: JournalEntryDTO; noBorder?: boolean }>(), {
+  noBorder: false,
+})
 
 const emit = defineEmits<{
   (e: 'edit-journal', entry: JournalEntryDTO): void
@@ -28,7 +28,7 @@ const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.item.life
 
 const lifeArea = computed(() => {
   if (!props.item.lifeAreaId) return null
-  return lifeAreasStore.lifeAreas.find(a => a.id === props.item.lifeAreaId) ?? null
+  return lifeAreasStore.lifeAreas.find((a) => a.id === props.item.lifeAreaId) ?? null
 })
 
 const goal = computed(() => goalsStore.getGoalById(props.item.goalId))
@@ -46,14 +46,23 @@ const lifeAreaLabel = computed(() => lifeArea.value?.name ?? '')
 const goalLabel = computed(() => goal.value?.title ?? '')
 
 const hasFooterMeta = computed(
-  () =>
-    !!props.item.addictionId ||
-    !!lifeArea.value ||
-    !!goal.value ||
-    props.item.aiGenerated
+  () => !!props.item.addictionId || !!lifeArea.value || !!goal.value || props.item.aiGenerated,
 )
 
-const isExpanded = ref(false)
+const textRef = ref<HTMLElement | null>(null)
+const menuRef = ref<HTMLDetailsElement | null>(null)
+const { expanded: isExpanded, foldable, toggle } = useClampedContent(textRef, () => props.item.text)
+const closeMenu = () => {
+  if (menuRef.value) menuRef.value.open = false
+}
+const outsideClick = (event: MouseEvent) => {
+  if (event.target instanceof Node && !menuRef.value?.contains(event.target)) closeMenu()
+}
+onMounted(() => document.addEventListener('click', outsideClick))
+onUnmounted(() => {
+  document.removeEventListener('click', outsideClick)
+  if (copyResetTimer) clearTimeout(copyResetTimer)
+})
 const showDeleteConfirm = ref(false)
 const copySucceeded = ref(false)
 let copyResetTimer: ReturnType<typeof setTimeout> | null = null
@@ -115,7 +124,7 @@ const formattedDate = computed(() => {
   return date.toLocaleDateString(locale.value, {
     day: 'numeric',
     month: 'short',
-    ...(date.getFullYear() !== now.getFullYear() && { year: 'numeric' })
+    ...(date.getFullYear() !== now.getFullYear() && { year: 'numeric' }),
   })
 })
 
@@ -140,361 +149,299 @@ async function onConfirmDelete() {
     <template #content>
       <div class="journal-card__header">
         <div class="journal-card__meta">
-          <i v-if="item.isPinned" class="pi pi-thumbtack journal-card__pin-badge" />
-          <span class="journal-card__date">{{ formattedDate }}</span>
+          <span>{{ formattedDate }}</span
+          ><i
+            aria-hidden="true"
+            v-if="item.isPinned"
+            class="pi pi-thumbtack"
+            :aria-label="t('journal.pinnedEntry')"
+          />
         </div>
-
-        <div class="journal-card__actions" @click.stop>
+        <div class="journal-card__header-right">
+          <span
+            v-if="lifeArea"
+            class="journal-area"
+            :style="{ '--area-color': areaColor ?? 'var(--app-muted)' }"
+            ><span />{{ lifeAreaLabel }}</span
+          >
+          <details ref="menuRef" class="journal-menu" @keydown.esc.prevent="closeMenu">
+            <summary :aria-label="t('redesign.entryActions')">
+              <i aria-hidden="true" class="pi pi-ellipsis-h" />
+            </summary>
+            <div class="journal-menu-items" @click="closeMenu">
+              <button type="button" @click="emit('edit-journal', item)">
+                <i aria-hidden="true" class="pi pi-pencil" />{{ t('journal.editNote') }}</button
+              ><button type="button" @click="onTogglePin">
+                <i aria-hidden="true" class="pi pi-thumbtack" />{{
+                  t(item.isPinned ? 'redesign.unpin' : 'journal.pin')
+                }}</button
+              ><button type="button" @click="copyEntryText">
+                <i aria-hidden="true" :class="copySucceeded ? 'pi pi-check' : 'pi pi-copy'" />{{
+                  t('journal.copyText')
+                }}</button
+              ><button type="button" class="danger" @click="showDeleteConfirm = true">
+                <i aria-hidden="true" class="pi pi-trash" />{{ t('journal.delete') }}
+              </button>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div v-if="showDeleteConfirm" class="journal-card__confirm">
+        <span>{{ t('journal.deleteConfirm') }}</span>
+        <div>
           <Button
-            icon="pi pi-thumbtack"
+            :label="t('cancel')"
             variant="text"
-            rounded
             size="small"
-            :severity="item.isPinned ? undefined : 'secondary'"
-            class="journal-card__action-btn"
-            @click="onTogglePin"
-          />
-          <Button
-            :icon="copySucceeded ? 'pi pi-check' : 'pi pi-copy'"
-            variant="text"
-            rounded
-            size="small"
-            :severity="copySucceeded ? 'success' : 'secondary'"
-            class="journal-card__action-btn"
-            :aria-label="t('journal.copyText')"
-            :title="t('journal.copyText')"
-            @click="copyEntryText"
-          />
-          <Button
-            icon="pi pi-pencil"
-            variant="text"
-            rounded
-            size="small"
-            severity="secondary"
-            class="journal-card__action-btn"
-            :aria-label="t('journal.editNote')"
-            @click="emit('edit-journal', item)"
-          />
-          <Button
-            icon="pi pi-trash"
-            variant="text"
-            rounded
-            size="small"
+            @click="showDeleteConfirm = false"
+          /><Button
+            :label="t('journal.delete')"
             severity="danger"
-            class="journal-card__action-btn"
-            @click="showDeleteConfirm = true"
+            size="small"
+            @click="onConfirmDelete"
           />
         </div>
       </div>
-
-      <Transition name="journal-card-slide">
-        <div v-if="showDeleteConfirm" class="journal-card__confirm" @click.stop>
-          <span class="journal-card__confirm-text">{{ t('journal.deleteConfirm') }}</span>
-          <div class="journal-card__confirm-btns">
-            <Button :label="t('cancel')" variant="text" size="small" @click="showDeleteConfirm = false" />
-            <Button :label="t('journal.delete')" severity="danger" size="small" @click="onConfirmDelete" />
-          </div>
-        </div>
-      </Transition>
-
-      <div class="journal-card__body" @click="emit('edit-journal', item)">
-        <div
-          class="journal-card__text"
-          :class="{ 'journal-card__text--expanded': isExpanded }"
-          @click.stop="isExpanded = !isExpanded"
-        >
-          <div class="journal-card__text-inner" v-html="renderedText" />
-        </div>
+      <div class="journal-card__text" :class="{ folded: foldable && !isExpanded }" @click="toggle">
+        <div ref="textRef" class="journal-card__text-inner" v-html="renderedText" />
       </div>
-
-      <div v-if="hasFooterMeta" class="journal-card__footer">
-        <span v-if="item.addictionId" class="journal-card__addiction">
-          <i v-if="showAddictionIcon" class="pi pi-ban" />
-          {{ addictionLabel }}
-        </span>
-        <span v-if="lifeArea" class="journal-card__life-area">
-          <i v-if="showLifeAreaIcon" class="pi pi-chart-pie" />
-          {{ lifeAreaLabel }}
-        </span>
-        <span v-if="item.aiGenerated" class="journal-card__reflection">
-          <i class="pi pi-sparkles" />
-          {{ t('journal.aiGeneratedChip') }}
-        </span>
-        <span v-if="goal" class="journal-card__goal">
-          <i v-if="showGoalIcon" class="pi pi-bullseye" />
-          {{ goalLabel }}
-        </span>
+      <button
+        v-if="foldable"
+        type="button"
+        class="text-action journal-fold"
+        :aria-expanded="isExpanded"
+        @click="toggle()"
+      >
+        {{ t(isExpanded ? 'redesign.collapse' : 'redesign.expand')
+        }}<i aria-hidden="true" :class="isExpanded ? 'pi pi-angle-up' : 'pi pi-angle-down'" />
+      </button>
+      <div v-if="item.addictionId || goal || item.aiGenerated" class="journal-card__footer">
+        <RouterLink v-if="item.addictionId" :to="'/addictions#tracker-' + item.addictionId"
+          ><i aria-hidden="true" class="pi pi-heart" />{{ addictionLabel }}</RouterLink
+        ><RouterLink v-if="goal" to="/goals"
+          ><i aria-hidden="true" class="pi pi-flag" />{{ goalLabel }}</RouterLink
+        ><span v-if="item.aiGenerated"
+          ><i aria-hidden="true" class="pi pi-sparkles" />{{ t('journal.aiGeneratedChip') }}</span
+        >
       </div>
     </template>
   </BaseCard>
 </template>
-
 <style scoped>
 .journal-card {
-  border-radius: var(--ds-radius-lg);
-  overflow: hidden;
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
   position: relative;
+  border-radius: var(--ds-radius-lg);
+  margin-bottom: 10px;
 }
-
-.journal-card:active {
-  transform: scale(0.985);
+.journal-card :deep(.p-card-body) {
+  padding: 12px 14px;
+  gap: 0;
 }
-
-:deep(.p-card-body) {
-  padding: 1rem 1.25rem;
-}
-
-:deep(.p-card-content) {
+.journal-card :deep(.p-card-content) {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0;
 }
-
-.journal-card__body {
-  cursor: pointer;
-  min-height: 0;
-}
-
-.journal-card__text {
-  margin: 0;
-  font-size: 0.9375rem;
-  line-height: 1.65;
-  color: var(--p-text-color);
-  word-break: break-word;
-  display: -webkit-box;
-  line-clamp: 5;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.journal-card__text--expanded {
-  display: block;
-  line-clamp: unset;
-  -webkit-line-clamp: unset;
-  -webkit-box-orient: unset;
-  overflow: visible;
-}
-
-.journal-card__text-inner :deep(p) {
-  margin: 0 0 0.5em;
-}
-
-.journal-card__text-inner :deep(p:last-child) {
-  margin-bottom: 0;
-}
-
-.journal-card__text-inner :deep(ul),
-.journal-card__text-inner :deep(ol) {
-  margin: 0.25em 0 0.5em;
-  padding-left: 1.25em;
-}
-
-.journal-card__text-inner :deep(li) {
-  margin: 0.15em 0;
-}
-
-.journal-card__text-inner :deep(code) {
-  font-family: ui-monospace, monospace;
-  font-size: 0.9em;
-  padding: 0.15em 0.35em;
-  background: var(--p-surface-100);
-  border-radius: 4px;
-}
-
-.journal-card__text-inner :deep(pre) {
-  margin: 0.5em 0;
-  padding: 0.75em;
-  overflow-x: auto;
-  background: var(--p-surface-100);
-  border-radius: 8px;
-}
-
-.journal-card__text-inner :deep(pre code) {
-  padding: 0;
-  background: none;
-}
-
-.journal-card__text-inner :deep(blockquote) {
-  margin: 0.5em 0;
-  padding-left: 1em;
-  border-left: 3px solid var(--p-content-border-color);
-  color: var(--p-text-muted-color);
-}
-
-.journal-card__text-inner :deep(h1),
-.journal-card__text-inner :deep(h2),
-.journal-card__text-inner :deep(h3) {
-  margin: 0.5em 0 0.25em;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.journal-card__text-inner :deep(h1) {
-  font-size: 1.15em;
-}
-
-.journal-card__text-inner :deep(h2) {
-  font-size: 1.05em;
-}
-
-.journal-card__text-inner :deep(h3) {
-  font-size: 1em;
-}
-
 .journal-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding-bottom: 0.625rem;
-  border-bottom: 1px solid var(--p-content-border-color);
+  gap: 8px;
+  margin-bottom: 8px;
 }
-
 .journal-card__meta {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
+  gap: 7px;
+  font-size: 11px;
+  color: var(--app-muted);
   min-width: 0;
 }
-
-.journal-card__pin-badge {
-  font-size: 0.6875rem;
-  color: var(--p-primary-color);
+.journal-card__meta i {
+  font-size: 10px;
+  color: var(--app-accent);
 }
-
-.journal-card__date {
-  white-space: nowrap;
-}
-
-.journal-card__actions {
-  display: flex;
-  gap: 0;
-  flex-shrink: 0;
-}
-
-.journal-card__action-btn {
-  width: 2rem;
-  height: 2rem;
-}
-
-.journal-card__life-area {
+.journal-card__header-right {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--p-text-muted-color);
-  padding: 0.25rem 0;
+  gap: 3px;
+  min-width: 0;
 }
-
-.journal-card__life-area i {
-  font-size: 0.625rem;
+.journal-area {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--app-muted);
+  background: color-mix(in srgb, var(--area-color) 12%, var(--app-card));
 }
-
+.journal-area > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--area-color);
+  flex-shrink: 0;
+}
+.journal-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+.journal-menu summary {
+  list-style: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  border-radius: 7px;
+  color: var(--app-muted);
+  cursor: pointer;
+}
+.journal-menu summary::-webkit-details-marker {
+  display: none;
+}
+.journal-menu-items {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 4px;
+  background: var(--app-card);
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px #0002;
+}
+.journal-menu-items button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 6px;
+  padding: 9px;
+  background: transparent;
+  color: var(--app-text);
+  text-align: left;
+  font-size: 12px;
+  min-height: 36px;
+}
+.journal-menu-items button:hover {
+  background: var(--app-soft);
+}
+.journal-menu-items button.danger {
+  color: var(--app-alert);
+}
+.journal-card__text {
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  color: var(--app-text);
+}
+.journal-card__text.folded {
+  max-height: 6.6em;
+  overflow: hidden;
+}
+.journal-card__text-inner {
+  line-height: 1.65;
+}
+.journal-card__text-inner :deep(p) {
+  margin: 0 0 0.5em;
+}
+.journal-card__text-inner :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.journal-card__text-inner :deep(ul),
+.journal-card__text-inner :deep(ol) {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+.journal-card__text-inner :deep(pre) {
+  overflow: auto;
+  padding: 10px;
+  background: var(--app-side);
+  border-radius: 6px;
+}
+.journal-card__text-inner :deep(code) {
+  background: var(--app-side);
+  font-size: 0.92em;
+}
+.journal-card__text-inner :deep(blockquote) {
+  border-left: 3px solid var(--app-line);
+  padding-left: 12px;
+  margin: 8px 0;
+  color: var(--app-muted);
+}
+.journal-card__text-inner :deep(h1),
+.journal-card__text-inner :deep(h2),
+.journal-card__text-inner :deep(h3) {
+  font-size: 15px;
+  margin: 8px 0;
+  font-weight: 600;
+}
+.journal-card__text-inner :deep(img) {
+  max-width: 100%;
+}
+.journal-card__text-inner :deep(table) {
+  display: block;
+  overflow: auto;
+}
+.journal-fold {
+  align-self: flex-start;
+  padding: 0;
+  min-height: 30px;
+  font-size: 11px;
+  margin-top: 3px;
+}
 .journal-card__footer {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
+  gap: 6px 14px;
+  font-size: 11px;
+  color: var(--app-muted);
+  margin-top: 10px;
 }
-
-.journal-card__addiction {
-  display: flex;
+.journal-card__footer > a,
+.journal-card__footer > span {
+  display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--p-text-muted-color);
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: inherit;
+  text-decoration: none;
 }
-
-.journal-card__addiction i {
-  font-size: 0.625rem;
+.journal-card__footer i {
+  font-size: 13px;
+  flex-shrink: 0;
 }
-
-.journal-card__reflection {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--p-text-muted-color);
-}
-
-.journal-card__reflection i {
-  font-size: 0.625rem;
-  color: var(--p-primary-color);
-}
-
-.journal-card__goal {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--p-text-muted-color);
-  margin-left: auto;
-}
-
-.journal-card__goal i {
-  font-size: 0.625rem;
-}
-
 .journal-card__confirm {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.25rem 0 0.125rem;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--app-alert);
+  margin-bottom: 8px;
 }
-
-.journal-card__confirm-text {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--p-text-color);
-}
-
-.journal-card__confirm-btns {
+.journal-card__confirm > div {
   display: flex;
-  gap: 0.25rem;
-  flex-shrink: 0;
+  gap: 6px;
 }
-
-.journal-card-slide-enter-active,
-.journal-card-slide-leave-active {
-  transition: all 0.2s ease;
-}
-
-.journal-card-slide-enter-from,
-.journal-card-slide-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-@media (min-width: 900px) {
-  .journal-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.75rem 1.75rem rgba(0, 0, 0, 0.08);
+@media (max-width: 760px) {
+  .journal-menu summary {
+    width: 38px;
+    height: 36px;
   }
-
-  .journal-card:active {
-    transform: translateY(-1px);
+  .journal-menu-items button {
+    min-height: 44px;
   }
-
-  ::deep(.p-card-body) {
-    padding: 1.125rem 1.25rem;
-  }
-
-  .journal-card__text {
-    font-size: 0.975rem;
-    line-clamp: 7;
-    -webkit-line-clamp: 7;
-  }
-
-  .journal-card__action-btn {
-    width: 2.25rem;
-    height: 2.25rem;
+  .journal-fold {
+    min-height: 36px;
   }
 }
 </style>

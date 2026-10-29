@@ -21,6 +21,7 @@ const { t, locale } = useI18n()
 
 const props = defineProps<{
   task: TaskDTO | null
+  initialDate?: string
 }>()
 
 const emit = defineEmits<{
@@ -41,12 +42,12 @@ const localTask = ref<TaskDTO>({
   id: props.task?.id ?? '',
   title: props.task?.title ?? '',
   description: props.task?.description ?? null,
-  dueDate: props.task?.dueDate ? props.task.dueDate : null,
+  dueDate: props.task?.dueDate ?? (props.initialDate ? props.initialDate + 'T00:00:00.000Z' : null),
   completionDate: props.task?.completionDate ? props.task.completionDate : null,
   recurrenceRule: props.task?.recurrenceRule ?? null,
   goalId: props.task?.goalId ? props.task.goalId : null,
   lifeAreaId: props.task?.lifeAreaId ? props.task.lifeAreaId : null,
-  sortOrder: props.task?.sortOrder ?? null
+  sortOrder: props.task?.sortOrder ?? null,
 })
 
 const dueDateAsDate = computed<Date | null>({
@@ -55,7 +56,7 @@ const dueDateAsDate = computed<Date | null>({
   },
   set(value) {
     localTask.value.dueDate = value ? toUtcDateOnlyIso(value) : null
-  }
+  },
 })
 
 const isEdit = computed(() => !!props.task)
@@ -67,7 +68,7 @@ const completedModel = computed({
   },
   set(value) {
     localTask.value.completionDate = value ? new Date().toISOString() : null
-  }
+  },
 })
 
 const descriptionModel = computed({
@@ -76,7 +77,7 @@ const descriptionModel = computed({
   },
   set(value) {
     localTask.value.description = value || null
-  }
+  },
 })
 
 const { formatRecurrence } = useRecurrenceFormatter()
@@ -84,9 +85,7 @@ const { formatRecurrence } = useRecurrenceFormatter()
 const dateChipLabel = computed(() => {
   const d = dueDateAsDate.value
   if (!d && !localTask.value.recurrenceRule) return t('tasks.recurrence.dateAndRepeat')
-  const dateStr = d
-    ? d.toLocaleDateString(locale.value, { day: 'numeric', month: 'short' })
-    : ''
+  const dateStr = d ? d.toLocaleDateString(locale.value, { day: 'numeric', month: 'short' }) : ''
   const recurStr = formatRecurrence(localTask.value.recurrenceRule, localTask.value.dueDate)
   if (dateStr && recurStr) return `${dateStr} · ${recurStr}`
   return dateStr || recurStr || t('tasks.recurrence.dateAndRepeat')
@@ -96,7 +95,7 @@ const hasDate = computed(() => !!localTask.value.dueDate || !!localTask.value.re
 
 const lifeAreaChipLabel = computed(() => {
   if (!localTask.value.lifeAreaId) return t('lifeareas.field')
-  const area = lifeAreasStore.lifeAreas.find(a => a.id === localTask.value.lifeAreaId)
+  const area = lifeAreasStore.lifeAreas.find((a) => a.id === localTask.value.lifeAreaId)
   return area?.name ?? t('lifeareas.field')
 })
 
@@ -104,7 +103,7 @@ const hasLifeArea = computed(() => !!localTask.value.lifeAreaId)
 
 const goalChipLabel = computed(() => {
   if (!localTask.value.goalId) return t('goals.field')
-  const goal = goalsStore.goalsSorted.find(g => g.id === localTask.value.goalId)
+  const goal = goalsStore.goalsSorted.find((g) => g.id === localTask.value.goalId)
   return goal?.title ?? t('goals.field')
 })
 
@@ -114,12 +113,12 @@ watch(
   () => localTask.value.goalId,
   (goalId) => {
     if (!goalId) return
-    const goal = goalsStore.goalsSorted.find(g => g.id === goalId)
+    const goal = goalsStore.goalsSorted.find((g) => g.id === goalId)
     if (goal && localTask.value.lifeAreaId !== goal.lifeAreaId) {
       localTask.value.lifeAreaId = goal.lifeAreaId
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const dateRecurrenceDrawerOpen = ref(false)
@@ -150,7 +149,7 @@ async function onSave() {
         recurrenceRule: localTask.value.recurrenceRule,
         goalId: localTask.value.goalId,
         lifeAreaId: localTask.value.lifeAreaId,
-        sortOrder: localTask.value.dueDate ? null : (localTask.value.sortOrder ?? null)
+        sortOrder: localTask.value.dueDate ? null : (localTask.value.sortOrder ?? null),
       }
       await tasksStore.editTask(localTask.value.id, request)
     } else {
@@ -160,7 +159,7 @@ async function onSave() {
         dueDate: localTask.value.dueDate,
         recurrenceRule: localTask.value.recurrenceRule,
         goalId: localTask.value.goalId,
-        lifeAreaId: localTask.value.lifeAreaId
+        lifeAreaId: localTask.value.lifeAreaId,
       }
       await tasksStore.createNewTask(request)
     }
@@ -191,26 +190,61 @@ async function onDelete() {
     <template #header>
       <div class="ds-drawer-title-row" ref="titleWrap">
         <Checkbox v-if="isEdit" binary v-model="completedModel" />
-        <InputText v-model="localTask.title" :placeholder="t('tasks.editdialog.newTask')"
-          class="ds-drawer-title-input task-drawer-title-input" :class="{ completed: completedModel }" />
+        <InputText
+          v-model="localTask.title"
+          :placeholder="t('tasks.editdialog.newTask')"
+          class="ds-drawer-title-input task-drawer-title-input"
+          :class="{ completed: completedModel }"
+        />
       </div>
     </template>
 
-    <Textarea v-model="descriptionModel" :placeholder="t('tasks.description')" autoResize class="ds-drawer-textarea"
-      :rows="3" fluid />
+    <Textarea
+      v-model="descriptionModel"
+      :placeholder="t('tasks.description')"
+      autoResize
+      class="ds-drawer-textarea"
+      :rows="3"
+      fluid
+    />
 
     <div class="ds-chip-row">
-      <Button :label="dateChipLabel" icon="pi pi-calendar" size="small" :severity="hasDate ? undefined : 'secondary'"
-        :variant="hasDate ? 'outlined' : 'text'" class="ds-chip-button"
-        @click="dateRecurrenceDrawerOpen = true" />
-      <TaskDateRecurrenceDrawer v-model:visible="dateRecurrenceDrawerOpen" :date="dueDateAsDate"
+      <Button
+        :label="dateChipLabel"
+        icon="pi pi-calendar"
+        size="small"
+        :severity="hasDate ? undefined : 'secondary'"
+        :variant="hasDate ? 'outlined' : 'text'"
+        class="ds-chip-button"
+        @click="dateRecurrenceDrawerOpen = true"
+      />
+      <TaskDateRecurrenceDrawer
+        v-model:visible="dateRecurrenceDrawerOpen"
+        :date="dueDateAsDate"
         :recurrence-rule="localTask.recurrenceRule"
-        @update:date="(v) => { localTask.dueDate = v ? toUtcDateOnlyIso(v) : null }"
-        @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }" />
+        @update:date="
+          (v) => {
+            localTask.dueDate = v ? toUtcDateOnlyIso(v) : null
+          }
+        "
+        @update:recurrence-rule="
+          (v) => {
+            localTask.recurrenceRule = v
+          }
+        "
+      />
 
-      <Select v-if="!hasGoal" v-model="localTask.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"
-        :class="{ 'ds-chip-select--active': hasLifeArea }">
+      <Select
+        v-if="!hasGoal"
+        v-model="localTask.lifeAreaId"
+        :options="lifeAreasStore.lifeAreas"
+        option-label="name"
+        option-value="id"
+        show-clear
+        :placeholder="t('lifeareas.field')"
+        class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasLifeArea }"
+      >
         <template #value>
           <span class="ds-chip-select-value">
             <i class="pi pi-chart-pie" />
@@ -219,9 +253,16 @@ async function onDelete() {
         </template>
       </Select>
 
-      <Select v-model="localTask.goalId" :options="goalsStore.activeGoalsSorted" option-label="title" option-value="id"
-        show-clear :placeholder="t('goals.field')" class="ds-chip-select"
-        :class="{ 'ds-chip-select--active': hasGoal }">
+      <Select
+        v-model="localTask.goalId"
+        :options="goalsStore.activeGoalsSorted"
+        option-label="title"
+        option-value="id"
+        show-clear
+        :placeholder="t('goals.field')"
+        class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasGoal }"
+      >
         <template #value>
           <span class="ds-chip-select-value">
             <i class="pi pi-bullseye" />
@@ -237,11 +278,24 @@ async function onDelete() {
 
     <template #footer>
       <div class="ds-drawer-actions">
-        <Button v-if="isEdit" icon="pi pi-trash" :label="t('tasks.editdialog.delete')" severity="danger" variant="text"
-          size="small" :loading="isDeleteLoading" @click="onDelete" />
+        <Button
+          v-if="isEdit"
+          icon="pi pi-trash"
+          :label="t('tasks.editdialog.delete')"
+          severity="danger"
+          variant="text"
+          size="small"
+          :loading="isDeleteLoading"
+          @click="onDelete"
+        />
         <span v-else />
-        <Button :label="isEdit ? t('tasks.editdialog.save') : t('tasks.editdialog.create')" :disabled="!canSave"
-          :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
+        <Button
+          :label="isEdit ? t('tasks.editdialog.save') : t('tasks.editdialog.create')"
+          :disabled="!canSave"
+          :loading="isSaveLoading"
+          icon="pi pi-check"
+          @click="onSave"
+        />
       </div>
     </template>
   </BaseDrawer>

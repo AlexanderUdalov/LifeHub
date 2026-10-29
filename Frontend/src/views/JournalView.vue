@@ -1,62 +1,62 @@
 <script setup lang="ts">
 defineOptions({ name: 'JournalView' })
-import EmptyState from '@/components/EmptyState.vue';
-import JournalCard from '@/components/JournalCard.vue';
-import DayFeedbackCard from '@/components/DayFeedbackCard.vue';
-import ReflectionDialog from '@/components/ReflectionDialog.vue';
-import Skeleton from 'primevue/skeleton';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
-import { useJournalStore } from '@/stores/journal';
-import { useLifeAreasStore } from '@/stores/lifeAreas';
-import { useGoalsStore } from '@/stores/goals';
-import { useAddictionsStore } from '@/stores/addictions';
-import { useNsfwContentStore } from '@/stores/nsfwContent';
-import { useI18n } from 'vue-i18n';
-import { computed, onMounted, ref, watch } from 'vue';
-import type { JournalEntryDTO } from '@/api/JournalAPI';
+import EmptyState from '@/components/EmptyState.vue'
+import JournalCard from '@/components/JournalCard.vue'
+import DayFeedbackCard from '@/components/DayFeedbackCard.vue'
+import ReflectionDialog from '@/components/ReflectionDialog.vue'
+import Skeleton from 'primevue/skeleton'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Dropdown from 'primevue/dropdown'
+import { useJournalStore } from '@/stores/journal'
+import { useLifeAreasStore } from '@/stores/lifeAreas'
+import { useGoalsStore } from '@/stores/goals'
+import { useAddictionsStore } from '@/stores/addictions'
+import { useNsfwContentStore } from '@/stores/nsfwContent'
+import { useI18n } from 'vue-i18n'
+import { computed, onMounted, ref, watch } from 'vue'
+import type { JournalEntryDTO } from '@/api/JournalAPI'
 
-const journalStore = useJournalStore();
-const lifeAreasStore = useLifeAreasStore();
-const goalsStore = useGoalsStore();
-const addictionsStore = useAddictionsStore();
-const nsfwContentStore = useNsfwContentStore();
-const { t } = useI18n();
+const journalStore = useJournalStore()
+const lifeAreasStore = useLifeAreasStore()
+const goalsStore = useGoalsStore()
+const addictionsStore = useAddictionsStore()
+const nsfwContentStore = useNsfwContentStore()
+const { t } = useI18n()
 
-const searchQuery = ref('');
-const showSearchBar = ref(false);
-const showFilterBar = ref(false);
-const filterLifeAreaId = ref<string | null>(null);
-const filterGoalId = ref<string | null>(null);
-const filterAddictionId = ref<string | null>(null);
+const searchQuery = ref('')
+const showSearchBar = ref(true)
+const showFilterBar = ref(false)
+const filterLifeAreaId = ref<string | null>(null)
+const filterGoalId = ref<string | null>(null)
+const filterAddictionId = ref<string | null>(null)
 
 const lifeAreaOptions = computed(() => [
   { label: t('journal.filterAll'), value: null },
-  ...lifeAreasStore.lifeAreas.map((a) => ({ label: a.name, value: a.id }))
-]);
+  ...lifeAreasStore.lifeAreas.map((a) => ({ label: a.name, value: a.id })),
+])
 
 const goalOptions = computed(() => [
   { label: t('journal.filterAll'), value: null },
-  ...goalsStore.goalsSorted.map((g) => ({ label: g.title, value: g.id }))
-]);
+  ...goalsStore.goalsSorted.map((g) => ({ label: g.title, value: g.id })),
+])
 
 const addictionOptions = computed(() => [
   { label: t('journal.filterAll'), value: null },
   ...addictionsStore.addictions
     .filter((a) => nsfwContentStore.addictionVisible(a.addiction))
-    .map((a) => ({ label: a.addiction.title, value: a.addiction.id }))
-]);
+    .map((a) => ({ label: a.addiction.title, value: a.addiction.id })),
+])
 
 const addictionsById = computed(
-  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction]))
-);
+  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction])),
+)
 
 function journalEntryVisible(entry: JournalEntryDTO) {
-  if (!entry.addictionId) return true;
-  const addiction = addictionsById.value.get(entry.addictionId);
-  if (!addiction) return true;
-  return nsfwContentStore.addictionVisible(addiction);
+  if (!entry.addictionId) return true
+  const addiction = addictionsById.value.get(entry.addictionId)
+  if (!addiction) return true
+  return nsfwContentStore.addictionVisible(addiction)
 }
 
 watch(
@@ -65,71 +65,71 @@ watch(
       .map((a) => `${a.addiction.id}:${a.addiction.isNsfw ? 1 : 0}`)
       .join(',')}`,
   () => {
-    const id = filterAddictionId.value;
-    if (!id) return;
-    const row = addictionsStore.addictions.find((a) => a.addiction.id === id);
-    if (row && !nsfwContentStore.addictionVisible(row.addiction)) filterAddictionId.value = null;
-  }
-);
+    const id = filterAddictionId.value
+    if (!id) return
+    const row = addictionsStore.addictions.find((a) => a.addiction.id === id)
+    if (row && !nsfwContentStore.addictionVisible(row.addiction)) filterAddictionId.value = null
+  },
+)
 
 const filteredEntries = computed(() => {
-  let list = journalStore.entries.filter(journalEntryVisible);
+  let list = journalStore.entries.filter(journalEntryVisible)
 
-  const q = searchQuery.value.trim().toLowerCase();
+  const q = searchQuery.value.trim().toLowerCase()
   if (q) {
-    list = list.filter((e) => e.text.toLowerCase().includes(q));
+    list = list.filter((e) => e.text.toLowerCase().includes(q))
   }
   if (filterLifeAreaId.value) {
-    list = list.filter((e) => e.lifeAreaId === filterLifeAreaId.value);
+    list = list.filter((e) => e.lifeAreaId === filterLifeAreaId.value)
   }
   if (filterGoalId.value) {
-    list = list.filter((e) => e.goalId === filterGoalId.value);
+    list = list.filter((e) => e.goalId === filterGoalId.value)
   }
   if (filterAddictionId.value) {
-    list = list.filter((e) => e.addictionId === filterAddictionId.value);
+    list = list.filter((e) => e.addictionId === filterAddictionId.value)
   }
 
-  const pinned = list.filter((e) => e.isPinned);
-  const regular = list.filter((e) => !e.isPinned);
-  return { pinned, regular };
-});
+  const pinned = list.filter((e) => e.isPinned)
+  const regular = list.filter((e) => !e.isPinned)
+  return { pinned, regular }
+})
 
-const pinnedItems = computed(() => filteredEntries.value.pinned);
-const regularItems = computed(() => filteredEntries.value.regular);
-const hasEntries = computed(() => journalStore.entries.length > 0);
+const pinnedItems = computed(() => filteredEntries.value.pinned)
+const regularItems = computed(() => filteredEntries.value.regular)
+const hasEntries = computed(() => journalStore.entries.length > 0)
 const hasFilteredResults = computed(
-  () => pinnedItems.value.length > 0 || regularItems.value.length > 0
-);
+  () => pinnedItems.value.length > 0 || regularItems.value.length > 0,
+)
 const isFilterActive = computed(
-  () => !!filterLifeAreaId.value || !!filterGoalId.value || !!filterAddictionId.value
-);
+  () => !!filterLifeAreaId.value || !!filterGoalId.value || !!filterAddictionId.value,
+)
 
 function toggleSearchBar() {
-  showSearchBar.value = !showSearchBar.value;
+  showSearchBar.value = !showSearchBar.value
 }
 
 function toggleFilterBar() {
-  showFilterBar.value = !showFilterBar.value;
+  showFilterBar.value = !showFilterBar.value
 }
 
 function clearFilters() {
-  filterLifeAreaId.value = null;
-  filterGoalId.value = null;
-  filterAddictionId.value = null;
+  filterLifeAreaId.value = null
+  filterGoalId.value = null
+  filterAddictionId.value = null
 }
 
-const showReflection = ref(false);
+const showReflection = ref(false)
 
 const emit = defineEmits<{
   (e: 'edit-journal', entry: JournalEntryDTO | null): void
-}>();
+}>()
 
 onMounted(async () => {
   await Promise.all([
     journalStore.loadEntries(),
-    addictionsStore.fetchAddictions(60).catch(() => undefined)
-  ]);
-});
+    addictionsStore.fetchAddictions(60).catch(() => undefined),
+  ])
+})
 </script>
 
 <template>
@@ -137,57 +137,122 @@ onMounted(async () => {
     <header class="journal-view__header">
       <h1 class="ds-page-header">{{ $t('journal.title') }}</h1>
       <div class="journal-view__actions">
-        <Button :label="$t('journal.newNote')" icon="pi pi-plus" class="journal-view__create-btn"
-          @click="emit('edit-journal', null)" />
-        <Button icon="pi pi-sparkles" variant="text" rounded size="small"
+        <Button
+          :label="$t('journal.newNote')"
+          icon="pi pi-plus"
+          class="journal-view__create-btn"
+          @click="emit('edit-journal', null)"
+        />
+        <Button
+          icon="pi pi-sparkles"
+          variant="text"
+          rounded
+          size="small"
           class="journal-view__action-btn"
-          :aria-label="$t('reflection.title')" @click="showReflection = true" />
-        <Button icon="pi pi-search" variant="text" rounded size="small"
-          :severity="showSearchBar ? 'secondary' : undefined" class="journal-view__action-btn"
-          :aria-label="$t('journal.search')" @click="toggleSearchBar" />
-        <Button icon="pi pi-filter" variant="text" rounded size="small"
-          :severity="isFilterActive ? 'secondary' : undefined" class="journal-view__action-btn"
-          :aria-label="$t('journal.filter')" @click="toggleFilterBar" />
+          :aria-label="$t('reflection.title')"
+          @click="showReflection = true"
+        />
+        <Button
+          icon="pi pi-search"
+          variant="text"
+          rounded
+          size="small"
+          :severity="showSearchBar ? 'secondary' : undefined"
+          class="journal-view__action-btn"
+          :aria-label="$t('journal.search')"
+          @click="toggleSearchBar"
+        />
+        <Button
+          icon="pi pi-filter"
+          variant="text"
+          rounded
+          size="small"
+          :severity="isFilterActive ? 'secondary' : undefined"
+          class="journal-view__action-btn"
+          :aria-label="$t('journal.filter')"
+          @click="toggleFilterBar"
+        />
       </div>
     </header>
 
-    <DayFeedbackCard />
+    <details class="journal-day-feedback">
+      <summary>{{ t('dayFeedback.title') }}</summary>
+      <DayFeedbackCard />
+    </details>
 
     <Transition name="journal-search-slide">
       <div v-if="showSearchBar" class="journal-view__search-bar">
         <i class="pi pi-search journal-view__search-icon" />
-        <InputText v-model="searchQuery" type="text" :placeholder="$t('journal.searchPlaceholder')"
-          class="journal-view__search-input" />
+        <InputText
+          v-model="searchQuery"
+          type="text"
+          :placeholder="$t('journal.searchPlaceholder')"
+          class="journal-view__search-input"
+        />
       </div>
     </Transition>
 
     <Transition name="journal-search-slide">
       <div v-if="showFilterBar" class="journal-view__filter-bar">
         <label class="journal-view__filter-label">{{ $t('journal.filterByLifeArea') }}</label>
-        <Dropdown v-model="filterLifeAreaId" :options="lifeAreaOptions" option-label="label" option-value="value"
-          :placeholder="$t('lifeareas.selectPlaceholder')" class="journal-view__filter-dropdown" />
+        <Dropdown
+          v-model="filterLifeAreaId"
+          :options="lifeAreaOptions"
+          option-label="label"
+          option-value="value"
+          :placeholder="$t('lifeareas.selectPlaceholder')"
+          class="journal-view__filter-dropdown"
+        />
         <label class="journal-view__filter-label">{{ $t('journal.filterByGoal') }}</label>
-        <Dropdown v-model="filterGoalId" :options="goalOptions" option-label="label" option-value="value"
-          :placeholder="$t('goals.selectPlaceholder')" class="journal-view__filter-dropdown" />
+        <Dropdown
+          v-model="filterGoalId"
+          :options="goalOptions"
+          option-label="label"
+          option-value="value"
+          :placeholder="$t('goals.selectPlaceholder')"
+          class="journal-view__filter-dropdown"
+        />
         <label class="journal-view__filter-label">{{ $t('journal.filterByAddiction') }}</label>
-        <Dropdown v-model="filterAddictionId" :options="addictionOptions" option-label="label" option-value="value"
-          :placeholder="$t('addictions.addictions')" class="journal-view__filter-dropdown" />
-        <Button :label="$t('journal.clearFilters')" variant="text" size="small" class="journal-view__filter-clear"
-          @click="clearFilters" />
+        <Dropdown
+          v-model="filterAddictionId"
+          :options="addictionOptions"
+          option-label="label"
+          option-value="value"
+          :placeholder="$t('addictions.addictions')"
+          class="journal-view__filter-dropdown"
+        />
+        <Button
+          :label="$t('journal.clearFilters')"
+          variant="text"
+          size="small"
+          class="journal-view__filter-clear"
+          @click="clearFilters"
+        />
       </div>
     </Transition>
 
-    <div v-if="journalStore.isLoading && journalStore.entries.length === 0" class="journal-skeleton">
+    <div
+      v-if="journalStore.isLoading && journalStore.entries.length === 0"
+      class="journal-skeleton"
+    >
       <div v-for="i in 3" :key="i" class="skeleton-card">
         <Skeleton width="100%" height="4.5rem" borderRadius="16px" />
       </div>
     </div>
 
-    <EmptyState v-else-if="!hasEntries" icon="pi pi-book" :title="$t('journal.empty')"
-      :subtitle="$t('journal.emptySubtitle')" />
+    <EmptyState
+      v-else-if="!hasEntries"
+      icon="pi pi-book"
+      :title="$t('journal.empty')"
+      :subtitle="$t('journal.emptySubtitle')"
+    />
 
-    <EmptyState v-else-if="!hasFilteredResults" icon="pi pi-search" :title="$t('journal.noResults')"
-      :subtitle="$t('journal.noResultsHint')" />
+    <EmptyState
+      v-else-if="!hasFilteredResults"
+      icon="pi pi-search"
+      :title="$t('journal.noResults')"
+      :subtitle="$t('journal.noResultsHint')"
+    />
 
     <template v-else>
       <section v-if="pinnedItems.length" class="journal-section">
@@ -196,15 +261,23 @@ onMounted(async () => {
           <span>{{ $t('journal.pinned') }}</span>
         </div>
         <TransitionGroup name="journal-list" tag="div" class="journal-cards">
-          <JournalCard v-for="item in pinnedItems" :key="item.id" :item="item"
-            @edit-journal="(entry) => emit('edit-journal', entry)" />
+          <JournalCard
+            v-for="item in pinnedItems"
+            :key="item.id"
+            :item="item"
+            @edit-journal="(entry) => emit('edit-journal', entry)"
+          />
         </TransitionGroup>
       </section>
 
       <section class="journal-section">
         <TransitionGroup name="journal-list" tag="div" class="journal-cards">
-          <JournalCard v-for="item in regularItems" :key="item.id" :item="item"
-            @edit-journal="(entry) => emit('edit-journal', entry)" />
+          <JournalCard
+            v-for="item in regularItems"
+            :key="item.id"
+            :item="item"
+            @edit-journal="(entry) => emit('edit-journal', entry)"
+          />
         </TransitionGroup>
       </section>
     </template>
@@ -275,7 +348,9 @@ onMounted(async () => {
 
 .journal-search-slide-enter-active,
 .journal-search-slide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .journal-search-slide-enter-from,

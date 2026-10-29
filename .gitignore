@@ -1,5 +1,7 @@
 # Dependencies (root npm install for dev scripts)
 node_modules/
+Backend.Tests/bin/
+Backend.Tests/obj/
 
 # Lock file: uncomment to ignore (many teams commit it for reproducible installs)
 # package-lock.json

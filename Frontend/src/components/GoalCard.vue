@@ -28,7 +28,7 @@ const props = withDefaults(
     addictions: AddictionWithResetsDTO[]
     journalEntries?: JournalEntryDTO[]
   }>(),
-  { journalEntries: () => [] }
+  { journalEntries: () => [] },
 )
 
 const emit = defineEmits<{
@@ -39,6 +39,7 @@ const emit = defineEmits<{
   (e: 'edit-journal', entry: JournalEntryDTO): void
   (e: 'completion-change', taskId: string, value: boolean): void
   (e: 'complete-goal', goalId: string): void
+  (e: 'reopen-goal', goalId: string): void
 }>()
 
 const { t } = useI18n()
@@ -72,20 +73,20 @@ const hasEntities = computed(
     props.tasks.length > 0 ||
     props.habits.length > 0 ||
     props.addictions.length > 0 ||
-    (props.journalEntries?.length ?? 0) > 0
+    (props.journalEntries?.length ?? 0) > 0,
 )
 
-const activeTasks = computed(() => props.tasks.filter(t => !t.completionDate))
+const activeTasks = computed(() => props.tasks.filter((t) => !t.completionDate))
 
 const journalEntriesSorted = computed(() =>
   [...(props.journalEntries ?? [])].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  ),
 )
 const completedTasks = computed(() =>
-  props.tasks.filter(t => t.completionDate).sort(
-    (a, b) => new Date(b.completionDate!).getTime() - new Date(a.completionDate!).getTime()
-  )
+  props.tasks
+    .filter((t) => t.completionDate)
+    .sort((a, b) => new Date(b.completionDate!).getTime() - new Date(a.completionDate!).getTime()),
 )
 const openTasksCount = computed(() => activeTasks.value.length)
 const isCompleted = computed(() => !!props.goal.completedAt)
@@ -114,9 +115,9 @@ const habitsBelowThreshold = computed(() =>
     .map((habit) => ({
       id: habit.habit.id,
       title: habit.habit.title,
-      streakDays: getHabitStreakDays(habit)
+      streakDays: getHabitStreakDays(habit),
     }))
-    .filter((item) => item.streakDays < MIN_STREAK_DAYS)
+    .filter((item) => item.streakDays < MIN_STREAK_DAYS),
 )
 
 const addictionsBelowThreshold = computed(() =>
@@ -124,28 +125,43 @@ const addictionsBelowThreshold = computed(() =>
     .map((addiction) => ({
       id: addiction.addiction.id,
       title: addiction.addiction.title,
-      streakDays: normalizeNumber(addiction.currentStreakDays)
+      streakDays: normalizeNumber(addiction.currentStreakDays),
     }))
-    .filter((item) => item.streakDays < MIN_STREAK_DAYS)
+    .filter((item) => item.streakDays < MIN_STREAK_DAYS),
 )
 
 const hasOpenTasks = computed(() => openTasksCount.value > 0)
 const hasShortHabits = computed(() => habitsBelowThreshold.value.length > 0)
 const hasShortAddictions = computed(() => addictionsBelowThreshold.value.length > 0)
 const hasCompletionWarnings = computed(
-  () => hasOpenTasks.value || hasShortHabits.value || hasShortAddictions.value
+  () => hasOpenTasks.value || hasShortHabits.value || hasShortAddictions.value,
 )
 
 const entityStats = computed(() => [
-  { key: 'tasks', icon: 'pi pi-check-square', count: props.tasks.length, label: t('goals.tasksCount', { count: props.tasks.length }) },
-  { key: 'habits', icon: 'pi pi-calendar', count: props.habits.length, label: t('goals.habitsCount', { count: props.habits.length }) },
-  { key: 'addictions', icon: 'pi pi-ban', count: props.addictions.length, label: t('goals.addictionsCount', { count: props.addictions.length }) },
+  {
+    key: 'tasks',
+    icon: 'pi pi-check-square',
+    count: props.tasks.length,
+    label: t('goals.tasksCount', { count: props.tasks.length }),
+  },
+  {
+    key: 'habits',
+    icon: 'pi pi-calendar',
+    count: props.habits.length,
+    label: t('goals.habitsCount', { count: props.habits.length }),
+  },
+  {
+    key: 'addictions',
+    icon: 'pi pi-ban',
+    count: props.addictions.length,
+    label: t('goals.addictionsCount', { count: props.addictions.length }),
+  },
   {
     key: 'journal',
     icon: 'pi pi-book',
     count: journalEntriesSorted.value.length,
-    label: t('goals.journalCount', { count: journalEntriesSorted.value.length })
-  }
+    label: t('goals.journalCount', { count: journalEntriesSorted.value.length }),
+  },
 ])
 
 const expanded = ref(false)
@@ -157,18 +173,18 @@ const completeSlides = computed(() => [
   {
     icon: 'pi pi-flag',
     title: t('goals.completeDrawer.steps.review.title'),
-    text: t('goals.completeDrawer.steps.review.text')
+    text: t('goals.completeDrawer.steps.review.text'),
   },
   {
     icon: 'pi pi-check-square',
     title: t('goals.completeDrawer.steps.tasks.title'),
-    text: t('goals.completeDrawer.steps.tasks.text', { count: openTasksCount.value })
+    text: t('goals.completeDrawer.steps.tasks.text', { count: openTasksCount.value }),
   },
   {
     icon: 'pi pi-calendar',
     title: t('goals.completeDrawer.steps.streak.title'),
-    text: t('goals.completeDrawer.steps.streak.text')
-  }
+    text: t('goals.completeDrawer.steps.streak.text'),
+  },
 ])
 
 function toggle() {
@@ -214,11 +230,31 @@ function confirmGoalCompletion() {
           </div>
         </div>
         <div class="goal-header-actions">
-          <BaseButton v-if="!isCompleted" icon="pi pi-check" rounded class="goal-complete-btn" ds-variant="primary"
-            :title="t('goals.completeDrawer.open')" :aria-label="t('goals.completeDrawer.open')"
-            @click.stop="openCompleteDrawer" />
-          <BaseButton v-if="hasEntities" icon="pi pi-chevron-down" class="chevron" ds-variant="text" rounded
-            :class="{ rotated: expanded }" />
+          <BaseButton
+            v-if="isCompleted"
+            icon="pi pi-refresh"
+            ds-variant="text"
+            :label="t('redesign.reopenGoal')"
+            @click.stop="emit('reopen-goal', goal.id)"
+          />
+          <BaseButton
+            v-if="!isCompleted"
+            icon="pi pi-check"
+            rounded
+            class="goal-complete-btn"
+            ds-variant="primary"
+            :title="t('goals.completeDrawer.open')"
+            :aria-label="t('goals.completeDrawer.open')"
+            @click.stop="openCompleteDrawer"
+          />
+          <BaseButton
+            v-if="hasEntities"
+            icon="pi pi-chevron-down"
+            class="chevron"
+            ds-variant="text"
+            rounded
+            :class="{ rotated: expanded }"
+          />
         </div>
       </div>
     </template>
@@ -228,7 +264,13 @@ function confirmGoalCompletion() {
       </p>
 
       <div v-if="!expanded" class="goal-stats">
-        <span v-for="stat in entityStats" :key="stat.key" class="goal-stat-chip" :aria-label="stat.label" :title="stat.label">
+        <span
+          v-for="stat in entityStats"
+          :key="stat.key"
+          class="goal-stat-chip"
+          :aria-label="stat.label"
+          :title="stat.label"
+        >
           <i :class="stat.icon" aria-hidden="true" />
           <span>{{ stat.count }}</span>
         </span>
@@ -236,40 +278,83 @@ function confirmGoalCompletion() {
 
       <div v-if="expanded" class="goal-expanded">
         <div v-if="tasks.length">
-          <h4><i class="pi pi-check-square section-icon" aria-hidden="true" />{{ t('tasks.tasks') }}</h4>
-          <TaskCard v-for="task in activeTasks" :key="task.id" :task="task" no-border @edit="emit('edit-task', task)"
-            @completion-change="(id, val) => emit('completion-change', id, val)" />
+          <h4>
+            <i class="pi pi-check-square section-icon" aria-hidden="true" />{{ t('tasks.tasks') }}
+          </h4>
+          <TaskCard
+            v-for="task in activeTasks"
+            :key="task.id"
+            :task="task"
+            no-border
+            @edit="emit('edit-task', task)"
+            @completion-change="(id, val) => emit('completion-change', id, val)"
+          />
           <div v-if="completedTasks.length" class="completed-tasks-section">
-            <BaseButton v-if="!completedExpanded" class="show-completed-btn"
+            <BaseButton
+              v-if="!completedExpanded"
+              class="show-completed-btn"
               ds-variant="text"
-              :label="t('goals.showCompleted', { count: completedTasks.length })" icon="pi pi-chevron-down"
-              @click="completedExpanded = true" />
+              :label="t('goals.showCompleted', { count: completedTasks.length })"
+              icon="pi pi-chevron-down"
+              @click="completedExpanded = true"
+            />
             <template v-else>
-              <BaseButton class="hide-completed-btn" ds-variant="text"
-                :label="t('goals.hideCompleted')" icon="pi pi-chevron-up"
-                @click="completedExpanded = false" />
-              <TaskCard v-for="task in completedTasks" :key="task.id" :task="task" no-border
-                @edit="emit('edit-task', task)" @completion-change="(id, val) => emit('completion-change', id, val)" />
+              <BaseButton
+                class="hide-completed-btn"
+                ds-variant="text"
+                :label="t('goals.hideCompleted')"
+                icon="pi pi-chevron-up"
+                @click="completedExpanded = false"
+              />
+              <TaskCard
+                v-for="task in completedTasks"
+                :key="task.id"
+                :task="task"
+                no-border
+                @edit="emit('edit-task', task)"
+                @completion-change="(id, val) => emit('completion-change', id, val)"
+              />
             </template>
           </div>
         </div>
 
         <div v-if="habits.length">
-          <h4><i class="pi pi-calendar section-icon" aria-hidden="true" />{{ t('habits.habits') }}</h4>
-          <HabitCard v-for="habit in habits" :key="habit.habit.id" :habit="habit" no-border
-            @edit="emit('edit-habit', $event)" />
+          <h4>
+            <i class="pi pi-calendar section-icon" aria-hidden="true" />{{ t('habits.habits') }}
+          </h4>
+          <HabitCard
+            v-for="habit in habits"
+            :key="habit.habit.id"
+            :habit="habit"
+            no-border
+            @edit="emit('edit-habit', $event)"
+          />
         </div>
 
         <div v-if="addictions.length">
-          <h4><i class="pi pi-ban section-icon" aria-hidden="true" />{{ t('addictions.addictions') }}</h4>
-          <AddictionCard v-for="addiction in addictions" :key="addiction.addiction.id" :addiction="addiction" no-border
-            @edit="emit('edit-addiction', $event)" />
+          <h4>
+            <i class="pi pi-ban section-icon" aria-hidden="true" />{{ t('addictions.addictions') }}
+          </h4>
+          <AddictionCard
+            v-for="addiction in addictions"
+            :key="addiction.addiction.id"
+            :addiction="addiction"
+            no-border
+            @edit="emit('edit-addiction', $event)"
+          />
         </div>
 
         <div v-if="journalEntriesSorted.length">
-          <h4><i class="pi pi-book section-icon" aria-hidden="true" />{{ t('journal.entries') }}</h4>
-          <JournalCard v-for="entry in journalEntriesSorted" :key="entry.id" :item="entry" no-border
-            @edit-journal="emit('edit-journal', $event)" />
+          <h4>
+            <i class="pi pi-book section-icon" aria-hidden="true" />{{ t('journal.entries') }}
+          </h4>
+          <JournalCard
+            v-for="entry in journalEntriesSorted"
+            :key="entry.id"
+            :item="entry"
+            no-border
+            @edit-journal="emit('edit-journal', $event)"
+          />
         </div>
       </div>
     </template>
@@ -283,8 +368,13 @@ function confirmGoalCompletion() {
       </div>
     </template>
 
-    <Carousel :value="completeSlides" :numVisible="1" :numScroll="1" :page="completeStep"
-      @update:page="(value) => (completeStep = value)">
+    <Carousel
+      :value="completeSlides"
+      :numVisible="1"
+      :numScroll="1"
+      :page="completeStep"
+      @update:page="(value) => (completeStep = value)"
+    >
       <template #item="{ data }">
         <div class="goal-complete-slide">
           <i :class="data.icon" class="goal-complete-slide-icon" />
@@ -301,17 +391,30 @@ function confirmGoalCompletion() {
       {{ t('goals.completeDrawer.warnings.habitsLead') }}
       <ul class="goal-complete-list">
         <li v-for="habit in habitsBelowThreshold" :key="habit.id">
-          {{ t('goals.completeDrawer.warnings.habitItem', { title: habit.title, days: habit.streakDays }) }}
+          {{
+            t('goals.completeDrawer.warnings.habitItem', {
+              title: habit.title,
+              days: habit.streakDays,
+            })
+          }}
         </li>
       </ul>
       <div>{{ t('goals.completeDrawer.warnings.habitsHint') }}</div>
     </Message>
-    <Message v-if="hasShortAddictions" severity="warn" :closable="false" class="goal-complete-warning">
+    <Message
+      v-if="hasShortAddictions"
+      severity="warn"
+      :closable="false"
+      class="goal-complete-warning"
+    >
       {{ t('goals.completeDrawer.warnings.addictionsLead') }}
       <ul class="goal-complete-list">
         <li v-for="addiction in addictionsBelowThreshold" :key="addiction.id">
           {{
-            t('goals.completeDrawer.warnings.addictionItem', { title: addiction.title, days: addiction.streakDays })
+            t('goals.completeDrawer.warnings.addictionItem', {
+              title: addiction.title,
+              days: addiction.streakDays,
+            })
           }}
         </li>
       </ul>
@@ -320,14 +423,32 @@ function confirmGoalCompletion() {
 
     <template #footer>
       <div class="goal-complete-actions">
-        <BaseButton v-if="completeStep > 0" icon="pi pi-angle-left" ds-variant="text"
-          :label="t('goals.completeDrawer.back')" @click="prevCompleteStep" />
+        <BaseButton
+          v-if="completeStep > 0"
+          icon="pi pi-angle-left"
+          ds-variant="text"
+          :label="t('goals.completeDrawer.back')"
+          @click="prevCompleteStep"
+        />
         <span v-else />
-        <Button v-if="completeStep < completeSlides.length - 1" icon="pi pi-angle-right" iconPos="right"
-          :label="t('goals.completeDrawer.next')" @click="nextCompleteStep" />
-        <Button v-else icon="pi pi-check" :severity="hasCompletionWarnings ? 'warn' : 'success'"
-          :label="hasCompletionWarnings ? t('goals.completeDrawer.completeAnyway') : t('goals.completeDrawer.complete')"
-          @click="confirmGoalCompletion" />
+        <Button
+          v-if="completeStep < completeSlides.length - 1"
+          icon="pi pi-angle-right"
+          iconPos="right"
+          :label="t('goals.completeDrawer.next')"
+          @click="nextCompleteStep"
+        />
+        <Button
+          v-else
+          icon="pi pi-check"
+          :severity="hasCompletionWarnings ? 'warn' : 'success'"
+          :label="
+            hasCompletionWarnings
+              ? t('goals.completeDrawer.completeAnyway')
+              : t('goals.completeDrawer.complete')
+          "
+          @click="confirmGoalCompletion"
+        />
       </div>
     </template>
   </BaseDrawer>

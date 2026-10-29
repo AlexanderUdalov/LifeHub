@@ -31,7 +31,7 @@ const habitsStore = useHabitsStore()
 const addictionsStore = useAddictionsStore()
 const nsfwContentStore = useNsfwContentStore()
 const journalStore = useJournalStore()
-const showCompletedGoals = ref(false)
+const showCompletedGoals = ref(true)
 
 onMounted(async () => {
   await Promise.all([
@@ -39,7 +39,7 @@ onMounted(async () => {
     tasksStore.fetchTasks(),
     habitsStore.fetchHabits(56),
     addictionsStore.fetchAddictions(60),
-    journalStore.loadEntries()
+    journalStore.loadEntries(),
   ])
 })
 
@@ -49,7 +49,7 @@ onActivated(async () => {
 
 const tasksByGoalId = computed(() => {
   const grouped: Record<string, typeof tasksStore.tasks> = {}
-  for (const task of tasksStore.tasks) {
+  for (const task of [...tasksStore.tasks, ...tasksStore.completedTasksList]) {
     if (!task.goalId) continue
     grouped[task.goalId] ??= []
     const bucket = grouped[task.goalId]
@@ -82,12 +82,20 @@ const addictionsByGoalId = computed(() => {
 })
 
 const addictionsById = computed(
-  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction]))
+  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction])),
 )
 
 const entriesByGoalId = computed(() => {
   const grouped: Record<string, JournalEntryDTO[]> = {}
   for (const entry of journalStore.entries) {
+    if (
+      entry.addictionId &&
+      !nsfwContentStore.addictionVisible(
+        addictionsStore.addictions.find((a) => a.addiction.id === entry.addictionId)?.addiction ??
+          {},
+      )
+    )
+      continue
     if (entry.addictionId) {
       const addiction = addictionsById.value.get(entry.addictionId)
       if (addiction && !nsfwContentStore.addictionVisible(addiction)) continue
@@ -103,8 +111,8 @@ const entriesByGoalId = computed(() => {
   return grouped
 })
 
-const activeGoals = computed(() => goalsStore.goalsSorted.filter(goal => !goal.completedAt))
-const completedGoals = computed(() => goalsStore.goalsSorted.filter(goal => !!goal.completedAt))
+const activeGoals = computed(() => goalsStore.goalsSorted.filter((goal) => !goal.completedAt))
+const completedGoals = computed(() => goalsStore.goalsSorted.filter((goal) => !!goal.completedAt))
 
 watch(completedGoals, (list) => {
   if (list.length === 0) showCompletedGoals.value = false
@@ -119,8 +127,12 @@ async function onCompleteGoal(goalId: string) {
   <div class="goals-view">
     <header class="goals-view__header">
       <h1 class="ds-page-header">{{ $t('goals.title') }}</h1>
-      <Button :label="$t('goals.newGoal')" icon="pi pi-plus" class="desktop-create-btn"
-        @click="emit('edit-goal', null)" />
+      <Button
+        :label="$t('goals.newGoal')"
+        icon="pi pi-plus"
+        class="desktop-create-btn"
+        @click="emit('edit-goal', null)"
+      />
     </header>
 
     <div v-if="goalsStore.isLoading && goalsStore.goals.length === 0" class="goals-skeleton">
@@ -133,29 +145,61 @@ async function onCompleteGoal(goalId: string) {
     </div>
 
     <template v-else>
-      <EmptyState v-if="activeGoals.length === 0" icon="pi pi-flag" :title="$t('goals.empty')"
-        :subtitle="$t('goals.emptySubtitle')" />
-      <GoalCard v-else v-for="goal in activeGoals" :key="goal.id" :goal="goal" :tasks="tasksByGoalId[goal.id] ?? []"
-        :habits="habitsByGoalId[goal.id] ?? []" :addictions="addictionsByGoalId[goal.id] ?? []"
-        :journal-entries="entriesByGoalId[goal.id] ?? []" @edit-goal="emit('edit-goal', $event)"
-        @edit-task="emit('edit-task', $event)" @edit-habit="emit('edit-habit', $event)"
-        @edit-addiction="emit('edit-addiction', $event)" @edit-journal="emit('edit-journal', $event)"
-        @completion-change="tasksStore.toggleTaskCompletion" @complete-goal="onCompleteGoal" />
+      <EmptyState
+        v-if="activeGoals.length === 0"
+        icon="pi pi-flag"
+        :title="$t('goals.empty')"
+        :subtitle="$t('goals.emptySubtitle')"
+      />
+      <GoalCard
+        v-else
+        v-for="goal in activeGoals"
+        :key="goal.id"
+        :goal="goal"
+        :tasks="tasksByGoalId[goal.id] ?? []"
+        :habits="habitsByGoalId[goal.id] ?? []"
+        :addictions="addictionsByGoalId[goal.id] ?? []"
+        :journal-entries="entriesByGoalId[goal.id] ?? []"
+        @edit-goal="emit('edit-goal', $event)"
+        @edit-task="emit('edit-task', $event)"
+        @edit-habit="emit('edit-habit', $event)"
+        @edit-addiction="emit('edit-addiction', $event)"
+        @edit-journal="emit('edit-journal', $event)"
+        @completion-change="tasksStore.toggleTaskCompletion"
+        @complete-goal="onCompleteGoal"
+      />
 
       <div v-if="completedGoals.length" class="completed-goals-text-block">
-        <button class="completed-goals-toggle" type="button" @click="showCompletedGoals = !showCompletedGoals">
-          <i :class="showCompletedGoals ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"/>
+        <button
+          class="completed-goals-toggle"
+          type="button"
+          @click="showCompletedGoals = !showCompletedGoals"
+        >
+          <i :class="showCompletedGoals ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" />
           {{
             showCompletedGoals
               ? $t('goals.hideCompletedGoalsInline', { count: completedGoals.length })
               : $t('goals.showCompletedGoalsInline', { count: completedGoals.length })
           }}
         </button>
-        <ul v-if="showCompletedGoals" class="completed-goals-list">
-          <li v-for="goal in completedGoals" :key="goal.id">
-            {{ goal.title }}
-          </li>
-        </ul>
+        <div v-if="showCompletedGoals" class="completed-goals-list">
+          <GoalCard
+            v-for="goal in completedGoals"
+            :key="goal.id"
+            :goal="goal"
+            :tasks="tasksByGoalId[goal.id] ?? []"
+            :habits="habitsByGoalId[goal.id] ?? []"
+            :addictions="addictionsByGoalId[goal.id] ?? []"
+            :journal-entries="entriesByGoalId[goal.id] ?? []"
+            @edit-goal="emit('edit-goal', $event)"
+            @edit-task="emit('edit-task', $event)"
+            @edit-habit="emit('edit-habit', $event)"
+            @edit-addiction="emit('edit-addiction', $event)"
+            @edit-journal="emit('edit-journal', $event)"
+            @completion-change="tasksStore.toggleTaskCompletion"
+            @reopen-goal="goalsStore.reopenGoal"
+          />
+        </div>
       </div>
     </template>
   </div>

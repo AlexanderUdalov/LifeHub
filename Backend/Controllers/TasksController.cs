@@ -39,7 +39,8 @@ public class TasksController(ApplicationContext context) : ControllerBase
     [ProducesResponseType(typeof(CompletedTasksPageResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<CompletedTasksPageResponse>> GetCompleted(
         [FromQuery] int limit = 20,
-        [FromQuery] int offset = 0)
+        [FromQuery] int offset = 0,
+        [FromQuery] DateOnly? dueDate = null)
     {
         limit = Math.Clamp(limit, 1, 100);
         offset = Math.Max(0, offset);
@@ -53,6 +54,7 @@ public class TasksController(ApplicationContext context) : ControllerBase
 
         var completed = all
             .Where(t => t.CompletionDate != null)
+            .Where(t => !dueDate.HasValue || (t.DueDate.HasValue && DateOnly.FromDateTime(t.DueDate.Value.UtcDateTime) == dueDate.Value))
             .OrderByDescending(t => t.CompletionDate)
             .ToList();
 

@@ -8,7 +8,7 @@ namespace Backend.Tests;
 public class AiChatServicePromptTests
 {
     [Fact]
-    public void TriggerGuidanceFallback_Russian_UsesDescriptionInSubtitle()
+    public void TriggerGuidanceFallback_Russian_RefersToMotivationWithoutQuotingDescription()
     {
         var method = typeof(AddictionTriggerGuidanceService).GetMethod(
             "BuildFallback",
@@ -27,7 +27,8 @@ public class AiChatServicePromptTests
 
         var result = method!.Invoke(null, [addiction, 12, 2, 5, true]) as GenerateTriggerGuidanceResponse;
         Assert.NotNull(result);
-        Assert.Contains("Хочу дышать свободно", result!.Subtitle);
+        Assert.Contains("Вспомни", result!.Subtitle);
+        Assert.DoesNotContain(addiction.Description, result.Subtitle);
         Assert.Equal(5, result.Tips.Count);
     }
 

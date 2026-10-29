@@ -25,7 +25,6 @@ const resolver = computed(() =>
     zodResolver(
         isRegister.value
             ? z.object({
-                nickname: z.string(t('auth.requiredField')),
                 email: z.email(t('auth.requiredField')),
                 password: z.string(t('auth.requiredField'))
             })
@@ -55,7 +54,6 @@ const submit = async ({ valid, values }: any) => {
         isLoading.value = true;
         const data = isRegister.value
             ? await register({
-                name: values.nickname,
                 email: values.email,
                 password: values.password
             })
@@ -77,56 +75,60 @@ const submit = async ({ valid, values }: any) => {
 </script>
 
 <template>
-    <Form :resolver @submit="submit" :validateOnBlur="true">
-        <Card>
-            <template #title>{{ title }}</template>
+    <div class="auth-page">
+        <Form :resolver @submit="submit" :validateOnBlur="true" class="auth-form">
+            <Card>
+                <template #title>{{ title }}</template>
 
-            <template #content>
-                <FormField v-if="isRegister" v-slot="$field" name="nickname">
-                    <FloatLabel variant="on">
-                        <InputText id="name" type="text" fluid />
-                        <label for="name">{{ $t('auth.nickname') }}</label>
-                    </FloatLabel>
-                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">
-                        {{ $field.error?.message }}
+                <template #content>
+                    <FormField v-slot="$field" name="email">
+                        <FloatLabel variant="on">
+                            <InputText id="email" fluid />
+                            <label for="email">{{ $t('auth.email') }}</label>
+                        </FloatLabel>
+                        <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">
+                            {{ $field.error?.message }}
+                        </Message>
+                    </FormField>
+
+                    <FormField v-slot="$field" name="password">
+                        <FloatLabel variant="on">
+                            <Password id="password" toggleMask :feedback="false" fluid />
+                            <label for="password">{{ $t('auth.password') }}</label>
+                        </FloatLabel>
+                        <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">
+                            {{ $field.error?.message }}
+                        </Message>
+                    </FormField>
+
+                    <Button text :label="toggleModeText" @click="isRegister = !isRegister" />
+
+                    <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
+                        {{ errorText }}
                     </Message>
-                </FormField>
+                </template>
 
-                <FormField v-slot="$field" name="email">
-                    <FloatLabel variant="on">
-                        <InputText id="email" fluid />
-                        <label for="email">{{ $t('auth.email') }}</label>
-                    </FloatLabel>
-                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">
-                        {{ $field.error?.message }}
-                    </Message>
-                </FormField>
-
-                <FormField v-slot="$field" name="password">
-                    <FloatLabel variant="on">
-                        <Password id="password" toggleMask :feedback="false" fluid />
-                        <label for="password">{{ $t('auth.password') }}</label>
-                    </FloatLabel>
-                    <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">
-                        {{ $field.error?.message }}
-                    </Message>
-                </FormField>
-
-                <Button text :label="toggleModeText" @click="isRegister = !isRegister" />
-
-                <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
-                    {{ errorText }}
-                </Message>
-            </template>
-
-            <template #footer>
-                <Button type="submit" :label="submitButtonText" icon="pi pi-check" :loading="isLoading" />
-            </template>
-        </Card>
-    </Form>
+                <template #footer>
+                    <Button type="submit" :label="submitButtonText" icon="pi pi-check" :loading="isLoading" />
+                </template>
+            </Card>
+        </Form>
+    </div>
 </template>
 
 <style scoped>
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.auth-form {
+    width: min(100%, 480px);
+}
+
 :deep(.p-card-title) {
     text-align: center;
 }

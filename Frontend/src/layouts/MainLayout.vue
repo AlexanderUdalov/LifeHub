@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed, onMounted, ref, watch, nextTick } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from 'vue'
 import Tabs from 'primevue/tabs'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
@@ -87,22 +87,60 @@ const leftTabs = computed(() => [
     { label: t('habits.habits'), icon: 'pi pi-calendar', route: '/habits' },
     { label: t('goals.title'), icon: 'pi pi-bullseye', route: '/goals' },
 ])
-const centerTab = { route: '/lifeareas' }
+const centerTab = computed(() => ({ label: t('lifeareas.title'), icon: 'pi pi-compass', route: '/lifeareas' }))
 const rightTabs = computed(() => [
     { label: t('journal.title'), icon: 'pi pi-book', route: '/journal' },
     { label: t('addictions.addictions'), icon: 'pi pi-ban', route: '/addictions' },
     { label: t('profile'), icon: 'pi pi-user', route: '/profile' },
 ])
 
+const desktopTabs = computed(() => [
+    ...leftTabs.value,
+    centerTab.value,
+    ...rightTabs.value
+])
+
+const DESKTOP_BREAKPOINT = 900
+const isDesktop = ref(false)
+let desktopMedia: MediaQueryList | null = null
+
+function syncDesktopState() {
+    isDesktop.value = desktopMedia?.matches ?? false
+}
+
+function setupDesktopMedia() {
+    desktopMedia = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`)
+    syncDesktopState()
+    desktopMedia.addEventListener('change', syncDesktopState)
+}
+
 onMounted(async () => {
+    setupDesktopMedia()
+
     await Promise.all([
         lifeAreasStore.fetchLifeAreas(),
         goalsStore.fetchGoals()
     ])
 })
 
+onBeforeUnmount(() => {
+    desktopMedia?.removeEventListener('change', syncDesktopState)
+})
+
 const hideFab = computed(() =>
     route.path.startsWith('/lifeareas') && lifeAreasStore.isLimitReached
+)
+
+const canCreatePrimary = computed(() =>
+    !hideFab.value &&
+    (
+        route.path.startsWith('/journal') ||
+        route.path.startsWith('/habits') ||
+        route.path.startsWith('/addictions') ||
+        route.path.startsWith('/lifeareas') ||
+        route.path.startsWith('/goals') ||
+        route.path.startsWith('/tasks')
+    )
 )
 
 const createPrimary = () => {
@@ -132,29 +170,51 @@ const createPrimary = () => {
 </script>
 
 <template>
-    <div>
+    <div class="main-layout">
         <Transition name="sticky-header">
             <div v-if="showStickyHeader" class="sticky-header" aria-hidden="true">
                 <span class="sticky-header-title">{{ currentTitle }}</span>
             </div>
         </Transition>
-        <main ref="contentRef" class="content" @scroll="onContentScroll">
-            <RouterView v-slot="{ Component }">
-                <KeepAlive :include="tabViewNames">
-                    <Transition :name="'tab-slide-' + slideDirection" mode="out-in">
-                        <component :is="Component" :key="route.path"
-                            @edit-task="(task: TaskDTO) => editContext = { type: 'task', item: task }"
-                            @edit-habit="(habit: HabitDTO) => editContext = { type: 'habit', item: habit }"
-                            @edit-addiction="(addiction: AddictionDTO) => editContext = { type: 'addiction', item: addiction }"
-                            @edit-lifearea="(area: LifeAreaDTO) => editContext = { type: 'lifearea', item: area }"
-                            @edit-goal="(goal: GoalDTO) => editContext = { type: 'goal', item: goal }"
-                            @edit-journal="(entry: JournalEntryDTO | null) => editContext = { type: 'journal', item: entry }" />
-                    </Transition>
-                </KeepAlive>
-            </RouterView>
+        <aside v-if="isDesktop" class="desktop-sidebar">
+            <div class="desktop-sidebar__brand">
+                <img src="/favicon.svg" class="desktop-sidebar__logo" :alt="t('lifeareas.title')" />
+                <span class="desktop-sidebar__title">LifeHub</span>
+            </div>
+            <nav class="desktop-sidebar__nav" aria-label="Main navigation">
+                <Button
+                    v-for="tab in desktopTabs"
+                    :key="tab.route"
+                    :label="tab.label"
+                    :icon="tab.icon"
+                    text
+                    class="desktop-nav-item"
+                    :class="{ 'desktop-nav-item--active': route.path === tab.route }"
+                    @click="router.push(tab.route)"
+                />
+            </nav>
+        </aside>
+        <aside v-if="isDesktop" class="desktop-balance-rail" aria-hidden="true" />
+
+        <main ref="contentRef" class="content" :class="{ 'content--desktop': isDesktop }" @scroll="onContentScroll">
+            <div class="content-frame">
+                <RouterView v-slot="{ Component }">
+                    <KeepAlive :include="tabViewNames">
+                        <Transition :name="'tab-slide-' + slideDirection" mode="out-in">
+                            <component :is="Component" :key="route.path"
+                                @edit-task="(task: TaskDTO | null) => editContext = { type: 'task', item: task }"
+                                @edit-habit="(habit: HabitDTO | null) => editContext = { type: 'habit', item: habit }"
+                                @edit-addiction="(addiction: AddictionDTO | null) => editContext = { type: 'addiction', item: addiction }"
+                                @edit-lifearea="(area: LifeAreaDTO | null) => editContext = { type: 'lifearea', item: area }"
+                                @edit-goal="(goal: GoalDTO | null) => editContext = { type: 'goal', item: goal }"
+                                @edit-journal="(entry: JournalEntryDTO | null) => editContext = { type: 'journal', item: entry }" />
+                        </Transition>
+                    </KeepAlive>
+                </RouterView>
+            </div>
         </main>
 
-        <Button v-if="!hideFab" class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
+        <Button v-if="!isDesktop && canCreatePrimary" class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
 
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item"
             @close="editContext = null" />
@@ -169,7 +229,7 @@ const createPrimary = () => {
         <JournalEntryEditDialog v-if="editContext && editContext.type === 'journal'" :entry="editContext.item"
             @close="editContext = null" />
 
-        <Tabs :value="route.path" @update:value="(v) => router.push(v as string)">
+        <Tabs v-if="!isDesktop" class="mobile-tabs" :value="route.path" @update:value="(v) => router.push(v as string)">
             <TabList class="tab-list">
                 <div class="tab-group tab-group-left">
                     <Tab v-for="tab in leftTabs" :key="tab.route" :value="tab.route" class="tab">
@@ -258,6 +318,22 @@ const createPrimary = () => {
     max-height: calc(100dvh - 80px);
 }
 
+.content-frame {
+    width: 100%;
+}
+
+.desktop-sidebar {
+    display: none;
+}
+
+.desktop-balance-rail {
+    display: none;
+}
+
+.mobile-tabs {
+    display: block;
+}
+
 .tab-list {
     display: flex;
     width: 100%;
@@ -341,5 +417,142 @@ const createPrimary = () => {
     width: 3.5rem;
     height: 3.5rem;
     font-size: 1.25rem;
+}
+
+@media (min-width: 900px) {
+    .main-layout {
+        min-height: 100dvh;
+    }
+
+    .sticky-header {
+        display: none;
+    }
+
+    .tab-slide-left-enter-active,
+    .tab-slide-left-leave-active,
+    .tab-slide-right-enter-active,
+    .tab-slide-right-leave-active {
+        transition: opacity 0.12s ease;
+    }
+
+    .tab-slide-left-enter-from,
+    .tab-slide-left-leave-to,
+    .tab-slide-right-enter-from,
+    .tab-slide-right-leave-to {
+        opacity: 0;
+        transform: none;
+    }
+
+    .content--desktop {
+        max-height: 100dvh;
+        min-height: 100dvh;
+        margin-left: 17rem;
+        padding: 2rem clamp(1.5rem, 4vw, 4rem);
+        box-sizing: border-box;
+    }
+
+    .content-frame {
+        max-width: 60rem;
+        margin: 0 auto;
+    }
+
+    .desktop-sidebar {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 17rem;
+        height: 100dvh;
+        border-right: 1px solid var(--p-content-border-color);
+        background: var(--p-content-background);
+        box-shadow: 0.5rem 0 2rem rgba(0, 0, 0, 0.04);
+        flex-direction: column;
+        padding: 1.25rem 0.875rem;
+        box-sizing: border-box;
+    }
+
+    .desktop-sidebar__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        margin-bottom: 1rem;
+        padding: 0 0.75rem;
+    }
+
+    .desktop-sidebar__logo {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .desktop-sidebar__title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--p-text-color);
+    }
+
+    .desktop-sidebar__nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .desktop-nav-item.p-button {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+        min-height: 3rem;
+        padding: 0 0.875rem;
+        border-radius: var(--ds-radius-md);
+        color: var(--p-text-muted-color);
+        font-size: 0.95rem;
+        text-align: left;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .desktop-nav-item.p-button:hover {
+        background: var(--p-content-hover-background);
+        color: var(--p-text-color);
+    }
+
+    .desktop-nav-item--active.p-button {
+        background: color-mix(in srgb, var(--p-primary-color) 16%, transparent);
+        color: var(--p-text-color);
+        font-weight: 600;
+    }
+
+    .desktop-nav-item :deep(.p-button-label) {
+        flex: 0 1 auto;
+        text-align: left;
+    }
+
+    .mobile-tabs {
+        display: none !important;
+    }
+
+    .fab {
+        right: 2rem;
+        bottom: 2rem;
+        width: 3.25rem;
+        height: 3.25rem;
+        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.18);
+    }
+}
+
+@media (min-width: 1200px) {
+    .content--desktop {
+        margin-right: 17rem;
+    }
+
+    .desktop-balance-rail {
+        display: block;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 17rem;
+        height: 100dvh;
+        pointer-events: none;
+    }
 }
 </style>

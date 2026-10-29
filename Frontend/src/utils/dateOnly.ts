@@ -56,13 +56,6 @@ export function startOfDay(date: Date): Date {
   return d
 }
 
-export function endOfDay(date: Date): Date {
-  const d = startOfDay(date)
-  d.setDate(d.getDate() + 1)
-  d.setMilliseconds(d.getMilliseconds() - 1)
-  return d
-}
-
 /** Monday of the week (ISO). Returns YYYY-MM-DD for the Monday of the week containing the given date. */
 export function getWeekKey(date: Date): string {
   const d = startOfDay(date)
@@ -87,24 +80,6 @@ export function getWeekDays(date: Date): Date[] {
     result.push(d)
   }
   return result
-}
-
-/**
- * Elapsed time since a reference moment. Pass startOfDay(date) for "time since that calendar day", or exact Date for "time since that moment".
- */
-export function getTimeSince(reference: Date, now: Date = new Date()): {
-  days: number
-  hours: number
-  minutes: number
-} {
-  const diffMs = now.getTime() - reference.getTime()
-  if (diffMs < 0) return { days: 0, hours: 0, minutes: 0 }
-  const totalMinutes = Math.floor(diffMs / 60_000)
-  const days = Math.floor(totalMinutes / (24 * 60))
-  const remainderMinutes = totalMinutes % (24 * 60)
-  const hours = Math.floor(remainderMinutes / 60)
-  const minutes = remainderMinutes % 60
-  return { days, hours, minutes }
 }
 
 /**

@@ -2,6 +2,7 @@
 defineOptions({ name: 'AddictionsView' })
 import AddictionCard from '@/components/AddictionCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { onMounted } from 'vue'
 import { useAddictionsStore } from '@/stores/addictions'
@@ -10,7 +11,7 @@ import type { AddictionDTO } from '@/api/AddictionsAPI'
 const addictionsStore = useAddictionsStore()
 
 const emit = defineEmits<{
-  (e: 'edit-addiction', addiction: AddictionDTO): void
+  (e: 'edit-addiction', addiction: AddictionDTO | null): void
 }>()
 
 onMounted(async () => {
@@ -20,7 +21,11 @@ onMounted(async () => {
 
 <template>
   <div class="addictions-view">
-    <h1 class="ds-page-header">{{ $t('addictions.addictions') }}</h1>
+    <header class="addictions-view__header">
+      <h1 class="ds-page-header">{{ $t('addictions.addictions') }}</h1>
+      <Button :label="$t('addictions.editdialog.newAddiction')" icon="pi pi-plus" class="desktop-create-btn"
+        @click="emit('edit-addiction', null)" />
+    </header>
 
     <div v-if="addictionsStore.isLoading && addictionsStore.addictions.length === 0" class="addictions-skeleton">
       <div v-for="i in 4" :key="i" class="skeleton-card">
@@ -54,6 +59,14 @@ onMounted(async () => {
   gap: 12px;
 }
 
+.addictions-view__header {
+  display: contents;
+}
+
+.desktop-create-btn {
+  display: none;
+}
+
 .addictions-view .skeleton-card {
   display: flex;
   align-items: center;
@@ -75,4 +88,42 @@ onMounted(async () => {
   flex: 1;
 }
 
+@media (min-width: 900px) {
+  .addictions-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    align-items: start;
+    gap: 1rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .addictions-view__header,
+  .addictions-skeleton,
+  .addictions-view :deep(.empty-state) {
+    grid-column: 1 / -1;
+  }
+
+  .addictions-view__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .desktop-create-btn {
+    display: inline-flex;
+  }
+
+  .addictions-view :deep(.empty-state) {
+    justify-self: center;
+  }
+
+  .addictions-skeleton {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    gap: 1rem;
+  }
+}
 </style>

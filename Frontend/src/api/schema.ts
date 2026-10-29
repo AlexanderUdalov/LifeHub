@@ -2289,7 +2289,6 @@ export interface components {
             refreshToken: string;
         };
         RegisterRequest: {
-            name: string;
             email: string;
             password: string;
         };

@@ -1,186 +1,212 @@
 # LifeHub
 
-LifeHub is an all-in-one personal growth platform that unifies tasks, habits, goals, journaling, addiction tracking, and AI-powered reflection.  
-A single place to manage your life, build discipline, and understand yourself through data and structure.
+[Russian version](README.ru.md)
 
----
+LifeHub is a personal growth command center for people who want more than another isolated to-do list.
 
-## 📌 Vision
+It brings tasks, habits, goals, journaling, addiction tracking, life areas, and AI-assisted reflection into one connected workspace. Instead of spreading your plans, routines, notes, and setbacks across separate apps, LifeHub helps you see the full picture: what you want to change, what you are doing today, what is getting in the way, and how your story is evolving over time.
 
-Modern self-development tools are fragmented: one app for tasks, another for habits, another for mood or addiction tracking, and none of them understand the full picture.
+## Why LifeHub
 
-**LifeHub aims to become a unified operating center for personal growth**, where all aspects of self-improvement work together:
-- Tasks support goals  
-- Habits build consistency  
-- Reflection reveals patterns  
-- AI helps analyze your state and progress  
-- All data is connected
+Most self-improvement tools focus on one narrow problem. LifeHub is built around the idea that personal change is connected:
 
----
+- Goals become concrete through tasks, habits, and recovery plans.
+- Habits build consistency instead of living in a separate tracker.
+- Journal entries preserve context, emotions, lessons, and turning points.
+- Addiction tracking treats relapse, triggers, and recovery progress as first-class data.
+- AI support helps turn raw notes and behavior into reflection prompts, summaries, and practical next steps.
 
-## 🎯 Core Objectives
+LifeHub is designed for people who want a private, structured place to plan better days, understand patterns, and keep moving without losing the human context behind the numbers.
 
-- Provide a clean, unified interface for managing all areas of personal development.
-- Help users build discipline and healthy habits.
-- Make progress visible through analytics, history, and reflection.
-- Assist with overcoming harmful behaviors and addictions.
-- Use AI as a guide for journaling, insights, prompts, and pattern detection.
-- Remove the need for multiple self-help apps.
+## Product Highlights
 
----
+- Unified personal dashboard domains: tasks, habits, addictions, life areas, goals, journal, profile, and authentication.
+- Goal-centered planning: connect what you want with the actions and routines that move it forward.
+- Habit tracking for recurring behaviors, consistency, and long-term discipline.
+- Addiction recovery tracking with resets, urges, triggers, notes, and dedicated detail pages.
+- Journaling for daily reflection, context, and progress narratives.
+- AI-assisted reflection powered by an API-based LLM integration when an API key is configured.
+- API-first architecture with generated TypeScript types for the frontend.
+- Web-first experience with optional Tauri desktop packaging support.
 
-## 🚀 MVP Features
+## Project Status
 
-### **✔ Tasks**
-- Create, complete, organize tasks  
-- Link tasks to goals  
-- Daily/weekly view
+LifeHub is a personal project with a complete core feature set for everyday use. Future work is expected to focus mainly on maintenance, bug fixes, and small quality-of-life improvements.
 
-### **✔ Habits**
-- Habit creation  
-- Streak tracking  
-- Progress calendar  
+## Tech Stack
 
-### **✔ Addiction Tracking**
-- Log urges, relapses, triggers  
-- Statistics and patterns  
+| Area | Technology |
+| --- | --- |
+| Frontend | Vue 3, Vite 7, TypeScript, Pinia, Vue Router, PrimeVue, vue-i18n, Zod |
+| Backend | ASP.NET Core Web API, .NET 10, JWT Bearer authentication |
+| Database | SQLite via Entity Framework Core |
+| AI | Microsoft.Extensions.AI with OpenAI-compatible chat client |
+| API Contracts | ASP.NET OpenAPI + `openapi-typescript` generated frontend schema |
+| Testing | Vitest for frontend, xUnit for backend |
+| Desktop | Optional Tauri 2 build flow |
+| Deployment | GitHub Actions, VPS artifact upload, rsync, systemd backend restart |
 
-### **✔ Goals**
-- Weekly / monthly / yearly goals  
-- Progress overview  
-- Link tasks and habits to goals  
+## Repository Structure
 
-### **✔ Journal**
-- Daily notes  
-- Mood / events logging  
-- AI-assisted reflection prompts  
+```text
+LifeHub/
+├── Backend/          # ASP.NET Core API, EF Core models, controllers, services
+├── Backend.Tests/    # xUnit backend tests
+├── Frontend/         # Vue 3 + Vite application
+├── Docs/             # Product documentation
+└── .github/          # CI/CD workflow for deployment
+```
 
-### **✔ AI Assistant**
-- Suggest reflection questions  
-- Provide summaries / insights  
-- Help users stay aware and consistent  
+## Getting Started
 
----
+### Prerequisites
 
-## 🛠️ Technology Stack (planned)
+- .NET SDK 10.x
+- Node.js 20.19+ or 22.12+
+- npm
+- EF Core CLI tools for database migrations
+- Optional: Python or `sqlite3` for clearing a stale SQLite migration lock
+- Optional: Tauri prerequisites for desktop builds
 
-- **Backend:** .NET Web API  
-- **Database:** PostgreSQL  
-- **Frontend:** Vue.js 
-- **AI Layer:** API-based LLM integration (later models can be swapped)  
-- **Deployment:** Docker + VPS + GitHub Actions  
+### Install Dependencies
 
-### Локальная разработка
+```bash
+npm install
+npm install --prefix Frontend
+dotnet restore
+```
 
-Перед первым запуском задайте секреты локально (User Secrets), см. [Backend/SECRETS.md](Backend/SECRETS.md).
+### Configure Local Secrets
 
-Из корня репозитория одной командой можно запустить и бэкенд, и фронтенд:
+The backend requires a JWT signing key. AI is optional, but AI features need an API key.
+
+```bash
+dotnet user-secrets set "Jwt:Key" "replace-with-a-long-random-secret" --project Backend/LifeHub-Backend.csproj
+dotnet user-secrets set "Ai:ApiKey" "replace-with-your-openai-key" --project Backend/LifeHub-Backend.csproj
+```
+
+See [`Backend/SECRETS.md`](Backend/SECRETS.md) for the local and production secret conventions.
+
+### Apply Database Migrations
+
+```bash
+dotnet ef database update --project Backend/LifeHub-Backend.csproj
+```
+
+The application currently uses SQLite. At runtime the database is stored under the backend output directory in a `database/lifehub.db` file.
+
+### Run the App
+
+From the repository root:
 
 ```bash
 npm run dev
 ```
 
-Бэкенд (API) и фронтенд (Vite) запустятся параллельно. Остановка — `Ctrl+C` в том же терминале (остановятся оба процесса).
+This starts both services:
 
-Отдельно:
-- `npm run dev:backend` — только бэкенд
-- `npm run dev:frontend` — только фронтенд
+- Backend API: `http://localhost:5091`
+- Frontend Vite dev server: usually `http://localhost:5173`
 
-После изменений моделей EF примените миграции (остановите бэкенд, если он держит файлы сборки):
+The Vite dev server proxies `/api` requests to the backend.
+
+You can also run each side separately:
 
 ```bash
-cd Backend
-dotnet ef database update --project LifeHub-Backend.csproj
+npm run dev:backend
+npm run dev:frontend
 ```
 
-Если в SQLite уже есть колонка `Note` у `AddictionResets` (старая тестовая миграция), перед `database update` удалите её:  
-`ALTER TABLE AddictionResets DROP COLUMN Note;` (SQLite 3.35+).
+## Useful Commands
 
-Для SQLite в миграции `AddictionResets.JournalEntryId` **не создаётся ограничение FOREIGN KEY** в БД (ограничение провайдера EF); связь задаётся только в модели приложения.
+| Command | Location | Description |
+| --- | --- | --- |
+| `npm run dev` | root | Start backend and frontend together |
+| `npm run dev:backend` | root | Start only the ASP.NET Core API |
+| `npm run dev:frontend` | root | Start only the Vite frontend |
+| `npm run build` | `Frontend/` | Type-check and build the frontend |
+| `npm run preview` | `Frontend/` | Preview the production frontend build |
+| `npm run type-check` | `Frontend/` | Run Vue TypeScript checks |
+| `npm run test` | `Frontend/` | Run frontend tests with Vitest |
+| `npm run format` | `Frontend/` | Format frontend source files |
+| `npm run api:gen` | `Frontend/` | Regenerate TypeScript API types from backend OpenAPI |
+| `dotnet test` | root | Run backend tests |
+| `npm run dev:tauri` | `Frontend/` | Run the Tauri-oriented frontend mode |
+| `npm run build:tauri` | `Frontend/` | Build the Tauri-oriented frontend bundle |
 
-#### Зависание на `Acquiring an exclusive lock` / `__EFMigrationsLock`
+## API Schema Workflow
 
-В EF Core 9+ для SQLite миграции защищаются «блокировкой» через таблицу `__EFMigrationsLock`. Если миграция оборвалась (процесс убит, сбой) или одновременно открыт тот же файл БД, строка в этой таблице может остаться — тогда `dotnet ef database update` снова и снова выполняет `INSERT OR IGNORE` и **не продвигается**. Официально: [Concurrent migrations protection (SQLite)](https://learn.microsoft.com/en-us/ef/core/providers/sqlite/limitations#concurrent-migrations-protection).
+The frontend consumes generated API types from `Frontend/src/api/schema.ts`.
 
-**Что сделать:**
+When backend DTOs, controllers, or API contracts change:
 
-1. Остановите бэкенд и любые программы, которые держат `lifehub.db` открытым.
-2. Удалите таблицу блокировки (путь к файлу совпадает с рантаймом: обычно `Backend/bin/Debug/net10.0/../database/lifehub.db` → `Backend/bin/Debug/database/lifehub.db`):
+1. Start the backend in Development mode.
+2. Run `npm run api:gen` from `Frontend/`.
+3. Commit the generated schema together with the API change.
+4. Stop the backend process after generation.
+
+OpenAPI is exposed at `http://localhost:5091/openapi/v1.json` in Development.
+
+## Deployment
+
+The repository includes a GitHub Actions workflow that deploys on pushes to `main`.
+
+The workflow:
+
+- Publishes the backend with `dotnet publish`.
+- Installs and builds the frontend with npm.
+- Uploads artifacts to a VPS.
+- Syncs backend and frontend files into `/var/www/lifehub`.
+- Writes production secrets into the backend `.env`.
+- Restarts the `lifehub-backend` systemd service.
+
+Required GitHub Secrets:
+
+- `VPS_HOST`
+- `VPS_USER`
+- `VPS_KEY`
+- `JWT_KEY`
+- `AI_API_KEY`
+
+## SQLite Migration Notes
+
+EF Core protects SQLite migrations with a `__EFMigrationsLock` table. If a migration is interrupted or another process keeps the database open, a stale lock can block future migrations.
+
+First stop the backend and any process using `lifehub.db`, then clear the lock:
 
 ```bash
 sqlite3 Backend/bin/Debug/database/lifehub.db "DROP TABLE IF EXISTS \"__EFMigrationsLock\";"
 ```
 
-Без установленного `sqlite3` (типично для Windows) можно из корня репозитория:
+On machines without `sqlite3`, use the helper script:
 
 ```bash
 python Backend/scripts/drop_migrations_lock.py
 ```
 
-(Необязательный аргумент — полный путь к `.db`, если файл не в `Backend/bin/Debug/database/lifehub.db`.)
+Then run the migration command again.
 
-(Если у вас другой путь к БД — укажите его; при необходимости задайте тот же файл, что и в `Program.cs`, через `--connection` у `dotnet ef database update`.)
+## Maintenance
 
-3. Повторите `dotnet ef database update`.
+The project is intended to stay focused on its current product scope. Maintenance work may include bug fixes, dependency updates, documentation updates, and small refinements that improve the existing experience.
 
-Затем при необходимости обновите клиентский OpenAPI: `npm run api:gen` из папки `Frontend` (бэкенд должен отдавать `/openapi/v1.json`).
+## Documentation
 
----
+- [`Frontend/docs/design-system.md`](Frontend/docs/design-system.md) - frontend design system notes.
+- [`Backend/SECRETS.md`](Backend/SECRETS.md) - local and production secret setup.
 
-## 📐 Architecture (draft)
+## Contributing
 
-LifeHub follows a modular design with clear domains:
+LifeHub is a personal project. Bug reports, documentation fixes, and focused improvements are welcome.
 
-- `Tasks`  
-- `Habits`  
-- `Journal`  
-- `AddictionTracker`  
-- `Goals`  
-- `AI`  
+Before opening a pull request, please run the relevant checks:
 
-Each module provides its own API layer, business logic, and database structures.  
-AI is abstracted through a provider interface, allowing switching between local and cloud models.
+```bash
+npm run build --prefix Frontend
+npm run test --prefix Frontend
+dotnet test
+```
 
----
+## License
 
-## 🧭 Roadmap
-
-### **Phase 1 — Documentation**
-- Product vision and goals  
-- Competitor analysis  
-- MVP specification  
-- Initial architectural plan  
-
-### **Phase 2 — Prototyping**
-- Wireframes and screens  
-- User flows  
-- OpenAPI specification  
-- Finalize stack choices  
-
-### **Phase 3 — MVP Implementation**
-- Auth & user management  
-- Tasks, habits, goals, journal modules  
-- Basic AI integration  
-- Analytics events  
-- Production deployment  
-
-### **Phase 4 — Iterative Development**
-- Pattern detection  
-- Advanced analytics  
-- Cross-platform clients  
-- Offline mode  
-- Better AI guidance  
-- Premium features  
-
----
-
-## 📄 License
-
-To be defined.
-
----
-
-## 🤝 Contributing
-
-LifeHub is currently an early-stage personal project.  
-Contributions, ideas, and feedback are welcome — feel free to open issues or discussions.
+LifeHub is licensed under the [MIT License](LICENSE).

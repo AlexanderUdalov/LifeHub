@@ -21,7 +21,6 @@
     "processing": "Загрузка",
     "registerToLogin": "Уже есть аккаунт? Войти",
     "loginToRegister": "Нет аккаунта? Зарегистрироваться",
-    "nickname": "Никнейм",
     "password": "Пароль",
     "email": "Email",
     "requiredField": "Обязательное поле"
@@ -94,7 +93,8 @@
         "weeklyWithDay": "Еженедельно ({weekday})",
         "monthlyWithDay": "Ежемесячно ({day}-го)",
         "yearlyWithDate": "Ежегодно ({day} {month} {year})",
-        "weekdays": "По будням"
+        "weekdays": "По будням",
+        "byWeekdays": "По дням недели"
       },
       "noDate": "Без даты",
       "noRepeat": "Без повтора",
@@ -332,7 +332,6 @@
     "profile": "Профиль",
     "email": "Email",
     "language": "Язык",
-    "name": "Никнейм",
     "theme": "Тема",
     "primary-color": "Основной цвет",
     "surface-color": "Цвет поверхностей",
@@ -359,6 +358,7 @@
     "emptySubtitle": "Создайте запись, чтобы вести свой дневник",
     "newNote": "Новая запись",
     "editNote": "Редактирование",
+    "copyText": "Копировать текст",
     "placeholder": "О чём вы думаете?",
     "markdownHint": "Поддерживается Markdown",
     "save": "Сохранить",

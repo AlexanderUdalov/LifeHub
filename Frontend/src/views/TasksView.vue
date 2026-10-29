@@ -7,6 +7,7 @@ import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Badge from 'primevue/badge'
+import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Skeleton from 'primevue/skeleton'
 import EmptyState from '@/components/EmptyState.vue'
@@ -20,7 +21,7 @@ import { isToday, isSameDateOnly, startOfDay, toDateOnlyString } from '@/utils/d
 
 const { t } = useI18n()
 const emit = defineEmits<{
-  (e: 'edit-task', task: TaskDTO): void
+  (e: 'edit-task', task: TaskDTO | null): void
 }>()
 
 const tasksStore = useTasksStore()
@@ -285,13 +286,17 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   <div class="tasks-view-root">
     <header class="tasks-view-header">
       <h1 class="ds-page-header">{{ $t('tasks.tasks') }}</h1>
-      <SelectButton v-model="taskViewMode" :options="taskViewModeOptions" option-label="label" option-value="value"
-        :allow-empty="false" :aria-label="$t('profile-view.task-list-view')"
-        @change="onTaskViewModeChange($event.value)">
-        <template #option="slotProps">
-          <i :class="slotProps.option.icon" :aria-hidden="true" />
-        </template>
-      </SelectButton>
+      <div class="tasks-view-actions">
+        <Button :label="$t('tasks.editdialog.newTask')" icon="pi pi-plus" class="desktop-create-btn"
+          @click="emit('edit-task', null)" />
+        <SelectButton v-model="taskViewMode" :options="taskViewModeOptions" option-label="label" option-value="value"
+          :allow-empty="false" :aria-label="$t('profile-view.task-list-view')"
+          @change="onTaskViewModeChange($event.value)">
+          <template #option="slotProps">
+            <i :class="slotProps.option.icon" :aria-hidden="true" />
+          </template>
+        </SelectButton>
+      </div>
     </header>
 
     <div v-if="tasksStore.isLoading && tasksStore.tasks.length === 0" class="tasks-skeleton">
@@ -456,6 +461,14 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   flex-wrap: wrap;
 }
 
+.tasks-view-actions {
+  display: contents;
+}
+
+.desktop-create-btn {
+  display: none;
+}
+
 .tasks-list {
   font-size: var(--ds-font-size-lg);
 }
@@ -568,5 +581,66 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   justify-content: space-between;
   margin-bottom: 0.5rem;
   font-size: var(--ds-font-size-lg);
+}
+
+@media (min-width: 900px) {
+  .tasks-view-root {
+    max-width: 78rem;
+    margin: 0 auto;
+  }
+
+  .tasks-view-header {
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .tasks-view-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+
+  .desktop-create-btn {
+    display: inline-flex;
+  }
+
+  .tasks-view-root :deep(.empty-state) {
+    margin-top: 3rem;
+  }
+
+  .tasks-skeleton {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+    gap: 1rem;
+    padding: 0;
+  }
+
+  .tasks-list {
+    border: 1px solid var(--p-content-border-color);
+    border-radius: var(--ds-radius-lg);
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    background: var(--p-card-background);
+  }
+
+  .calendar-view {
+    display: grid;
+    grid-template-columns: minmax(20rem, 26rem) minmax(24rem, 1fr);
+    align-items: start;
+    gap: 1.25rem;
+    padding: 0;
+  }
+
+  .calendar-view-top,
+  .calendar-view-bottom {
+    min-width: 0;
+  }
+
+  .calendar-view-top {
+    position: sticky;
+    top: 0;
+  }
 }
 </style>

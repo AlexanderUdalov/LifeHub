@@ -57,6 +57,28 @@ html {
   border-top: 1px solid var(--p-content-border-color);
 }
 
+.ds-desktop-dialog {
+  border-radius: var(--ds-radius-lg);
+}
+
+.ds-desktop-dialog .p-dialog-header {
+  padding: var(--ds-space-5) var(--ds-space-6) var(--ds-space-3);
+}
+
+.ds-desktop-dialog .p-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  max-height: min(68vh, 42rem);
+  padding: 0 var(--ds-space-6) var(--ds-space-5);
+  overflow-y: auto;
+}
+
+.ds-desktop-dialog .p-dialog-footer {
+  border-top: 1px solid var(--p-content-border-color);
+  padding: var(--ds-space-4) var(--ds-space-6);
+}
+
 .ds-drawer-title-row {
   display: flex;
   align-items: center;
@@ -178,4 +200,20 @@ html {
 .ds-color-swatch.is-selected {
   border-color: var(--p-text-color);
   box-shadow: 0 0 0 1px var(--p-content-border-color);
+}
+
+@media (min-width: 900px) {
+  .ds-page-header {
+    margin: 0;
+    font-size: 1.75rem;
+    text-align: left;
+  }
+
+  .ds-drawer-title-input.p-inputtext {
+    font-size: var(--ds-font-size-xl);
+  }
+
+  .ds-drawer-actions {
+    justify-content: flex-end;
+  }
 }

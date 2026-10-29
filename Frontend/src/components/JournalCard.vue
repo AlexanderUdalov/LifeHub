@@ -55,6 +55,47 @@ const hasFooterMeta = computed(
 
 const isExpanded = ref(false)
 const showDeleteConfirm = ref(false)
+const copySucceeded = ref(false)
+let copyResetTimer: ReturnType<typeof setTimeout> | null = null
+
+function fallbackCopyToClipboard(text: string) {
+  const ta = document.createElement('textarea')
+  ta.value = text
+  ta.setAttribute('readonly', '')
+  ta.style.position = 'fixed'
+  ta.style.left = '-9999px'
+  document.body.appendChild(ta)
+  ta.select()
+  document.execCommand('copy')
+  document.body.removeChild(ta)
+}
+
+async function copyEntryText() {
+  const text = props.item.text ?? ''
+  const markSuccess = () => {
+    copySucceeded.value = true
+    if (copyResetTimer) clearTimeout(copyResetTimer)
+    copyResetTimer = setTimeout(() => {
+      copySucceeded.value = false
+      copyResetTimer = null
+    }, 1500)
+  }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      fallbackCopyToClipboard(text)
+    }
+    markSuccess()
+  } catch {
+    try {
+      fallbackCopyToClipboard(text)
+      markSuccess()
+    } catch {
+      // Clipboard unavailable (permissions / non-secure context)
+    }
+  }
+}
 
 const formattedDate = computed(() => {
   const date = new Date(props.item.createdAt)
@@ -114,12 +155,24 @@ async function onConfirmDelete() {
             @click="onTogglePin"
           />
           <Button
+            :icon="copySucceeded ? 'pi pi-check' : 'pi pi-copy'"
+            variant="text"
+            rounded
+            size="small"
+            :severity="copySucceeded ? 'success' : 'secondary'"
+            class="journal-card__action-btn"
+            :aria-label="t('journal.copyText')"
+            :title="t('journal.copyText')"
+            @click="copyEntryText"
+          />
+          <Button
             icon="pi pi-pencil"
             variant="text"
             rounded
             size="small"
             severity="secondary"
             class="journal-card__action-btn"
+            :aria-label="t('journal.editNote')"
             @click="emit('edit-journal', item)"
           />
           <Button
@@ -210,6 +263,7 @@ async function onConfirmDelete() {
   color: var(--p-text-color);
   word-break: break-word;
   display: -webkit-box;
+  line-clamp: 5;
   -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -217,6 +271,7 @@ async function onConfirmDelete() {
 
 .journal-card__text--expanded {
   display: block;
+  line-clamp: unset;
   -webkit-line-clamp: unset;
   -webkit-box-orient: unset;
   overflow: visible;
@@ -415,5 +470,31 @@ async function onConfirmDelete() {
 .journal-card-slide-leave-to {
   opacity: 0;
   transform: translateY(8px);
+}
+
+@media (min-width: 900px) {
+  .journal-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.75rem 1.75rem rgba(0, 0, 0, 0.08);
+  }
+
+  .journal-card:active {
+    transform: translateY(-1px);
+  }
+
+  ::deep(.p-card-body) {
+    padding: 1.125rem 1.25rem;
+  }
+
+  .journal-card__text {
+    font-size: 0.975rem;
+    line-clamp: 7;
+    -webkit-line-clamp: 7;
+  }
+
+  .journal-card__action-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
 }
 </style>

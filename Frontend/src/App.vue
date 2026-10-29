@@ -10,6 +10,7 @@ import { RouterView } from 'vue-router';
 
 <style>
 .app-shell {
-  background: var(--surface-100);
+  min-height: 100dvh;
+  background: var(--p-content-background);
 }
 </style>

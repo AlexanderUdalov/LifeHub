@@ -1,10 +1,9 @@
 import { api } from './API';
 import type { components } from './schema';
 
-export type StartReflectionRequest = components['schemas']['StartReflectionRequest'];
-export type StartReflectionResponse = components['schemas']['StartReflectionResponse'];
-export type SendReflectionMessageRequest = components['schemas']['SendReflectionMessageRequest'];
-export type ReflectionMessageResponse = components['schemas']['ReflectionMessageResponse'];
+type StartReflectionRequest = components['schemas']['StartReflectionRequest'];
+type StartReflectionResponse = components['schemas']['StartReflectionResponse'];
+type ReflectionMessageResponse = components['schemas']['ReflectionMessageResponse'];
 export type ChatMessageDTO = components['schemas']['ChatMessageDTO'];
 
 export async function startReflection(

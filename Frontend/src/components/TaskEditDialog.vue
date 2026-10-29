@@ -4,14 +4,13 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
-import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import { computed, onMounted, ref, watch } from 'vue'
 import { type CreateTaskRequest, type TaskDTO, type UpdateTaskRequest } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
-import DateAndRecurrencePicker from '@/components/DateAndRecurrencePicker.vue'
+import TaskDateRecurrenceDrawer from '@/components/TaskDateRecurrenceDrawer.vue'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
 import { useApiError } from '@/composables/useApiError'
 import { useTasksStore } from '@/stores/tasks'
@@ -123,7 +122,7 @@ watch(
   { immediate: true }
 )
 
-const dateRecurrencePopover = ref<InstanceType<typeof Popover> | null>(null)
+const dateRecurrenceDrawerOpen = ref(false)
 
 const titleWrap = ref<HTMLElement | null>(null)
 
@@ -203,12 +202,11 @@ async function onDelete() {
     <div class="ds-chip-row">
       <Button :label="dateChipLabel" icon="pi pi-calendar" size="small" :severity="hasDate ? undefined : 'secondary'"
         :variant="hasDate ? 'outlined' : 'text'" class="ds-chip-button"
-        @click="(e: Event) => dateRecurrencePopover?.toggle(e)" />
-      <Popover ref="dateRecurrencePopover" append-to="body">
-        <DateAndRecurrencePicker :date="dueDateAsDate" :recurrence-rule="localTask.recurrenceRule"
-          @update:date="(v) => { localTask.dueDate = v ? toUtcDateOnlyIso(v) : null }"
-          @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }" @close="dateRecurrencePopover?.hide()" />
-      </Popover>
+        @click="dateRecurrenceDrawerOpen = true" />
+      <TaskDateRecurrenceDrawer v-model:visible="dateRecurrenceDrawerOpen" :date="dueDateAsDate"
+        :recurrence-rule="localTask.recurrenceRule"
+        @update:date="(v) => { localTask.dueDate = v ? toUtcDateOnlyIso(v) : null }"
+        @update:recurrence-rule="(v) => { localTask.recurrenceRule = v }" />
 
       <Select v-if="!hasGoal" v-model="localTask.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
         show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"

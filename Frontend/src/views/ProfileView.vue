@@ -25,7 +25,7 @@ const apiError = useApiError();
 
 const currentUser = ref<User>();
 const updateForm = reactive<UpdateRequest>({
-    name: '',
+    name: null,
     email: '',
     currentPassword: '',
     newPassword: ''
@@ -34,7 +34,6 @@ const isDirty = computed(() => {
     if (!currentUser.value) return false
 
     return (
-        updateForm.name !== currentUser.value.name ||
         updateForm.email !== currentUser.value.email
     )
 })
@@ -48,14 +47,13 @@ const submitUserData = async () => {
         if (!currentUser.value) return
 
         await updateUser({
-            name: updateForm.name,
+            name: null,
             email: updateForm.email,
             currentPassword: null,
             newPassword: null
         })
 
         Object.assign(currentUser.value, {
-            name: updateForm.name,
             email: updateForm.email
         })
     }
@@ -211,11 +209,6 @@ onMounted(async () => {
         <h1 class="ds-page-header">{{ $t('profile-view.profile') }}</h1>
         <Card>
             <template #content>
-                <IftaLabel>
-                    <InputText id="name" v-model="updateForm.name" fluid />
-                    <label for="name">{{ $t('profile-view.name') }}</label>
-                </IftaLabel>
-
                 <IftaLabel>
                     <InputText id="email" v-model="updateForm.email" fluid />
                     <label for="email">{{ $t('profile-view.email') }}</label>
@@ -396,5 +389,41 @@ onMounted(async () => {
     display: flex;
     justify-content: center;
     padding: 0.5rem;
+}
+
+@media (min-width: 900px) {
+    .profile-view-root {
+        max-width: 48rem;
+        margin: 0 auto;
+    }
+
+    .profile-view-root .ds-page-header {
+        margin-bottom: 1rem;
+    }
+
+    .selector {
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .color-selector {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .submit-button {
+        justify-content: flex-end;
+        padding-right: 0;
+    }
+
+    :deep(.p-dialog) {
+        width: min(30rem, calc(100vw - 2rem));
+    }
 }
 </style>

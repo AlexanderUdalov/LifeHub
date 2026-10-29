@@ -110,4 +110,4 @@ jobs:
           set -eu
           sudo systemctl restart lifehub-backend
           sleep 3
-          sudo systemctl is-active --quiet lifehub-backend
+          systemctl is-active --quiet lifehub-backend

@@ -13,8 +13,6 @@ export const LOGO_COLORS = [
   '#ffb74d' // orange
 ] as const
 
-export type LogoColor = (typeof LOGO_COLORS)[number]
-
 /** Normalize hex color for comparison (lowercase, with #). */
 export function normalizeHex(color: string): string {
   const s = color.trim()

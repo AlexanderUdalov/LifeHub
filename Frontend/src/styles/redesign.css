@@ -1,0 +1,783 @@
+:root {
+  --app-bg: #f7f8f5;
+  --app-card: #fff;
+  --app-side: #eff2ec;
+  --app-text: #29382f;
+  --app-muted: #617067;
+  --app-line: #dde4dc;
+  --app-accent: #315e86;
+  --app-on: #fff;
+  --app-soft: #edf2f7;
+  --app-alert: #a94b40;
+  --ds-font-family: 'Segoe UI', system-ui, sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+body,
+.app-shell {
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+a {
+  color: var(--app-accent);
+}
+.lifehub-layout {
+  display: grid;
+  grid-template-columns: 196px minmax(0, 1fr);
+  min-height: 100dvh;
+}
+.app-sidebar {
+  padding: 26px 16px;
+  background: var(--app-side);
+  border-right: 1px solid var(--app-line);
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+}
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--app-text);
+  text-decoration: none;
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.8px;
+}
+.app-logo {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 9px;
+  background: var(--app-accent);
+  color: var(--app-on);
+  font-size: 16px;
+}
+.app-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 30px;
+}
+.app-sidebar nav a {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  min-height: 43px;
+  padding: 10px;
+  border-radius: 9px;
+  text-decoration: none;
+  font-size: 13px;
+  color: var(--app-muted);
+}
+.app-sidebar nav a[aria-current='page'] {
+  color: var(--app-accent);
+  background: var(--app-card);
+  font-weight: 600;
+}
+.app-workspace {
+  min-width: 0;
+}
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 9px 28px;
+  border-bottom: 1px solid var(--app-line);
+}
+.app-breadcrumb {
+  font-size: 12px;
+  color: var(--app-muted);
+}
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mobile-brand,
+.mobile-bottom {
+  display: none;
+}
+.app-content {
+  padding: 25px 28px 32px;
+  width: 100%;
+}
+.app-content > div {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.app-content .ds-page-header {
+  font:
+    500 29px/1.25 Georgia,
+    serif;
+  letter-spacing: -0.5px;
+  text-align: left;
+  margin: 0 0 20px;
+  color: var(--app-text);
+}
+.app-content .tasks-view-root,
+.app-content .habits-view,
+.app-content .goals-view,
+.app-content .journal-view,
+.app-content .addictions-view,
+.app-content .lifeareas-view,
+.app-content .profile-view-root {
+  padding: 0;
+  max-width: none;
+}
+.app-content .habits-grid,
+.app-content .goals-grid,
+.app-content .journal-grid,
+.app-content .addictions-grid {
+  gap: 15px;
+}
+.p-card {
+  border: 1px solid var(--app-line);
+  border-radius: var(--ds-radius-lg);
+  background: var(--app-card);
+  box-shadow: none;
+  color: var(--app-text);
+}
+.p-card .p-card-body {
+  gap: 9px;
+  padding: 16px;
+}
+.p-card .p-card-caption {
+  gap: 5px;
+}
+.p-card .p-card-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+.p-button {
+  font-weight: 500;
+  border-radius: 9px;
+  font-size: 13px;
+}
+.p-drawer {
+  background: var(--app-card);
+  color: var(--app-text);
+}
+.p-drawer .p-drawer-content {
+  overflow-x: hidden;
+}
+.p-inputtext,
+.p-textarea,
+.p-select,
+.p-datepicker {
+  max-width: 100%;
+}
+.page-heading,
+.section-heading,
+.settings-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.page-heading {
+  margin-bottom: 18px;
+}
+.page-heading .ds-page-header {
+  margin-bottom: 0;
+}
+.page-heading .p-datepicker {
+  width: 155px;
+}
+.section-heading {
+  margin-bottom: 8px;
+}
+.settings-page {
+  max-width: 780px !important;
+  margin-left: 0 !important;
+}
+.settings-section {
+  padding: 17px;
+  background: var(--app-card);
+  border: 1px solid var(--app-line);
+  border-radius: var(--ds-radius-lg);
+  margin-bottom: 16px;
+  min-width: 0;
+}
+.settings-section h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.settings-section p,
+.settings-section small,
+.muted {
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.settings-section p:last-child {
+  margin-bottom: 0;
+}
+.text-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 5px;
+  color: var(--app-accent);
+  background: transparent;
+  border: 0;
+  text-decoration: none;
+  font-size: 12px;
+}
+.icon-action {
+  width: 40px;
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--app-muted);
+  text-decoration: none;
+  border-radius: 9px;
+}
+.setting-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 20px;
+}
+.setting-options.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+.setting-options button,
+.color-options button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 64px;
+  padding: 10px 4px;
+  background: var(--app-card);
+  color: var(--app-muted);
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  font-size: 12px;
+}
+.setting-options button[aria-pressed='true'],
+.color-options button[aria-pressed='true'] {
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+  background: var(--app-soft);
+}
+.color-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+.color-swatch {
+  display: block;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--app-line);
+}
+.background-swatch {
+  width: 31px;
+  border-radius: 6px;
+}
+.custom-color {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.custom-color input {
+  width: 44px;
+  height: 42px;
+  padding: 4px;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  background: var(--app-card);
+}
+.custom-color small {
+  display: block;
+}
+.navigation-setting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--app-line);
+}
+.navigation-setting:last-of-type {
+  border: 0;
+}
+.navigation-setting > span:last-child {
+  flex: 1;
+  min-width: 0;
+}
+.navigation-setting-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  color: var(--app-accent);
+  background: var(--app-soft);
+}
+.native-select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  color: var(--app-text);
+  background: var(--app-card);
+  font-size: 14px;
+}
+.navigation-setting small {
+  display: block;
+  margin-bottom: 5px;
+}
+.more-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.more-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px;
+  min-height: 60px;
+  background: var(--app-card);
+  border: 1px solid var(--app-line);
+  border-radius: var(--ds-radius-lg);
+  color: var(--app-text);
+  text-decoration: none;
+  font-size: 14px;
+}
+.more-link i {
+  color: var(--app-accent);
+}
+.more-link i:last-child {
+  margin-left: auto;
+}
+.more-settings {
+  margin-top: 16px;
+}
+.today-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.today-grid > div {
+  min-width: 0;
+}
+.today-grid .day-feedback {
+  margin: 0 0 16px;
+}
+.today-grid .habit-card {
+  border: 0;
+  border-bottom: 1px solid var(--app-line) !important;
+  border-radius: 0;
+}
+.today-grid .habit-card .p-card-body {
+  padding: 13px 0;
+}
+.today-grid details summary {
+  color: var(--app-alert);
+  font-size: 13px;
+  cursor: pointer;
+}
+.lifehub-layout .task-card {
+  margin: 0;
+}
+.app-content .tasks-view-header {
+  justify-content: space-between;
+  padding: 0;
+  margin-bottom: 15px;
+}
+.app-content .tasks-view-header .ds-page-header {
+  margin: 0;
+}
+.app-content .journal-view__header {
+  justify-content: space-between;
+  padding: 0;
+  min-height: 42px;
+  margin-bottom: 14px;
+}
+.app-content .journal-view__header .ds-page-header {
+  position: static;
+  margin: 0;
+  pointer-events: auto;
+}
+.app-content .journal-view__filter-bar {
+  background: var(--app-card);
+  border: 1px solid var(--app-line);
+  border-radius: var(--ds-radius-lg);
+  padding: 15px;
+}
+.app-content .journal-view__filter-bar .p-select {
+  width: 100%;
+}
+.app-content .desktop-create-btn,
+.app-content .journal-view__create-btn {
+  display: none !important;
+}
+.app-content .tasks-view-root .calendar-view {
+  padding: 0;
+  grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+}
+.app-content .calendar-view-bottom {
+  min-width: 0;
+  background: var(--app-card);
+  border: 1px solid var(--app-line);
+  border-radius: var(--ds-radius-lg);
+  padding: 14px;
+}
+.app-content .calendar-day {
+  flex-direction: column;
+  position: relative;
+}
+.app-content .calendar-day.has-tasks::after {
+  display: none;
+}
+.calendar-area-dots {
+  display: flex;
+  gap: 3px;
+  height: 5px;
+  position: absolute;
+  bottom: -3px;
+}
+.calendar-area-dots > span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+.calendar-inline-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--app-muted);
+  font-size: 13px;
+  width: 100%;
+}
+.calendar-inline-add > span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+}
+.calendar-inline-add:hover {
+  color: var(--app-accent);
+}
+.task-scope-row {
+  margin: 0 0 13px;
+  max-width: 260px;
+}
+.task-scope-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+.task-view-switch {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  background: var(--app-card);
+}
+.task-view-switch button {
+  width: 38px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--app-muted);
+}
+.task-view-switch button[aria-pressed='true'] {
+  background: var(--app-soft);
+  color: var(--app-accent);
+}
+.app-content .p-accordionpanel {
+  background: var(--app-card);
+  border: 1px solid var(--app-line);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.app-content .p-accordionheader {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.app-content .p-accordioncontent-content {
+  padding: 0 14px;
+}
+.app-content .tasks-list-header {
+  align-items: center;
+}
+.app-content .p-badge {
+  background: var(--app-soft);
+  color: var(--app-accent);
+  min-width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+.app-content .journal-day-feedback {
+  font-size: 13px;
+  margin-bottom: 15px;
+  color: var(--app-muted);
+}
+.app-content .journal-day-feedback summary {
+  padding: 8px 0;
+  cursor: pointer;
+}
+.app-content .completed-goals-list {
+  padding: 0;
+  width: 100%;
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+.app-content .completed-goals-text-block {
+  align-items: stretch;
+}
+.app-content .completed-goals-toggle {
+  min-height: 44px;
+  align-self: flex-start;
+  gap: 8px;
+}
+.app-content .habit-streak-chip {
+  background: var(--app-soft);
+  color: var(--app-accent);
+}
+.app-content .lifeareas-view {
+  align-items: stretch;
+}
+.app-content .legend,
+.app-content .skeleton-legend {
+  max-width: none;
+}
+.app-content .legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.app-content .wheel-wrap {
+  margin: 0 auto 10px;
+}
+:root[data-design='rhythm'] .lifehub-layout {
+  grid-template-columns: 1fr;
+}
+:root[data-design='rhythm'] .app-sidebar {
+  position: static;
+  height: auto;
+  border-right: 0;
+  border-bottom: 1px solid var(--app-line);
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 14px 28px;
+  background: var(--app-card);
+}
+:root[data-design='rhythm'] .app-sidebar nav {
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin: 0;
+  gap: 2px;
+}
+:root[data-design='rhythm'] .app-sidebar nav a {
+  font-size: 12px;
+  padding: 9px;
+}
+:root[data-design='rhythm'] .app-sidebar nav a[aria-current='page'] {
+  background: var(--app-soft);
+}
+@media (min-width: 1500px) {
+  .app-content {
+    padding-inline: 38px;
+  }
+}
+@media (max-width: 1050px) {
+  .today-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-sidebar {
+    padding-inline: 10px;
+  }
+  .lifehub-layout {
+    grid-template-columns: 170px minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .lifehub-layout {
+    display: block;
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+  .app-sidebar,
+  :root[data-design='rhythm'] .app-sidebar,
+  .app-breadcrumb,
+  .app-header .desktop-create {
+    display: none;
+  }
+  .app-header {
+    min-height: 58px;
+    padding: 5px 16px;
+  }
+  .mobile-brand {
+    display: flex;
+    font-size: 23px;
+  }
+  .app-content {
+    padding: 18px 13px 24px;
+  }
+  .app-content .ds-page-header {
+    font-size: 27px;
+    margin-bottom: 15px;
+  }
+  .app-content .tasks-view-header .ds-page-header,
+  .app-content .journal-view__header .ds-page-header,
+  .page-heading .ds-page-header {
+    margin: 0;
+  }
+  .mobile-bottom {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 3px;
+    position: fixed;
+    z-index: 20;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: var(--app-card);
+    border-top: 1px solid var(--app-line);
+  }
+  .mobile-bottom > a,
+  .mobile-bottom > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 58px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--app-muted);
+    text-decoration: none;
+    font-size: 11px;
+    padding: 3px 0;
+    min-width: 0;
+  }
+  .mobile-bottom > a > i {
+    font-size: 17px;
+  }
+  .mobile-bottom > a > span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .mobile-bottom > [aria-current='page'] {
+    color: var(--app-accent);
+    background: var(--app-soft);
+  }
+  .mobile-add {
+    display: grid;
+    place-items: center;
+    width: 39px;
+    height: 31px;
+    border-radius: 10px;
+    color: var(--app-on);
+    background: var(--app-accent);
+    font-size: 17px;
+  }
+  .settings-section {
+    padding: 14px;
+  }
+  .today-grid {
+    gap: 0;
+  }
+  .app-content .tasks-view-root .calendar-view {
+    display: flex;
+    flex-direction: column;
+  }
+  .more-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .app-content .legend {
+    grid-template-columns: 1fr;
+  }
+  .native-select,
+  .p-inputtext,
+  .p-textarea,
+  .p-select {
+    font-size: 16px;
+  }
+  .text-action,
+  .icon-action {
+    min-height: 44px;
+  }
+  .p-card .p-card-body {
+    padding: 14px;
+  }
+  .settings-link {
+    gap: 8px;
+  }
+  .app-content .journal-view__actions {
+    margin-left: 0;
+  }
+  .app-content .journal-view__action-btn {
+    width: 36px;
+    height: 44px;
+  }
+  .task-view-switch button {
+    width: 38px;
+    height: 38px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

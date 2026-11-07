@@ -4,6 +4,13 @@ html {
 
 body {
     margin: 0;
+    min-width: 320px;
+    min-height: 100dvh;
+    background: var(--p-content-background);
+}
+
+#app {
+    min-height: 100dvh;
 }
 
 /* Shared bottom drawers: addictions edit / reset / trigger / details */

@@ -1,7 +1,7 @@
 import { RRule, rrulestr, type Options } from 'rrule'
 
 /** State for recurrence UI: freq, interval, byweekday (normalized to number[]), bymonthday. */
-export type RecurrenceOptionsState = Partial<Pick<Options, 'interval'>> & {
+type RecurrenceOptionsState = Partial<Pick<Options, 'interval'>> & {
   freq: Options['freq'] | null
   byweekday?: number[]
   bymonthday?: number[]

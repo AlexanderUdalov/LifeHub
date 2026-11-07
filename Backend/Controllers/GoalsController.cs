@@ -136,6 +136,19 @@ public class GoalsController(ApplicationContext context) : ControllerBase
         return Ok(goal.ToDTO());
     }
 
+    [HttpPost("{id:guid}/reopen")]
+    [ProducesResponseType(typeof(GoalDTO), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GoalDTO>> Reopen(Guid id)
+    {
+        var userId = User.GetUserId();
+        var goal = await context.Goals.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+        if (goal is null) return NotFound();
+        goal.CompletedAt = null;
+        await context.SaveChangesAsync();
+        return Ok(goal.ToDTO());
+    }
+
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

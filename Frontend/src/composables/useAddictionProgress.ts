@@ -2,12 +2,12 @@ import { computed, unref, type MaybeRef, type Ref } from 'vue'
 import type { AddictionWithResetsDTO } from '@/api/AddictionsAPI'
 import { getTimeSinceDetailed, parseUtcIso } from '@/utils/dateOnly'
 
-export interface Milestone {
+interface Milestone {
   seconds: number
   labelKey: string
 }
 
-export const MILESTONES: Milestone[] = [
+const MILESTONES: Milestone[] = [
   { seconds: 3_600, labelKey: 'addictions.stages.1hour' },
   { seconds: 86_400, labelKey: 'addictions.stages.1day' },
   { seconds: 259_200, labelKey: 'addictions.stages.3days' },

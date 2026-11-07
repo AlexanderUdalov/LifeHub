@@ -17,7 +17,7 @@ import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const props = withDefaults(
   defineProps<{ addiction: AddictionWithResetsDTO; noBorder?: boolean }>(),
-  { noBorder: false }
+  { noBorder: false },
 )
 
 const emit = defineEmits<{
@@ -31,7 +31,9 @@ const goalsStore = useGoalsStore()
 
 const intlLocale = computed(() => (locale.value === 'ru' ? 'ru-RU' : 'en-US'))
 
-const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.addiction.addiction.lifeAreaId))
+const areaColor = computed(() =>
+  lifeAreasStore.getAreaColorById(props.addiction.addiction.lifeAreaId),
+)
 
 const displayColor = computed(() => {
   const fromArea = areaColor.value
@@ -40,7 +42,9 @@ const displayColor = computed(() => {
   return c && c.length > 0 ? c : '#ef4444'
 })
 
-const goalTitle = computed(() => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null)
+const goalTitle = computed(
+  () => goalsStore.getGoalById(props.addiction.addiction.goalId)?.title ?? null,
+)
 
 const resetsList = computed(() => props.addiction.resets ?? [])
 
@@ -96,7 +100,7 @@ async function onResetConfirm(payload: { addiction: AddictionDTO; resetAt: Date;
   showResetDrawer.value = false
   await addictionsStore.setReset(payload.addiction.id, payload.resetAt, {
     note: payload.note,
-    resetAt: payload.resetAt
+    resetAt: payload.resetAt,
   })
 }
 
@@ -114,7 +118,7 @@ async function onAddAnotherResetForDay() {
   const d = new Date(
     resetInfoDate.value.getFullYear(),
     resetInfoDate.value.getMonth(),
-    resetInfoDate.value.getDate()
+    resetInfoDate.value.getDate(),
   )
   showResetInfoDrawer.value = false
   await nextTick()
@@ -127,7 +131,7 @@ const resetInfoDateLabel = computed(() => {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   })
 })
 
@@ -142,13 +146,18 @@ const resetsForInfoDay = computed(() => {
 function formatResetAt(iso: string) {
   return parseUtcIso(iso).toLocaleTimeString(intlLocale.value, {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 </script>
 
 <template>
-  <BaseCard class="addiction-card" :borderless="noBorder" :accent-color="displayColor">
+  <BaseCard
+    :id="'tracker-' + addiction.addiction.id"
+    class="addiction-card"
+    :borderless="noBorder"
+    :accent-color="displayColor"
+  >
     <template #title>
       <div class="ac-header">
         <div class="ac-title-wrap">
@@ -170,7 +179,7 @@ function formatResetAt(iso: string) {
               class="ac-progress-fill"
               :style="{
                 width: progressPercent + '%',
-                backgroundColor: displayColor
+                backgroundColor: displayColor,
               }"
             />
           </div>

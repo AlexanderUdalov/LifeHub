@@ -2,6 +2,7 @@
 defineOptions({ name: 'LifeAreasView' })
 import Card from 'primevue/card'
 import EmptyState from '@/components/EmptyState.vue'
+import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted } from 'vue'
 import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
@@ -71,7 +72,11 @@ function onEditArea(area: LifeAreaDTO) {
 
 <template>
   <div class="lifeareas-view">
-    <h1 class="ds-page-header">{{ $t('lifeareas.title') }}</h1>
+    <header class="lifeareas-view__header">
+      <h1 class="ds-page-header">{{ $t('lifeareas.title') }}</h1>
+      <Button v-if="!lifeAreasStore.isLimitReached" :label="$t('lifeareas.add')" icon="pi pi-plus"
+        class="desktop-create-btn" @click="emit('edit-lifearea', null)" />
+    </header>
 
     <div v-if="lifeAreasStore.isLoading && lifeAreasStore.lifeAreas.length === 0" class="lifeareas-skeleton">
       <Skeleton shape="circle" size="170px" class="skeleton-wheel" />
@@ -121,6 +126,14 @@ function onEditArea(area: LifeAreaDTO) {
   flex-direction: column;
   gap: 1rem;
   align-items: center;
+}
+
+.lifeareas-view__header {
+  display: contents;
+}
+
+.desktop-create-btn {
+  display: none;
 }
 
 .skeleton-wheel {
@@ -242,5 +255,57 @@ function onEditArea(area: LifeAreaDTO) {
 .legend-card:hover {
   background: var(--p-content-hover-background);
   border-color: var(--p-content-hover-border-color);
+}
+
+@media (min-width: 900px) {
+  .lifeareas-view {
+    display: grid;
+    grid-template-columns: minmax(18rem, 24rem) minmax(20rem, 1fr);
+    align-items: start;
+    gap: 2rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .lifeareas-view__header,
+  .lifeareas-skeleton,
+  .lifeareas-view :deep(.empty-state) {
+    grid-column: 1 / -1;
+  }
+
+  .lifeareas-view__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .desktop-create-btn {
+    display: inline-flex;
+  }
+
+  .lifeareas-view :deep(.empty-state) {
+    justify-self: center;
+  }
+
+  .lifeareas-skeleton {
+    display: grid;
+    grid-template-columns: minmax(18rem, 24rem) minmax(20rem, 1fr);
+    align-items: start;
+    width: 100%;
+  }
+
+  .wheel-wrap,
+  .skeleton-wheel {
+    width: min(28vw, 22rem);
+    max-width: 22rem;
+  }
+
+  .legend,
+  .skeleton-legend {
+    max-width: none;
+  }
 }
 </style>

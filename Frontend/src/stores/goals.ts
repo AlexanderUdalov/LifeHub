@@ -4,7 +4,7 @@ import {
   goalsApi,
   type CreateGoalRequest,
   type GoalDTO,
-  type UpdateGoalRequest
+  type UpdateGoalRequest,
 } from '@/api/GoalsAPI'
 
 export const useGoalsStore = defineStore('goals', () => {
@@ -20,20 +20,23 @@ export const useGoalsStore = defineStore('goals', () => {
         return new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime()
       }
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-    })
+    }),
   )
 
-  const activeGoalsSorted = computed(() => goalsSorted.value.filter(goal => !goal.completedAt))
+  const activeGoalsSorted = computed(() => goalsSorted.value.filter((goal) => !goal.completedAt))
 
   function getGoalById(goalId: string | null | undefined): GoalDTO | null {
     if (!goalId) return null
-    return goals.value.find(x => x.id === goalId) ?? null
+    return goals.value.find((x) => x.id === goalId) ?? null
   }
 
   async function fetchGoals(includeCompleted = false) {
     isLoading.value = true
     try {
-      goals.value = await goalsApi.getGoals(includeCompleted)
+      const fetched = await goalsApi.getGoals(includeCompleted)
+      goals.value = includeCompleted
+        ? fetched
+        : [...fetched, ...goals.value.filter((goal) => !!goal.completedAt)]
     } finally {
       isLoading.value = false
     }
@@ -45,7 +48,7 @@ export const useGoalsStore = defineStore('goals', () => {
   }
 
   async function updateGoal(id: string, request: UpdateGoalRequest) {
-    const existing = goals.value.find(x => x.id === id)
+    const existing = goals.value.find((x) => x.id === id)
     if (!existing) return
 
     const backup = { ...existing }
@@ -61,7 +64,7 @@ export const useGoalsStore = defineStore('goals', () => {
   }
 
   async function deleteGoal(id: string) {
-    const idx = goals.value.findIndex(x => x.id === id)
+    const idx = goals.value.findIndex((x) => x.id === id)
     if (idx === -1) return
 
     const backup = goals.value[idx]
@@ -76,7 +79,7 @@ export const useGoalsStore = defineStore('goals', () => {
   }
 
   async function completeGoal(id: string) {
-    const existing = goals.value.find(x => x.id === id)
+    const existing = goals.value.find((x) => x.id === id)
     if (!existing) return
 
     const backup = { ...existing }
@@ -91,6 +94,12 @@ export const useGoalsStore = defineStore('goals', () => {
     }
   }
 
+  async function reopenGoal(id: string) {
+    const updated = await goalsApi.reopenGoal(id)
+    const existing = goals.value.find((goal) => goal.id === id)
+    if (existing) Object.assign(existing, updated)
+  }
+
   return {
     goals,
     goalsSorted,
@@ -101,6 +110,7 @@ export const useGoalsStore = defineStore('goals', () => {
     updateGoal,
     deleteGoal,
     completeGoal,
-    getGoalById
+    reopenGoal,
+    getGoalById,
   }
 })

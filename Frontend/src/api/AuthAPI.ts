@@ -2,11 +2,11 @@ import { useAuthStore } from "@/stores/auth";
 import { api } from "./API";
 import type { components } from "./schema";
 
-export type LoginRequest = components["schemas"]["LoginRequest"];
-export type RegisterRequest = components["schemas"]["RegisterRequest"];
+type LoginRequest = components["schemas"]["LoginRequest"];
+type RegisterRequest = components["schemas"]["RegisterRequest"];
 export type UpdateRequest = components["schemas"]["UpdateRequest"];
 export type User = components["schemas"]["UserDTO"];
-export type AuthResponse = components["schemas"]["AuthResponse"];
+type AuthResponse = components["schemas"]["AuthResponse"];
 
 export async function login(request: LoginRequest) {
     const { data } = await api.post<AuthResponse>("/auth/login", request);
@@ -15,11 +15,6 @@ export async function login(request: LoginRequest) {
 
 export async function register(request: RegisterRequest) {
     const { data } = await api.post<AuthResponse>("/auth/register", request);
-    return data;
-}
-
-export async function refresh(refreshToken: string) {
-    const { data } = await api.post<AuthResponse>("/auth/refresh", { refreshToken }, { skipAuthRefresh: true } as any);
     return data;
 }
 

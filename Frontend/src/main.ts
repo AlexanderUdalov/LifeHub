@@ -6,7 +6,7 @@ import en from '@/locales/en.json'
 import App from './App.vue'
 import router from './router'
 import { GesturePlugin } from '@vueuse/gesture'
-import ToastService from 'primevue/toastservice';
+import ToastService from 'primevue/toastservice'
 
 import PrimeVue from 'primevue/config'
 import ruPrime from 'primelocale/ru.json'
@@ -16,21 +16,19 @@ import Aura from '@primeuix/themes/aura'
 import 'primeicons/primeicons.css'
 import './main.css'
 import './styles/design-system.css'
-import { applyTheme, applyStoredCustomColors, getStoredTheme } from '@/utils/theme'
-
-const storedTheme = getStoredTheme()
-applyTheme(storedTheme ?? 'auto')
+import './styles/redesign.css'
+import { usePreferencesStore } from '@/stores/preferences'
 
 const primeLocales = { ru: ruPrime.ru, en: enPrime.en }
 const initialLocale = (() => {
-    const saved = localStorage.getItem('locale')
-    return saved === 'en' || saved === 'ru' ? saved : 'ru'
+  const saved = localStorage.getItem('locale')
+  return saved === 'en' || saved === 'ru' ? saved : 'ru'
 })()
 const i18n = createI18n({
-    legacy: false,
-    locale: initialLocale,
-    fallbackLocale: 'en',
-    messages: { ru, en }
+  legacy: false,
+  locale: initialLocale,
+  fallbackLocale: 'en',
+  messages: { ru, en },
 })
 const pinia = createPinia()
 const app = createApp(App)
@@ -38,16 +36,16 @@ const app = createApp(App)
 app.use(i18n)
 app.use(pinia)
 app.use(router)
-app.use(ToastService);
+app.use(ToastService)
 app.use(GesturePlugin)
 app.use(PrimeVue, {
-    theme: {
-        preset: Aura,
-        options: { darkModeSelector: '.p-dark' }
-    },
-    locale: primeLocales[initialLocale]
-});
+  theme: {
+    preset: Aura,
+    options: { darkModeSelector: '.p-dark' },
+  },
+  locale: primeLocales[initialLocale],
+})
 
-applyStoredCustomColors();
+usePreferencesStore(pinia)
 
 app.mount('#app')

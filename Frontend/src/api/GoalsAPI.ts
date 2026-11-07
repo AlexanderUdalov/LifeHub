@@ -51,5 +51,10 @@ export const goalsApi = {
   async completeGoal(id: string): Promise<GoalDTO> {
     const { data } = await api.post<GoalDTO>(`/goals/${id}/complete`)
     return data
-  }
+  },
+
+  async reopenGoal(id: string): Promise<GoalDTO> {
+    const { data } = await api.post<GoalDTO>(`/goals/${id}/reopen`)
+    return data
+  },
 }

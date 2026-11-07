@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import Checkbox from 'primevue/checkbox'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { TaskDTO } from '@/api/TasksAPI'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
 import { useRecurrenceFormatter } from '@/composables/useRecurrenceFormatter'
+import { useClampedContent } from '@/composables/useClampedContent'
+import { renderMarkdown } from '@/composables/useMarkdown'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
-import BaseCard from '@/components/base/BaseCard.vue'
-
+import { toDateOnlyString } from '@/utils/dateOnly'
 const props = withDefaults(
   defineProps<{
     task: TaskDTO
@@ -17,289 +18,249 @@ const props = withDefaults(
     hideDeadline?: boolean
     hideGoal?: boolean
   }>(),
-  { draggable: false, noBorder: false, compact: false, hideDeadline: false, hideGoal: false }
+  { draggable: false, noBorder: false, compact: false, hideDeadline: false, hideGoal: false },
 )
-const lifeAreasStore = useLifeAreasStore()
-const goalsStore = useGoalsStore()
-const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.task.lifeAreaId))
-
-type DescriptionPart =
-  | { type: 'text'; value: string }
-  | { type: 'link'; value: string }
-
-const descriptionParts = computed<DescriptionPart[]>(() => {
-  const source = props.task.description ?? ''
-  if (!source) return []
-
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  const parts: DescriptionPart[] = []
-  let lastIndex = 0
-  let match: RegExpExecArray | null
-
-  while ((match = urlRegex.exec(source)) !== null) {
-    const [url] = match
-    const start = match.index
-
-    if (start > lastIndex) {
-      parts.push({ type: 'text', value: source.slice(lastIndex, start) })
-    }
-
-    parts.push({ type: 'link', value: url })
-    lastIndex = start + url.length
-  }
-
-  if (lastIndex < source.length) {
-    parts.push({ type: 'text', value: source.slice(lastIndex) })
-  }
-
-  return parts
-})
-
 const emit = defineEmits<{
   (e: 'edit', task: TaskDTO): void
-  (e: 'completion-change', taskId: string, value: boolean): void
+  (e: 'completion-change', id: string, value: boolean): void
   (e: 'drag-start', event: PointerEvent): void
 }>()
-
-const localCompleted = ref<boolean>(!!props.task.completionDate)
-watch(localCompleted, value => {
-  emit('completion-change', props.task.id, value)
-})
-
-const isExpanded = ref(false)
-
-function onHeaderClick() {
-  emit('edit', props.task)
-}
-
-function onContentClick() {
-  isExpanded.value = !isExpanded.value
-}
-
-const isOverdue = computed(() => {
-  if (!props.task.dueDate || localCompleted.value) return false
-
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const due = new Date(props.task.dueDate)
-  due.setHours(0, 0, 0, 0)
-
-  return due < today
-})
-
-const { formatDeadline } = useDeadlineFormatter()
-const deadlineText = computed(() => {
-  if (!props.task.dueDate) return null
-  return formatDeadline(new Date(props.task.dueDate))
-})
-
-const { formatRecurrence } = useRecurrenceFormatter()
-const recurrenceText = computed(() =>
-  formatRecurrence(props.task.recurrenceRule, props.task.dueDate)
+const { t } = useI18n()
+const lifeAreas = useLifeAreasStore(),
+  goals = useGoalsStore()
+const area = computed(() => lifeAreas.lifeAreas.find((x) => x.id === props.task.lifeAreaId))
+const goal = computed(() => goals.getGoalById(props.task.goalId))
+const { formatDeadline } = useDeadlineFormatter(),
+  { formatRecurrence } = useRecurrenceFormatter()
+const deadline = computed(() =>
+  props.task.dueDate ? formatDeadline(new Date(props.task.dueDate)) : '',
 )
-const goalTitle = computed(() => goalsStore.getGoalById(props.task.goalId)?.title ?? null)
-const hasDescription = computed(() => !!props.task.description?.trim())
-const showCompactDeadline = computed(
-  // In compact mode show due date for active tasks (so "this week" can display a date).
-  // Overdue color is still determined by `isOverdue` for the deadline styling.
-  () => props.compact && !props.hideDeadline && !!deadlineText.value && !localCompleted.value
-)
-const showRegularDeadline = computed(
-  () => !props.compact && !props.hideDeadline && !!deadlineText.value
-)
-const showRecurrence = computed(() => !props.compact && !!recurrenceText.value)
-const showGoal = computed(() => !props.compact && !props.hideGoal && !!goalTitle.value)
-const showDeadlineRow = computed(
+const recurrence = computed(() => formatRecurrence(props.task.recurrenceRule, props.task.dueDate))
+const overdue = computed(
   () =>
-    showCompactDeadline.value ||
-    showRegularDeadline.value ||
-    showRecurrence.value ||
-    showGoal.value
+    !!props.task.dueDate &&
+    !props.task.completionDate &&
+    props.task.dueDate.slice(0, 10) < toDateOnlyString(new Date()),
+)
+const description = computed(() => renderMarkdown(props.task.description ?? ''))
+const textRef = ref<HTMLElement | null>(null)
+const { expanded, foldable, toggle } = useClampedContent(
+  textRef,
+  () => props.task.description ?? '',
+  3,
 )
 </script>
-
-
 <template>
-  <BaseCard class="task-card" :class="{ 'no-border': noBorder, compact: props.compact }"
-    :borderless="noBorder" :accent-color="areaColor">
-    <template #title>
-      <div class="task-card-title-row" @click="onHeaderClick">
-        <Checkbox v-model="localCompleted" name="completed" binary @click.stop />
-        <label for="completed" class="title title-clickable" :class="{ completed: localCompleted }">
-          {{ props.compact && hasDescription ? `${task.title}…` : task.title }}
-        </label>
-        <div v-if="draggable" class="drag-handle" @pointerdown.prevent.stop="emit('drag-start', $event)">
-          <i class="pi pi-bars" />
+  <article class="task-card" :class="{ compact, completed: !!task.completionDate }">
+    <label class="task-check"
+      ><input
+        type="checkbox"
+        :checked="!!task.completionDate"
+        :aria-label="t('redesign.completeTask', { title: task.title })"
+        @change="emit('completion-change', task.id, ($event.target as HTMLInputElement).checked)"
+    /></label>
+    <div class="task-content">
+      <button type="button" class="task-title" @click="emit('edit', task)">{{ task.title }}</button
+      ><template v-if="!compact && task.description"
+        ><div class="task-description" :class="{ folded: foldable && !expanded }" @click="toggle">
+          <div ref="textRef" class="task-description-inner" v-html="description" />
         </div>
+        <button
+          v-if="foldable"
+          type="button"
+          class="text-action task-fold"
+          :aria-expanded="expanded"
+          @click="toggle()"
+        >
+          {{ t(expanded ? 'redesign.collapse' : 'redesign.expand')
+          }}<i
+            aria-hidden="true"
+            :class="expanded ? 'pi pi-angle-up' : 'pi pi-angle-down'"
+          /></button
+      ></template>
+      <div class="task-meta">
+        <span v-if="area" class="area-chip" :style="{ '--area-color': area.color }"
+          ><span />{{ area.name }}</span
+        ><span v-if="deadline && !hideDeadline" :class="{ overdue }"
+          ><i aria-hidden="true" class="pi pi-calendar" />{{ deadline }}</span
+        ><span v-if="recurrence"
+          ><i aria-hidden="true" class="pi pi-refresh" />{{ recurrence }}</span
+        ><RouterLink v-if="goal && !hideGoal" to="/goals"
+          ><i aria-hidden="true" class="pi pi-flag" />{{ goal.title }}</RouterLink
+        >
       </div>
-    </template>
-    <template #content>
-      <p v-if="!props.compact && props.task.description" class="description"
-        :class="{ completed: localCompleted, expanded: isExpanded }" @click="onContentClick">
-        <template v-if="!isExpanded">
-          {{ props.task.description }}
-        </template>
-        <template v-else>
-          <template v-for="(part, index) in descriptionParts" :key="index">
-            <a v-if="part.type === 'link'" :href="part.value" target="_blank" rel="noopener noreferrer"
-              class="description-link" @click.stop>
-              {{ part.value }}
-            </a>
-            <span v-else>{{ part.value }}</span>
-          </template>
-        </template>
-      </p>
-
-      <div v-if="showDeadlineRow" class="deadline-row">
-        <span class="deadline-row-left">
-          <span v-if="showCompactDeadline || showRegularDeadline" class="deadline"
-            :class="{ overdue: isOverdue, completed: localCompleted }">
-            {{ deadlineText }}
-          </span>
-          <span v-if="showRecurrence" class="recurrence" :class="{ completed: localCompleted }">
-            <i class="pi pi-refresh recurrence-icon" aria-hidden="true"></i>
-            {{ recurrenceText }}
-          </span>
-        </span>
-        <span v-if="showGoal" class="goal-text">
-          {{ goalTitle }}
-        </span>
-      </div>
-    </template>
-  </BaseCard>
+    </div>
+    <button
+      v-if="draggable"
+      type="button"
+      class="drag-handle"
+      :aria-label="t('redesign.reorderTask')"
+      @pointerdown.prevent.stop="emit('drag-start', $event)"
+    >
+      <i aria-hidden="true" class="pi pi-bars" />
+    </button>
+  </article>
 </template>
-
 <style scoped>
 .task-card {
+  display: flex;
+  align-items: stretch;
+  gap: 9px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--app-line);
+  background: transparent;
+  min-width: 0;
   border-radius: 0;
-  border-left-width: 4px;
-  border-left-style: solid;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
 }
-
-:deep(.p-card-body) {
-  padding: 1rem;
+.task-card:last-child {
+  border-bottom: 0;
 }
-
-.task-card.compact :deep(.p-card-body) {
-  padding: 0.5rem 0.75rem;
-}
-
-.task-card-title-row {
+.task-check {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  min-width: 0;
+  justify-content: center;
+  min-width: 36px;
+  align-self: stretch;
   cursor: pointer;
 }
-
-.title {
+.task-check input {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 1px solid var(--app-muted);
+  border-radius: 6px;
+  background: var(--app-card);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.task-check input:checked {
+  background: var(--app-accent);
+  border-color: var(--app-accent);
+}
+.task-check input:checked:after {
+  content: '✓';
+  color: var(--app-on);
+  font-size: 15px;
+}
+.task-content {
   flex: 1;
   min-width: 0;
-  vertical-align: middle;
-  padding-left: 1rem;
-  font-size: 1.25rem;
 }
-
-.task-card.compact .title {
-  font-size: 1rem;
-  padding-left: 0.75rem;
+.task-title {
+  display: block;
+  border: 0;
+  padding: 0;
+  min-height: 24px;
+  background: transparent;
+  color: var(--app-text);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
-
-.title-clickable {
-  cursor: pointer;
+.completed .task-title {
+  text-decoration: line-through;
+  color: var(--app-muted);
 }
-
-.drag-handle {
+.task-description {
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 5px 0;
+  overflow-wrap: anywhere;
+}
+.task-description.folded {
+  max-height: 4.8em;
+  overflow: hidden;
+}
+.task-description-inner {
+  line-height: 1.6;
+}
+.task-description-inner :deep(p) {
+  margin: 0;
+}
+.task-description-inner :deep(ul),
+.task-description-inner :deep(ol) {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+.task-description-inner :deep(a) {
+  color: var(--app-accent);
+}
+.task-fold {
+  font-size: 11px;
+  padding: 0;
+  min-height: 28px;
+}
+.task-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px 10px;
+  margin-top: 6px;
+  color: var(--app-muted);
+  font-size: 11px;
+}
+.task-meta > span,
+.task-meta > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.task-meta i {
+  font-size: 12px;
   flex-shrink: 0;
-  margin-left: 0.25rem;
-  padding: 0.25rem;
-  color: var(--p-text-muted-color);
+}
+.task-meta a {
+  color: inherit;
+  text-decoration: none;
+}
+.task-meta .overdue {
+  color: var(--app-alert);
+}
+.area-chip {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--area-color) 12%, var(--app-card));
+}
+.area-chip > span {
+  height: 7px;
+  width: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--area-color);
+}
+.drag-handle {
+  align-self: center;
+  border: 0;
+  padding: 10px;
+  background: transparent;
+  color: var(--app-muted);
   cursor: grab;
   touch-action: none;
 }
-
-.title.completed {
-  text-decoration: line-through;
-  color: var(--p-gray-400);
+.compact {
+  padding: 9px 0;
 }
-
-.description {
-  color: var(--p-gray-400);
-  font-size: var(--ds-font-size-md);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+.compact .task-title {
+  font-size: 13px;
 }
-
-.description.completed {
-  color: var(--p-gray-500);
-}
-
-.description.expanded {
-  white-space: pre-line;
-  overflow: visible;
-  text-overflow: unset;
-}
-
-.description-link {
-  color: var(--p-primary-color);
-  text-decoration: underline;
-  cursor: pointer;
-  word-break: break-all;
-}
-
-.deadline-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  font-size: var(--ds-font-size-sm);
-  margin: 0;
-}
-
-.deadline-row-left {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.deadline {
-  color: var(--p-orange-400);
-}
-
-.deadline.overdue {
-  color: var(--p-red-600);
-}
-
-.deadline.completed {
-  color: var(--p-gray-400);
-}
-
-.recurrence {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: var(--p-gray-500);
-}
-
-.recurrence-icon {
-  font-size: 0.875em;
-}
-
-.recurrence.completed {
-  color: var(--p-gray-400);
-}
-
-.goal-text {
-  color: var(--p-text-muted-color);
-  margin-left: auto;
+@media (max-width: 760px) {
+  .task-title {
+    min-height: 30px;
+  }
+  .task-check {
+    min-width: 35px;
+  }
+  .drag-handle {
+    padding: 12px 4px;
+  }
+  .task-fold {
+    min-height: 36px;
+  }
 }
 </style>

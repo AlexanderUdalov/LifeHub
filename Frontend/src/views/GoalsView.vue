@@ -3,6 +3,7 @@ defineOptions({ name: 'GoalsView' })
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import EmptyState from '@/components/EmptyState.vue'
 import GoalCard from '@/components/GoalCard.vue'
+import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { useGoalsStore } from '@/stores/goals'
 import { useTasksStore } from '@/stores/tasks'
@@ -17,7 +18,7 @@ import type { HabitDTO } from '@/api/HabitsAPI'
 import type { AddictionDTO } from '@/api/AddictionsAPI'
 
 const emit = defineEmits<{
-  (e: 'edit-goal', goal: GoalDTO): void
+  (e: 'edit-goal', goal: GoalDTO | null): void
   (e: 'edit-task', task: TaskDTO): void
   (e: 'edit-habit', habit: HabitDTO): void
   (e: 'edit-addiction', addiction: AddictionDTO): void
@@ -30,7 +31,7 @@ const habitsStore = useHabitsStore()
 const addictionsStore = useAddictionsStore()
 const nsfwContentStore = useNsfwContentStore()
 const journalStore = useJournalStore()
-const showCompletedGoals = ref(false)
+const showCompletedGoals = ref(true)
 
 onMounted(async () => {
   await Promise.all([
@@ -38,7 +39,7 @@ onMounted(async () => {
     tasksStore.fetchTasks(),
     habitsStore.fetchHabits(56),
     addictionsStore.fetchAddictions(60),
-    journalStore.loadEntries()
+    journalStore.loadEntries(),
   ])
 })
 
@@ -48,7 +49,7 @@ onActivated(async () => {
 
 const tasksByGoalId = computed(() => {
   const grouped: Record<string, typeof tasksStore.tasks> = {}
-  for (const task of tasksStore.tasks) {
+  for (const task of [...tasksStore.tasks, ...tasksStore.completedTasksList]) {
     if (!task.goalId) continue
     grouped[task.goalId] ??= []
     const bucket = grouped[task.goalId]
@@ -80,9 +81,25 @@ const addictionsByGoalId = computed(() => {
   return grouped
 })
 
+const addictionsById = computed(
+  () => new Map(addictionsStore.addictions.map((row) => [row.addiction.id, row.addiction])),
+)
+
 const entriesByGoalId = computed(() => {
   const grouped: Record<string, JournalEntryDTO[]> = {}
   for (const entry of journalStore.entries) {
+    if (
+      entry.addictionId &&
+      !nsfwContentStore.addictionVisible(
+        addictionsStore.addictions.find((a) => a.addiction.id === entry.addictionId)?.addiction ??
+          {},
+      )
+    )
+      continue
+    if (entry.addictionId) {
+      const addiction = addictionsById.value.get(entry.addictionId)
+      if (addiction && !nsfwContentStore.addictionVisible(addiction)) continue
+    }
     if (!entry.goalId) continue
     let bucket = grouped[entry.goalId]
     if (!bucket) {
@@ -94,8 +111,8 @@ const entriesByGoalId = computed(() => {
   return grouped
 })
 
-const activeGoals = computed(() => goalsStore.goalsSorted.filter(goal => !goal.completedAt))
-const completedGoals = computed(() => goalsStore.goalsSorted.filter(goal => !!goal.completedAt))
+const activeGoals = computed(() => goalsStore.goalsSorted.filter((goal) => !goal.completedAt))
+const completedGoals = computed(() => goalsStore.goalsSorted.filter((goal) => !!goal.completedAt))
 
 watch(completedGoals, (list) => {
   if (list.length === 0) showCompletedGoals.value = false
@@ -108,7 +125,15 @@ async function onCompleteGoal(goalId: string) {
 
 <template>
   <div class="goals-view">
-    <h1 class="ds-page-header">{{ $t('goals.title') }}</h1>
+    <header class="goals-view__header">
+      <h1 class="ds-page-header">{{ $t('goals.title') }}</h1>
+      <Button
+        :label="$t('goals.newGoal')"
+        icon="pi pi-plus"
+        class="desktop-create-btn"
+        @click="emit('edit-goal', null)"
+      />
+    </header>
 
     <div v-if="goalsStore.isLoading && goalsStore.goals.length === 0" class="goals-skeleton">
       <div v-for="i in 3" :key="i" class="skeleton-card">
@@ -120,29 +145,61 @@ async function onCompleteGoal(goalId: string) {
     </div>
 
     <template v-else>
-      <EmptyState v-if="activeGoals.length === 0" icon="pi pi-flag" :title="$t('goals.empty')"
-        :subtitle="$t('goals.emptySubtitle')" />
-      <GoalCard v-else v-for="goal in activeGoals" :key="goal.id" :goal="goal" :tasks="tasksByGoalId[goal.id] ?? []"
-        :habits="habitsByGoalId[goal.id] ?? []" :addictions="addictionsByGoalId[goal.id] ?? []"
-        :journal-entries="entriesByGoalId[goal.id] ?? []" @edit-goal="emit('edit-goal', $event)"
-        @edit-task="emit('edit-task', $event)" @edit-habit="emit('edit-habit', $event)"
-        @edit-addiction="emit('edit-addiction', $event)" @edit-journal="emit('edit-journal', $event)"
-        @completion-change="tasksStore.toggleTaskCompletion" @complete-goal="onCompleteGoal" />
+      <EmptyState
+        v-if="activeGoals.length === 0"
+        icon="pi pi-flag"
+        :title="$t('goals.empty')"
+        :subtitle="$t('goals.emptySubtitle')"
+      />
+      <GoalCard
+        v-else
+        v-for="goal in activeGoals"
+        :key="goal.id"
+        :goal="goal"
+        :tasks="tasksByGoalId[goal.id] ?? []"
+        :habits="habitsByGoalId[goal.id] ?? []"
+        :addictions="addictionsByGoalId[goal.id] ?? []"
+        :journal-entries="entriesByGoalId[goal.id] ?? []"
+        @edit-goal="emit('edit-goal', $event)"
+        @edit-task="emit('edit-task', $event)"
+        @edit-habit="emit('edit-habit', $event)"
+        @edit-addiction="emit('edit-addiction', $event)"
+        @edit-journal="emit('edit-journal', $event)"
+        @completion-change="tasksStore.toggleTaskCompletion"
+        @complete-goal="onCompleteGoal"
+      />
 
       <div v-if="completedGoals.length" class="completed-goals-text-block">
-        <button class="completed-goals-toggle" type="button" @click="showCompletedGoals = !showCompletedGoals">
-          <i :class="showCompletedGoals ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"/>
+        <button
+          class="completed-goals-toggle"
+          type="button"
+          @click="showCompletedGoals = !showCompletedGoals"
+        >
+          <i :class="showCompletedGoals ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" />
           {{
             showCompletedGoals
               ? $t('goals.hideCompletedGoalsInline', { count: completedGoals.length })
               : $t('goals.showCompletedGoalsInline', { count: completedGoals.length })
           }}
         </button>
-        <ul v-if="showCompletedGoals" class="completed-goals-list">
-          <li v-for="goal in completedGoals" :key="goal.id">
-            {{ goal.title }}
-          </li>
-        </ul>
+        <div v-if="showCompletedGoals" class="completed-goals-list">
+          <GoalCard
+            v-for="goal in completedGoals"
+            :key="goal.id"
+            :goal="goal"
+            :tasks="tasksByGoalId[goal.id] ?? []"
+            :habits="habitsByGoalId[goal.id] ?? []"
+            :addictions="addictionsByGoalId[goal.id] ?? []"
+            :journal-entries="entriesByGoalId[goal.id] ?? []"
+            @edit-goal="emit('edit-goal', $event)"
+            @edit-task="emit('edit-task', $event)"
+            @edit-habit="emit('edit-habit', $event)"
+            @edit-addiction="emit('edit-addiction', $event)"
+            @edit-journal="emit('edit-journal', $event)"
+            @completion-change="tasksStore.toggleTaskCompletion"
+            @reopen-goal="goalsStore.reopenGoal"
+          />
+        </div>
       </div>
     </template>
   </div>
@@ -160,6 +217,14 @@ async function onCompleteGoal(goalId: string) {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.goals-view__header {
+  display: contents;
+}
+
+.desktop-create-btn {
+  display: none;
 }
 
 .skeleton-card {
@@ -201,5 +266,50 @@ async function onCompleteGoal(goalId: string) {
   color: var(--p-text-muted-color);
   font-size: 0.9rem;
   padding-left: 1.1rem;
+}
+
+@media (min-width: 900px) {
+  .goals-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+    align-items: start;
+    gap: 1rem;
+    max-width: 78rem;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .goals-view__header,
+  .goals-skeleton,
+  .completed-goals-text-block,
+  .goals-view :deep(.empty-state) {
+    grid-column: 1 / -1;
+  }
+
+  .goals-view__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .desktop-create-btn {
+    display: inline-flex;
+  }
+
+  .goals-view :deep(.empty-state) {
+    justify-self: center;
+  }
+
+  .goals-skeleton {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+    gap: 1rem;
+  }
+
+  .completed-goals-text-block {
+    align-items: flex-start;
+    padding: 0.5rem 0 0;
+  }
 }
 </style>

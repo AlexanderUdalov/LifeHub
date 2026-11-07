@@ -3,7 +3,7 @@ import type { components } from './schema'
 import { toDateOnlyString } from '@/utils/dateOnly'
 
 export type HabitDTO = components['schemas']['HabitDTO']
-export type HabitDayDTO = components['schemas']['HabitDayDTO']
+type HabitDayDTO = components['schemas']['HabitDayDTO']
 export type HabitWithHistoryDTO = components['schemas']['HabitWithHistoryDTO']
 export type HabitUpsertRequest = components['schemas']['HabitUpsertRequest']
 

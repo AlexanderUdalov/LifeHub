@@ -1,0 +1,39 @@
+name: Check
+'on':
+- push
+- pull_request
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+    - run: dotnet test Backend.Tests/LifeHub.Backend.Tests.csproj -c Release
+    - run: dotnet publish Backend/LifeHub-Backend.csproj -c Release -r linux-x64 --self-contained false -o .release/backend
+    - run: npm ci --prefix Frontend --no-audit --no-fund
+    - run: npm test --prefix Frontend
+    - run: 'npm run build --prefix Frontend
+
+        mkdir -p .release/frontend
+
+        cp -r Frontend/dist/. .release/frontend/'
+    - name: Package exact source revision
+      shell: bash
+      run: 'set -euo pipefail
+
+        revision=$(git rev-parse HEAD)
+
+        echo "RELEASE_SHA=$revision" >> "$GITHUB_ENV"
+
+        python scripts/package_release.py --project lifehub --sha "$revision" --backend .release/backend --frontend .release/frontend
+        --output release.tar.gz'

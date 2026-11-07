@@ -14,3 +14,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Code-only deployment artifacts
+.release/
+release.tar.gz

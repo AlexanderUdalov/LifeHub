@@ -83,6 +83,8 @@ builder.Services
 
 var app = builder.Build();
 
+app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
+
 app.UseCors("LifeHubCors");
 app.UseAuthentication();
 app.UseAuthorization();

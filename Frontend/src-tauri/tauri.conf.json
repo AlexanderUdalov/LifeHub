@@ -5,7 +5,7 @@
   "identifier": "com.alexanderudalov.lifehub",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "http://localhost:4120",
     "beforeDevCommand": "npm run dev:tauri",
     "beforeBuildCommand": "npm run build:tauri"
   },

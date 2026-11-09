@@ -13,9 +13,11 @@ export default defineConfig({
     },
   },
   server: {
+    port: 4120,
+    strictPort: true,
     proxy: {
       '/api': {
-        target: process.env.LIFEHUB_DEV_API ?? 'http://localhost:5091',
+        target: process.env.LIFEHUB_DEV_API ?? 'http://localhost:4121',
         changeOrigin: true,
         secure: false,
       },

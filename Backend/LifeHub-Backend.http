@@ -1,4 +1,4 @@
-@LifeHub_Backend_HostAddress = http://localhost:5091
+@LifeHub_Backend_HostAddress = http://localhost:4121
 
 GET {{LifeHub_Backend_HostAddress}}/weatherforecast/
 Accept: application/json

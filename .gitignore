@@ -20,3 +20,7 @@ Thumbs.db
 # Code-only deployment artifacts
 .release/
 release.tar.gz
+
+# Generated .NET outputs at any depth
+**/bin/
+**/obj/

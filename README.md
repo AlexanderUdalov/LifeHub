@@ -105,8 +105,8 @@ npm run dev
 
 This starts both services:
 
-- Backend API: `http://localhost:5091`
-- Frontend Vite dev server: usually `http://localhost:5173`
+- Backend API: `http://localhost:4121`
+- Frontend Vite dev server: usually `http://localhost:4120`
 
 The Vite dev server proxies `/api` requests to the backend.
 
@@ -145,7 +145,7 @@ When backend DTOs, controllers, or API contracts change:
 3. Commit the generated schema together with the API change.
 4. Stop the backend process after generation.
 
-OpenAPI is exposed at `http://localhost:5091/openapi/v1.json` in Development.
+OpenAPI is exposed at `http://localhost:4121/openapi/v1.json` in Development.
 
 ## Deployment
 

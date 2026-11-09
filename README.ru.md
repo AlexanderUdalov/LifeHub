@@ -105,8 +105,8 @@ npm run dev
 
 Команда запускает оба сервиса:
 
-- Backend API: `http://localhost:5091`
-- Frontend Vite dev server: обычно `http://localhost:5173`
+- Backend API: `http://localhost:4121`
+- Frontend Vite dev server: обычно `http://localhost:4120`
 
 Vite dev server проксирует `/api` запросы на backend.
 
@@ -145,7 +145,7 @@ Frontend использует сгенерированные API-типы из `
 3. Закоммитьте сгенерированную схему вместе с API-изменениями.
 4. Остановите backend после генерации.
 
-OpenAPI доступен в Development по адресу `http://localhost:5091/openapi/v1.json`.
+OpenAPI доступен в Development по адресу `http://localhost:4121/openapi/v1.json`.
 
 ## Развертывание
 

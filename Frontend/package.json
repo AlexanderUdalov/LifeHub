@@ -18,7 +18,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write --experimental-cli src/",
-    "api:gen": "openapi-typescript http://localhost:5091/openapi/v1.json -o src/api/schema.ts",
+    "api:gen": "openapi-typescript http://localhost:4121/openapi/v1.json -o src/api/schema.ts",
     "tauri": "tauri"
   },
   "dependencies": {

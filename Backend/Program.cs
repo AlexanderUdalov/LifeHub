@@ -67,7 +67,9 @@ builder.Services
 {
     options.AddPolicy("LifeHubCors", policy =>
     {
-        policy.WithOrigins("http://tauri.localhost")
+        policy.WithOrigins(builder.Environment.IsDevelopment()
+                ? new[] { "http://tauri.localhost", "http://localhost:4120", "http://127.0.0.1:4120" }
+                : new[] { "http://tauri.localhost" })
             .AllowAnyMethod()
             .AllowAnyHeader();
     });

@@ -28,3 +28,7 @@ journalctl -u site-lifehub.service -n 50 --no-pager. Полные журналы
 Копии: /var/lib/portfolio-deploy/lifehub/backups. Последние копии видны в operation=status.
 Receiver и права устанавливаются bootstrap из personal-infra/deploy/.
 Восстановление БД — отдельная административная операция после остановки сервиса.
+
+## Локальная разработка
+
+Dev-порты: frontend 4120 / backend 4121 / HTTPS 4122. Production-порты не менялись. Vite использует strictPort.

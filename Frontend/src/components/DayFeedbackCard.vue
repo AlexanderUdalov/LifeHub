@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
-import DatePicker from 'primevue/datepicker'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import BaseCard from '@/components/base/BaseCard.vue'
@@ -10,10 +9,24 @@ import { getDayFeedback, saveDayFeedback, type DayFeedbackDTO } from '@/api/DayF
 import { toDateOnlyString } from '@/utils/dateOnly'
 
 const { t } = useI18n()
-const yesterday = new Date()
-yesterday.setDate(yesterday.getDate() - 1)
-const selectedDate = ref<Date | null>(yesterday)
-const dateKey = computed(() => selectedDate.value ? toDateOnlyString(selectedDate.value) : '')
+const emit = defineEmits<{
+  (e: 'discuss', feedback: { score: number; note: string }): void
+}>()
+const dateKey = ref(toDateOnlyString(new Date()))
+let dateTimer: ReturnType<typeof setInterval> | undefined
+
+function refreshToday() {
+  dateKey.value = toDateOnlyString(new Date())
+}
+
+onMounted(() => {
+  dateTimer = setInterval(refreshToday, 60_000)
+  window.addEventListener('focus', refreshToday)
+})
+onBeforeUnmount(() => {
+  clearInterval(dateTimer)
+  window.removeEventListener('focus', refreshToday)
+})
 const score = ref(5)
 const note = ref('')
 const saved = ref<DayFeedbackDTO | null>(null)
@@ -55,17 +68,28 @@ async function loadFeedback() {
 watch(dateKey, loadFeedback, { immediate: true })
 
 async function save() {
-  if (disabled.value || unchanged.value) return
+  const previousDate = dateKey.value
+  refreshToday()
+  if (previousDate !== dateKey.value || disabled.value) return false
+  if (unchanged.value) return true
   saving.value = true
   error.value = ''
   try {
-    saved.value = await saveDayFeedback(dateKey.value, { score: score.value, note: note.value.trim() || null })
+    const result = await saveDayFeedback(previousDate, { score: score.value, note: note.value.trim() || null })
+    if (dateKey.value !== previousDate) return false
+    saved.value = result
     note.value = saved.value.note ?? ''
+    return true
   } catch {
-    error.value = t('dayFeedback.saveError')
+    if (dateKey.value === previousDate) error.value = t('dayFeedback.saveError')
+    return false
   } finally {
     saving.value = false
   }
+}
+
+async function discuss() {
+  if (await save()) emit('discuss', { score: score.value, note: note.value.trim() })
 }
 </script>
 
@@ -75,9 +99,7 @@ async function save() {
       <form class="day-feedback__form" :aria-busy="loading || saving" @submit.prevent="save">
         <div class="day-feedback__header">
           <h2 class="day-feedback__title">{{ t('dayFeedback.title') }}</h2>
-          <DatePicker v-model="selectedDate" :max-date="new Date()" :disabled="saving" date-format="dd.mm.yy"
-            :manual-input="false" show-icon input-id="day-feedback-date" :aria-label="t('dayFeedback.date')"
-            class="day-feedback__date" />
+          <span class="day-feedback__hint">{{ t('reflection.period1') }}</span>
         </div>
         <p class="day-feedback__hint">{{ t('dayFeedback.subtitle') }}</p>
 
@@ -97,6 +119,8 @@ async function save() {
         <Textarea id="day-feedback-note" v-model="note" :disabled="disabled" :maxlength="1000" :rows="2"
           :placeholder="t('dayFeedback.notePlaceholder')" auto-resize fluid />
         <small class="day-feedback__hint day-feedback__counter">{{ note.length }} / 1000</small>
+        <Button type="button" :label="t('dayFeedback.discuss')" icon="pi pi-sparkles" severity="secondary"
+          outlined :disabled="disabled" :loading="saving" @click="discuss" />
 
         <Message v-if="error" severity="error" :closable="false">
           {{ error }}
@@ -136,16 +160,6 @@ async function save() {
   margin: 0;
   font-size: var(--ds-font-size-lg);
   font-weight: 600;
-}
-
-.day-feedback__date {
-  width: 10rem;
-  max-width: 100%;
-}
-
-.day-feedback__date :deep(input) {
-  width: 100%;
-  min-width: 0;
 }
 
 .day-feedback__hint,

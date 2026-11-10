@@ -15,8 +15,8 @@ public class AiController(AiChatService aiChatService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<StartReflectionResponse>> StartReflection(StartReflectionRequest request)
     {
-        if (request.PeriodDays is < 1 or > 90)
-            return BadRequest("Period must be between 1 and 90 days.");
+        if (request.PeriodDays is < 1 or > 365)
+            return BadRequest("Period must be between 1 and 365 days.");
 
         var userId = User.GetUserId();
         var (contextId, contextSummary, message) = await aiChatService.StartReflectionAsync(

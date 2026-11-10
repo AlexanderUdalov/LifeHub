@@ -1,5 +1,7 @@
 html {
     font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--p-content-background);
+    touch-action: pan-x pan-y;
 }
 
 body {
@@ -11,6 +13,15 @@ body {
 
 #app {
     min-height: 100dvh;
+}
+
+@media (max-width: 899px) {
+    /* Keep Safari from zooming when a small form control receives focus. */
+    input.p-inputtext,
+    textarea.p-textarea,
+    select {
+        font-size: max(16px, 1rem);
+    }
 }
 
 /* Shared bottom drawers: addictions edit / reset / trigger / details */

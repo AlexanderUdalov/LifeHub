@@ -2,8 +2,8 @@
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import ProgressBar from 'primevue/progressbar'
-import ProgressSpinner from 'primevue/progressspinner'
 import Message from 'primevue/message'
+import Dialog from 'primevue/dialog'
 import { computed, nextTick, ref, watch, TransitionGroup } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useJournalStore } from '@/stores/journal'
@@ -12,7 +12,7 @@ import {
   sendReflectionMessage,
   type ChatMessageDTO
 } from '@/api/ReflectionAPI'
-import BaseDrawer from '@/components/base/BaseDrawer.vue'
+import DayFeedbackCard from '@/components/DayFeedbackCard.vue'
 
 const { t, locale } = useI18n()
 const journalStore = useJournalStore()
@@ -26,7 +26,7 @@ watch(visible, (v) => {
   if (!v) emit('close')
 })
 
-type Step = 'period' | 'chat' | 'complete'
+type Step = 'period' | 'day' | 'chat' | 'complete'
 const step = ref<Step>('period')
 
 const contextId = ref('')
@@ -37,6 +37,9 @@ const isLoading = ref(false)
 const errorText = ref('')
 const isSaving = ref(false)
 const maxSteps = 5
+const selectedPeriod = ref(7)
+const initialMessage = ref('')
+const replyFailed = ref(false)
 
 const messagesContainer = ref<HTMLElement | null>(null)
 const inputEl = ref<HTMLElement | null>(null)
@@ -66,7 +69,14 @@ function focusInput() {
   })
 }
 
-async function selectPeriod(days: number) {
+async function selectPeriod(days: number, openingMessage = '') {
+  selectedPeriod.value = days
+  initialMessage.value = openingMessage
+  contextId.value = ''
+  messages.value = []
+  journalSummary.value = null
+  replyFailed.value = false
+  step.value = 'chat'
   isLoading.value = true
   errorText.value = ''
 
@@ -75,8 +85,10 @@ async function selectPeriod(days: number) {
     const res = await startReflection(days, language)
     contextId.value = res.contextId!
     messages.value = [{ role: 'assistant', content: res.message ?? '' }]
-    journalSummary.value = null
-    step.value = 'chat'
+    if (openingMessage) {
+      messages.value.push({ role: 'user', content: openingMessage })
+      await requestReply()
+    }
     scrollToBottom()
     focusInput()
   } catch {
@@ -86,14 +98,27 @@ async function selectPeriod(days: number) {
   }
 }
 
+function discussDay(feedback: { score: number; note: string }) {
+  const openingMessage = [
+    t('dayFeedback.chatScore', { score: feedback.score }),
+    feedback.note
+  ].filter(Boolean).join('\n\n')
+  selectPeriod(1, openingMessage)
+}
+
 async function sendMessage() {
   const text = userInput.value.trim()
   if (!text || isLoading.value) return
 
   messages.value.push({ role: 'user', content: text })
   userInput.value = ''
+  await requestReply()
+}
+
+async function requestReply() {
   isLoading.value = true
   errorText.value = ''
+  replyFailed.value = false
   scrollToBottom()
 
   try {
@@ -106,6 +131,7 @@ async function sendMessage() {
     focusInput()
   } catch {
     errorText.value = t('reflection.error')
+    replyFailed.value = true
   } finally {
     isLoading.value = false
   }
@@ -151,9 +177,11 @@ async function saveToJournal() {
 </script>
 
 <template>
-  <BaseDrawer v-model:visible="visible" class="reflection-drawer" max-height="85vh">
+  <Dialog v-model:visible="visible" modal :maximized="true" class="reflection-dialog">
     <template #header>
-      <span class="reflection-drawer__title">
+      <span class="reflection-dialog__title">
+        <Button v-if="step === 'day'" icon="pi pi-arrow-left" variant="text" rounded
+          :aria-label="t('reflection.backToPeriods')" @click="step = 'period'" />
         <i class="pi pi-sparkles" />
         {{ t('reflection.title') }}
       </span>
@@ -162,11 +190,13 @@ async function saveToJournal() {
     <!-- Period selection -->
     <div v-if="step === 'period'" class="reflection-period">
       <p class="reflection-period__question">{{ t('reflection.selectPeriod') }}</p>
-      <div v-if="isLoading" class="reflection-period__loading">
-        <ProgressSpinner style="width: 2.5rem; height: 2.5rem" strokeWidth="4" />
-        <span class="reflection-period__loading-text">{{ t('reflection.loading') }}</span>
-      </div>
-      <div v-else class="reflection-period__buttons">
+      <div class="reflection-period__buttons">
+        <Button
+          :label="t('reflection.period1')"
+          severity="secondary"
+          outlined
+          @click="step = 'day'"
+        />
         <Button
           :label="t('reflection.period7')"
           severity="secondary"
@@ -174,23 +204,21 @@ async function saveToJournal() {
           @click="selectPeriod(7)"
         />
         <Button
-          :label="t('reflection.period14')"
-          severity="secondary"
-          outlined
-          @click="selectPeriod(14)"
-        />
-        <Button
           :label="t('reflection.period30')"
           severity="secondary"
           outlined
           @click="selectPeriod(30)"
         />
+        <Button
+          :label="t('reflection.period365')"
+          severity="secondary"
+          outlined
+          @click="selectPeriod(365)"
+        />
       </div>
-
-      <Message v-if="errorText" severity="error" :closable="false" class="reflection-error">
-        {{ errorText }}
-      </Message>
     </div>
+
+    <DayFeedbackCard v-if="step === 'day'" @discuss="discussDay" />
 
     <!-- Chat -->
     <template v-if="step === 'chat' || step === 'complete'">
@@ -212,7 +240,8 @@ async function saveToJournal() {
             </div>
           </div>
 
-          <div v-if="isLoading" key="typing" class="reflection-message reflection-message--ai">
+          <div v-if="isLoading" key="typing" class="reflection-message reflection-message--ai"
+            role="status" :aria-label="t('reflection.loading')">
           <div class="reflection-message__bubble reflection-typing">
             <span class="reflection-typing__dot" />
             <span class="reflection-typing__dot" />
@@ -224,10 +253,13 @@ async function saveToJournal() {
 
       <Message v-if="errorText" severity="error" :closable="false" class="reflection-error">
         {{ errorText }}
+        <Button v-if="!contextId || replyFailed" :label="t('dayFeedback.retry')" variant="text"
+          :disabled="isLoading"
+          @click="contextId ? requestReply() : selectPeriod(selectedPeriod, initialMessage)" />
       </Message>
     </template>
 
-    <template #footer>
+    <template v-if="step === 'chat' || step === 'complete'" #footer>
       <!-- Chat input -->
       <div v-if="step === 'chat'" class="reflection-input">
         <div ref="inputEl" class="reflection-input__wrap">
@@ -235,13 +267,14 @@ async function saveToJournal() {
             v-model="userInput"
             :placeholder="t('reflection.inputPlaceholder')"
             class="reflection-input__field"
-            :disabled="isLoading"
+            :disabled="isLoading || !contextId || replyFailed"
             @keydown="handleKeydown"
           />
           <Button
             icon="pi pi-send"
             rounded
-            :disabled="!userInput.trim() || isLoading"
+            :disabled="!userInput.trim() || isLoading || !contextId || replyFailed"
+            :aria-label="t('reflection.send')"
             class="reflection-input__send"
             @click="sendMessage"
           />
@@ -268,12 +301,12 @@ async function saveToJournal() {
         </div>
       </div>
     </template>
-  </BaseDrawer>
+  </Dialog>
 </template>
 
 <style>
 
-.reflection-drawer__title {
+.reflection-dialog__title {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--p-text-color);
@@ -282,15 +315,54 @@ async function saveToJournal() {
   gap: 0.5rem;
 }
 
-.reflection-drawer__title .pi-sparkles {
+.reflection-dialog__title .pi-sparkles {
   color: var(--p-primary-color);
 }
 
-.reflection-drawer .p-drawer-content { overflow: hidden; }
+.reflection-dialog.p-dialog {
+  background: var(--p-content-background);
+  height: 100dvh;
+  max-height: 100dvh;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
 
-.reflection-drawer .p-drawer-footer {
+.reflection-dialog .p-dialog-header {
+  flex-shrink: 0;
+  padding: max(0.75rem, env(safe-area-inset-top, 0px)) max(1.25rem, env(safe-area-inset-right, 0px)) 0.75rem max(1.25rem, env(safe-area-inset-left, 0px));
+  background: var(--p-content-background);
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+.reflection-dialog .p-dialog-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 0.75rem;
+  padding: 1rem max(1.25rem, env(safe-area-inset-right, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-left, 0px));
+}
+
+.reflection-dialog:has(.reflection-messages) .p-dialog-content {
+  overflow: hidden;
+  padding-bottom: 0.5rem;
+}
+
+.reflection-dialog .p-dialog-footer {
+  flex-shrink: 0;
   border-top: 1px solid var(--p-content-border-color);
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem max(1.25rem, env(safe-area-inset-right, 0px)) max(0.75rem, env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-left, 0px));
+  display: block;
+}
+
+.reflection-dialog .day-feedback,
+.reflection-period {
+  width: 100%;
+  max-width: 42rem;
+  align-self: center;
+  box-sizing: border-box;
 }
 
 /* Period selection */
@@ -308,19 +380,6 @@ async function saveToJournal() {
   color: var(--p-text-color);
   text-align: center;
   margin: 0;
-}
-
-.reflection-period__loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 0;
-}
-
-.reflection-period__loading-text {
-  font-size: 0.875rem;
-  color: var(--p-text-muted-color);
 }
 
 .reflection-period__buttons {
@@ -343,6 +402,7 @@ async function saveToJournal() {
 /* Messages */
 .reflection-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -450,6 +510,7 @@ async function saveToJournal() {
 .reflection-input__field {
   flex: 1;
   min-width: 0;
+  font-size: 1rem;
 }
 
 .reflection-input__send {

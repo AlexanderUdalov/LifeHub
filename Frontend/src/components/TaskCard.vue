@@ -302,4 +302,10 @@ const showDeadlineRow = computed(
   color: var(--p-text-muted-color);
   margin-left: auto;
 }
+
+@media (max-width: 899px) {
+  .task-card:not(.compact) .title {
+    font-size: 1.125rem;
+  }
+}
 </style>

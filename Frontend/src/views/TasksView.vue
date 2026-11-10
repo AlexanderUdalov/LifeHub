@@ -583,6 +583,18 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   font-size: var(--ds-font-size-lg);
 }
 
+@media (max-width: 899px) {
+  .tasks-list :deep(.p-accordioncontent-content) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .completed-list .task-card-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 @media (min-width: 900px) {
   .tasks-view-root {
     max-width: 78rem;

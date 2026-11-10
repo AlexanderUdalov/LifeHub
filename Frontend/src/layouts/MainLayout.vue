@@ -254,7 +254,7 @@ const createPrimary = () => {
 <style scoped>
 .sticky-header {
     position: fixed;
-    top: 0;
+    top: env(safe-area-inset-top, 0px);
     left: 0;
     right: 0;
     z-index: 10;
@@ -263,9 +263,8 @@ const createPrimary = () => {
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    background: linear-gradient(to bottom,
-            #000000ae 0%,
-            transparent 100%);
+    background: var(--p-content-background);
+    border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .sticky-header-title {
@@ -417,6 +416,26 @@ const createPrimary = () => {
     width: 3.5rem;
     height: 3.5rem;
     font-size: 1.25rem;
+}
+
+@media (max-width: 899px) {
+    .main-layout {
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    .main-layout::before {
+        content: '';
+        position: fixed;
+        inset: 0 0 auto;
+        height: env(safe-area-inset-top, 0px);
+        background: var(--p-content-background);
+        pointer-events: none;
+        z-index: 11;
+    }
+
+    .content {
+        max-height: calc(100dvh - 80px - env(safe-area-inset-top, 0px));
+    }
 }
 
 @media (min-width: 900px) {

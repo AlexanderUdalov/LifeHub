@@ -15,7 +15,6 @@ import type { JournalEntryDTO } from '@/api/JournalAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useI18n } from 'vue-i18n'
 import { useDeadlineFormatter } from '@/composables/useDeadlineFormatter'
-import { getCurrentDayBasedStreakFallback, getCurrentWeeksStreak } from '@/utils/habitStreak'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseDrawer from '@/components/base/BaseDrawer.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -99,18 +98,13 @@ function normalizeNumber(value: number | string | null | undefined): number {
 
 function getHabitStreakDays(habit: HabitWithHistoryDTO): number {
   const goalNum = normalizeNumber(habit.habit.timesPerWeekGoal)
-  if (goalNum >= 1 && goalNum <= 7) {
-    const weeks = getCurrentWeeksStreak(habit.history, goalNum)
-    return weeks * 7
-  }
-
   const current = normalizeNumber(habit.currentStreak)
-  if (current > 0) return current
-  return getCurrentDayBasedStreakFallback(habit.history)
+  return goalNum >= 1 && goalNum <= 7 ? current * 7 : current
 }
 
 const habitsBelowThreshold = computed(() =>
   props.habits
+    .filter(habit => habit.habit.state === 'active')
     .map((habit) => ({
       id: habit.habit.id,
       title: habit.habit.title,

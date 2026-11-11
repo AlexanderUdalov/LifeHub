@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineOptions({ name: 'TasksView' })
-import { onMounted, onUnmounted, computed, ref, watch } from 'vue'
+import { onMounted, computed, ref, watch } from 'vue'
 
 import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
@@ -12,6 +12,7 @@ import DatePicker from 'primevue/datepicker'
 import Skeleton from 'primevue/skeleton'
 import EmptyState from '@/components/EmptyState.vue'
 import TaskCard from '@/components/TaskCard.vue'
+import InfiniteLoadTrigger from '@/components/InfiniteLoadTrigger.vue'
 import { type TaskDTO } from '@/api/TasksAPI'
 import { useI18n } from 'vue-i18n'
 import { useTasksStore } from '@/stores/tasks'
@@ -99,57 +100,20 @@ const hasMoreCompleted = computed(
   () => tasksStore.completedTotal > 0 && firstUnloadedCompletedIndex.value < tasksStore.completedTotal
 )
 
-const loadMoreCompletedSentinel = ref<HTMLElement | null>(null)
+const completedLoadError = ref(false)
 
 async function loadMoreCompleted() {
   if (tasksStore.isLoadingMoreCompleted || !hasMoreCompleted.value) return
+  completedLoadError.value = false
   const first = firstUnloadedCompletedIndex.value
   const last = Math.min(first + COMPLETED_PAGE_SIZE - 1, tasksStore.completedTotal - 1)
   if (first > last) return
-  await tasksStore.fetchMoreCompletedTasks(first, last)
-}
-
-function isSentinelNearViewport(): boolean {
-  const el = loadMoreCompletedSentinel.value
-  if (!el) return false
-  const rect = el.getBoundingClientRect()
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight
-  // Keep loading while sentinel stays near viewport bottom.
-  return rect.top <= viewportHeight + 100
-}
-
-async function loadMoreCompletedUntilNotVisible() {
-  while (!tasksStore.isLoadingMoreCompleted && hasMoreCompleted.value && isSentinelNearViewport()) {
-    await loadMoreCompleted()
+  try {
+    await tasksStore.fetchMoreCompletedTasks(first, last)
+  } catch {
+    completedLoadError.value = true
   }
 }
-
-let loadMoreObserver: IntersectionObserver | null = null
-
-onMounted(() => {
-  loadMoreObserver = new IntersectionObserver(
-    (entries) => {
-      if (!entries[0]?.isIntersecting) return
-      void loadMoreCompletedUntilNotVisible()
-    },
-    { root: null, rootMargin: '100px', threshold: 0 }
-  )
-  watch(
-    loadMoreCompletedSentinel,
-    (el, prev) => {
-      if (prev && loadMoreObserver) loadMoreObserver.unobserve(prev)
-      if (el && loadMoreObserver) loadMoreObserver.observe(el)
-    },
-    { immediate: true }
-  )
-})
-
-onUnmounted(() => {
-  if (loadMoreObserver && loadMoreCompletedSentinel.value) {
-    loadMoreObserver.unobserve(loadMoreCompletedSentinel.value)
-  }
-  loadMoreObserver?.disconnect()
-})
 
 function onEditTask(task: TaskDTO) {
   emit('edit-task', task)
@@ -328,9 +292,14 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
                   <div v-if="tasksStore.isLoadingMoreCompleted" class="task-card-wrapper completed-loading">
                     <Skeleton height="3rem" class="skeleton-row" />
                   </div>
-                  <div v-show="hasMoreCompleted && !tasksStore.isLoadingMoreCompleted" ref="loadMoreCompletedSentinel"
-                    class="completed-load-more-sentinel" aria-hidden="true" />
                 </TransitionGroup>
+                <p v-if="completedLoadError" role="alert" class="completed-load-error">
+                  {{ t('tasks.completedLoadError') }}
+                  <Button :label="t('tasks.retry')" text @click="loadMoreCompleted" />
+                </p>
+                <InfiniteLoadTrigger v-if="hasMoreCompleted"
+                  :disabled="tasksStore.isLoading || tasksStore.isLoadingMoreCompleted || completedLoadError || !activeAccordionValue.includes(String(index))"
+                  @load="loadMoreCompleted" />
               </div>
             </template>
             <TransitionGroup v-else name="task-list">
@@ -379,9 +348,14 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
                   <div v-if="tasksStore.isLoadingMoreCompleted" class="task-card-wrapper completed-loading">
                     <Skeleton height="2.5rem" class="skeleton-row" />
                   </div>
-                  <div v-show="hasMoreCompleted && !tasksStore.isLoadingMoreCompleted" ref="loadMoreCompletedSentinel"
-                    class="completed-load-more-sentinel" aria-hidden="true" />
                 </TransitionGroup>
+                <p v-if="completedLoadError" role="alert" class="completed-load-error">
+                  {{ t('tasks.completedLoadError') }}
+                  <Button :label="t('tasks.retry')" text @click="loadMoreCompleted" />
+                </p>
+                <InfiniteLoadTrigger v-if="hasMoreCompleted"
+                  :disabled="tasksStore.isLoading || tasksStore.isLoadingMoreCompleted || completedLoadError || !activeAccordionValue.includes(String(index))"
+                  @load="loadMoreCompleted" />
               </div>
             </template>
             <TransitionGroup v-else name="task-list">
@@ -517,9 +491,9 @@ function onDragStart(sectionKey: string, taskIndex: number, _event: PointerEvent
   padding: 0.25rem 0.5rem;
 }
 
-.completed-load-more-sentinel {
-  min-height: 1px;
-  width: 100%;
+.completed-load-error {
+  padding: 0.5rem;
+  color: var(--p-text-muted-color);
 }
 
 .task-list-move {

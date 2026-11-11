@@ -209,6 +209,12 @@ namespace LifeHub_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("TimesPerWeekGoal")
                         .HasColumnType("INTEGER");
 
@@ -251,6 +257,59 @@ namespace LifeHub_Backend.Migrations
                         .IsUnique();
 
                     b.ToTable("HabitDays");
+                });
+
+            modelBuilder.Entity("LifeHub.Models.HabitInactivePeriod", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("HabitId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HabitId")
+                        .IsUnique()
+                        .HasFilter("\"EndDate\" IS NULL");
+
+                    b.HasIndex("HabitId", "StartDate");
+
+                    b.ToTable("HabitInactivePeriods");
+                });
+
+            modelBuilder.Entity("LifeHub.Models.HabitSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("HabitId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RecurrenceRule")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("TimesPerWeekGoal")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HabitId", "EffectiveFrom")
+                        .IsUnique();
+
+                    b.ToTable("HabitSchedules");
                 });
 
             modelBuilder.Entity("LifeHub.Models.JournalEntry", b =>
@@ -591,6 +650,28 @@ namespace LifeHub_Backend.Migrations
                     b.Navigation("Habit");
                 });
 
+            modelBuilder.Entity("LifeHub.Models.HabitInactivePeriod", b =>
+                {
+                    b.HasOne("LifeHub.Models.Habit", "Habit")
+                        .WithMany("InactivePeriods")
+                        .HasForeignKey("HabitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Habit");
+                });
+
+            modelBuilder.Entity("LifeHub.Models.HabitSchedule", b =>
+                {
+                    b.HasOne("LifeHub.Models.Habit", "Habit")
+                        .WithMany("Schedules")
+                        .HasForeignKey("HabitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Habit");
+                });
+
             modelBuilder.Entity("LifeHub.Models.JournalEntry", b =>
                 {
                     b.HasOne("LifeHub.Models.Addiction", "Addiction")
@@ -702,6 +783,10 @@ namespace LifeHub_Backend.Migrations
             modelBuilder.Entity("LifeHub.Models.Habit", b =>
                 {
                     b.Navigation("Days");
+
+                    b.Navigation("InactivePeriods");
+
+                    b.Navigation("Schedules");
                 });
 
             modelBuilder.Entity("LifeHub.Models.LifeFocus", b =>

@@ -7,18 +7,25 @@ import SelectButton from 'primevue/selectbutton'
 import InputNumber from 'primevue/inputnumber'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RRule } from 'rrule'
 
 import { useHabitsStore } from '@/stores/habits'
 import type { HabitDTO } from '@/api/HabitsAPI'
-import { parseRuleToOptions, optionsToRuleString } from '@/composables/useRecurrenceOptions'
+import { pendingSchedule, scheduleWeekdays } from '@/utils/habitTracking'
+import { toDateOnlyString } from '@/utils/dateOnly'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useGoalsStore } from '@/stores/goals'
 import { useApiError } from '@/composables/useApiError'
 import BaseDrawer from '@/components/base/BaseDrawer.vue'
 
 const HABIT_COLOR_OPTIONS = [
-  '#3b82f6', '#ef4444', '#22c55e', '#eab308', '#a855f7', '#ec4899', '#06b6d4'
+  '#52b58b',
+  '#3b82f6',
+  '#ef4444',
+  '#22c55e',
+  '#eab308',
+  '#a855f7',
+  '#ec4899',
+  '#06b6d4',
 ]
 
 type LocalHabit = {
@@ -35,32 +42,32 @@ function getInitialHabit(habit: HabitDTO | null): LocalHabit {
     return {
       title: '',
       color: HABIT_COLOR_OPTIONS[0] ?? '#3b82f6',
-      selectedWeekdays: [],
+      selectedWeekdays: [0, 1, 2, 3, 4, 5, 6],
       goalId: null,
       lifeAreaId: null,
-      timesPerWeekGoal: null
+      timesPerWeekGoal: null,
     }
   }
-  const goal = habit.timesPerWeekGoal
+  const pending = pendingSchedule(habit, toDateOnlyString(new Date()))
+  const goal = Number(pending ? pending.timesPerWeekGoal : habit.timesPerWeekGoal) || null
   if (typeof goal === 'number' && goal >= 1 && goal <= 7) {
     return {
       title: habit.title,
       color: habit.color,
-      selectedWeekdays: [],
+      selectedWeekdays: [0, 1, 2, 3, 4, 5, 6],
       goalId: habit.goalId,
       lifeAreaId: habit.lifeAreaId,
-      timesPerWeekGoal: goal
+      timesPerWeekGoal: goal,
     }
   }
-  const opt = parseRuleToOptions(habit.recurrenceRule)
-  const selectedWeekdays = opt.byweekday ?? []
+  const selectedWeekdays = scheduleWeekdays(pending?.recurrenceRule ?? habit.recurrenceRule)
   return {
     title: habit.title,
     color: habit.color,
     selectedWeekdays,
     goalId: habit.goalId,
     lifeAreaId: habit.lifeAreaId,
-    timesPerWeekGoal: null
+    timesPerWeekGoal: null,
   }
 }
 
@@ -87,10 +94,11 @@ const localHabit = ref<LocalHabit>(getInitialHabit(props.habit))
 
 const isEdit = computed(() => !!props.habit)
 const canSave = computed(() => {
-  if (localHabit.value.title.trim().length === 0 || localHabit.value.color.trim().length === 0) return false
+  if (localHabit.value.title.trim().length === 0 || localHabit.value.color.trim().length === 0)
+    return false
   const n = localHabit.value.timesPerWeekGoal
   if (n != null) return n >= 1 && n <= 7
-  return true
+  return localHabit.value.selectedWeekdays.length > 0
 })
 
 const weekdayOptions = computed(() => [
@@ -100,7 +108,7 @@ const weekdayOptions = computed(() => [
   { value: 3, label: t('tasks.recurrence.weekdays.3') },
   { value: 4, label: t('tasks.recurrence.weekdays.4') },
   { value: 5, label: t('tasks.recurrence.weekdays.5') },
-  { value: 6, label: t('tasks.recurrence.weekdays.6') }
+  { value: 6, label: t('tasks.recurrence.weekdays.6') },
 ])
 
 function toggleWeekday(value: number) {
@@ -119,7 +127,7 @@ function isWeekdaySelected(value: number) {
 
 const habitModeOptions = computed(() => [
   { label: t('habits.editdialog.modeWeekdays'), value: 'weekdays' as const },
-  { label: t('habits.editdialog.modeTimesPerWeek'), value: 'timesPerWeek' as const }
+  { label: t('habits.editdialog.modeTimesPerWeek'), value: 'timesPerWeek' as const },
 ])
 
 const habitMode = computed({
@@ -127,7 +135,7 @@ const habitMode = computed({
   set: (v: 'weekdays' | 'timesPerWeek') => {
     if (v === 'weekdays') localHabit.value.timesPerWeekGoal = null
     else localHabit.value.timesPerWeekGoal = 3
-  }
+  },
 })
 
 const recurrenceRule = computed<string>(() => {
@@ -136,21 +144,13 @@ const recurrenceRule = computed<string>(() => {
   if (days.length === 0 || days.length === 7) return 'FREQ=DAILY'
 
   return (
-    optionsToRuleString(
-      {
-        freq: RRule.WEEKLY,
-        interval: 1,
-        byweekday: days,
-        bymonthday: []
-      },
-      new Date()
-    ) ?? 'FREQ=DAILY'
+    'FREQ=WEEKLY;BYDAY=' + days.map((d) => ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][d]).join(',')
   )
 })
 
 const lifeAreaChipLabel = computed(() => {
   if (!localHabit.value.lifeAreaId) return t('lifeareas.field')
-  const area = lifeAreasStore.lifeAreas.find(a => a.id === localHabit.value.lifeAreaId)
+  const area = lifeAreasStore.lifeAreas.find((a) => a.id === localHabit.value.lifeAreaId)
   return area?.name ?? t('lifeareas.field')
 })
 
@@ -158,7 +158,7 @@ const hasLifeArea = computed(() => !!localHabit.value.lifeAreaId)
 
 const goalChipLabel = computed(() => {
   if (!localHabit.value.goalId) return t('goals.field')
-  const goal = goalsStore.goalsSorted.find(g => g.id === localHabit.value.goalId)
+  const goal = goalsStore.goalsSorted.find((g) => g.id === localHabit.value.goalId)
   return goal?.title ?? t('goals.field')
 })
 
@@ -173,7 +173,7 @@ onMounted(() => {
 })
 
 const isSaveLoading = ref(false)
-const isDeleteLoading = ref(false)
+const isArchiveLoading = ref(false)
 const errorText = ref('')
 
 async function onSave() {
@@ -187,7 +187,7 @@ async function onSave() {
       recurrenceRule: recurrenceRule.value,
       timesPerWeekGoal: localHabit.value.timesPerWeekGoal,
       goalId: localHabit.value.goalId,
-      lifeAreaId: localHabit.value.lifeAreaId
+      lifeAreaId: localHabit.value.lifeAreaId,
     }
 
     if (isEdit.value) {
@@ -204,17 +204,17 @@ async function onSave() {
   }
 }
 
-async function onDelete() {
+async function onArchive() {
   if (!props.habit) return
   errorText.value = ''
-  isDeleteLoading.value = true
+  isArchiveLoading.value = true
   try {
-    await habitsStore.deleteHabit(props.habit.id)
+    await habitsStore.setState(props.habit.id, 'archived')
     emit('close')
   } catch (e) {
     errorText.value = apiError.resolveMessage(e)
   } finally {
-    isDeleteLoading.value = false
+    isArchiveLoading.value = false
   }
 }
 </script>
@@ -223,30 +223,56 @@ async function onDelete() {
   <BaseDrawer v-model:visible="visible" class="habit-drawer">
     <template #header>
       <div class="ds-drawer-title-row" ref="titleWrap">
-        <InputText v-model="localHabit.title" :placeholder="t('habits.editdialog.newHabit')"
-          class="ds-drawer-title-input" />
+        <InputText
+          v-model="localHabit.title"
+          :placeholder="t('habits.editdialog.newHabit')"
+          :aria-label="t('habits.tracker.nameLabel')"
+          :maxlength="200"
+          class="ds-drawer-title-input"
+        />
       </div>
     </template>
 
+    <p v-if="isEdit" class="habit-drawer-hint">{{ t('habits.tracker.scheduleHint') }}</p>
     <div class="ds-drawer-section">
       <label class="ds-drawer-label">{{ t('habits.editdialog.color') }}</label>
       <div class="habit-drawer-colors">
-        <button v-for="color in HABIT_COLOR_OPTIONS" :key="color" type="button" class="ds-color-swatch"
-          :class="{ 'is-selected': localHabit.color === color }" :style="{ backgroundColor: color }"
-          :aria-pressed="localHabit.color === color" :aria-label="color" @click="localHabit.color = color" />
+        <button
+          v-for="color in HABIT_COLOR_OPTIONS"
+          :key="color"
+          type="button"
+          class="ds-color-swatch"
+          :class="{ 'is-selected': localHabit.color === color }"
+          :style="{ backgroundColor: color }"
+          :aria-pressed="localHabit.color === color"
+          :aria-label="color"
+          @click="localHabit.color = color"
+        />
       </div>
     </div>
 
     <div class="ds-drawer-section">
       <label class="ds-drawer-label">{{ t('habits.editdialog.days') }}</label>
-      <SelectButton v-model="habitMode" :options="habitModeOptions" option-label="label" option-value="value"
-        :allow-empty="false" class="habit-drawer-mode-select" />
+      <SelectButton
+        v-model="habitMode"
+        :options="habitModeOptions"
+        option-label="label"
+        option-value="value"
+        :allow-empty="false"
+        class="habit-drawer-mode-select"
+      />
 
       <template v-if="localHabit.timesPerWeekGoal == null">
         <div class="habit-drawer-weekdays">
-          <button v-for="wd in weekdayOptions" :key="wd.value" type="button" class="habit-wd-btn"
-            :class="{ selected: isWeekdaySelected(wd.value) }" :aria-pressed="isWeekdaySelected(wd.value)"
-            @click="toggleWeekday(wd.value)">
+          <button
+            v-for="wd in weekdayOptions"
+            :key="wd.value"
+            type="button"
+            class="habit-wd-btn"
+            :class="{ selected: isWeekdaySelected(wd.value) }"
+            :aria-pressed="isWeekdaySelected(wd.value)"
+            @click="toggleWeekday(wd.value)"
+          >
             {{ wd.label }}
           </button>
         </div>
@@ -254,17 +280,32 @@ async function onDelete() {
 
       <template v-else>
         <div class="habit-drawer-times-row">
-          <span class="habit-drawer-times-label">{{ t('habits.editdialog.timesPerWeekLabel') }}</span>
-          <InputNumber v-model="localHabit.timesPerWeekGoal" buttonLayout="horizontal"
-            :min="1" :max="7" show-buttons class="habit-drawer-times-input" />
+          <span class="habit-drawer-times-label">{{
+            t('habits.editdialog.timesPerWeekLabel')
+          }}</span>
+          <InputNumber
+            v-model="localHabit.timesPerWeekGoal"
+            buttonLayout="horizontal"
+            :min="1"
+            :max="7"
+            show-buttons
+            class="habit-drawer-times-input"
+          />
         </div>
       </template>
     </div>
 
     <div class="ds-chip-row">
-      <Select v-model="localHabit.lifeAreaId" :options="lifeAreasStore.lifeAreas" option-label="name" option-value="id"
-        show-clear :placeholder="t('lifeareas.field')" class="ds-chip-select"
-        :class="{ 'ds-chip-select--active': hasLifeArea }">
+      <Select
+        v-model="localHabit.lifeAreaId"
+        :options="lifeAreasStore.lifeAreas"
+        option-label="name"
+        option-value="id"
+        show-clear
+        :placeholder="t('lifeareas.field')"
+        class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasLifeArea }"
+      >
         <template #value>
           <span class="ds-chip-select-value">
             <i class="pi pi-objects-column" />
@@ -273,9 +314,16 @@ async function onDelete() {
         </template>
       </Select>
 
-      <Select v-model="localHabit.goalId" :options="goalsStore.activeGoalsSorted" option-label="title" option-value="id"
-        show-clear :placeholder="t('goals.field')" class="ds-chip-select"
-        :class="{ 'ds-chip-select--active': hasGoal }">
+      <Select
+        v-model="localHabit.goalId"
+        :options="goalsStore.activeGoalsSorted"
+        option-label="title"
+        option-value="id"
+        show-clear
+        :placeholder="t('goals.field')"
+        class="ds-chip-select"
+        :class="{ 'ds-chip-select--active': hasGoal }"
+      >
         <template #value>
           <span class="ds-chip-select-value">
             <i class="pi pi-bullseye" />
@@ -285,17 +333,38 @@ async function onDelete() {
       </Select>
     </div>
 
+    <p
+      v-if="localHabit.timesPerWeekGoal == null && !localHabit.selectedWeekdays.length"
+      class="habit-drawer-hint"
+      role="status"
+    >
+      {{ t('habits.tracker.atLeastOneDay') }}
+    </p>
     <Message v-if="errorText.length" severity="error" icon="pi pi-times-circle" :life="3000">
       {{ errorText }}
     </Message>
 
     <template #footer>
       <div class="ds-drawer-actions">
-        <Button v-if="isEdit" icon="pi pi-trash" :label="t('habits.editdialog.delete')" severity="danger" variant="text"
-          size="small" :loading="isDeleteLoading" @click="onDelete" />
+        <Button
+          v-if="isEdit && props.habit?.state !== 'archived'"
+          icon="pi pi-inbox"
+          :label="t('habits.tracker.archive')"
+          severity="secondary"
+          text
+          size="small"
+          :loading="isArchiveLoading"
+          :disabled="isSaveLoading"
+          @click="onArchive"
+        />
         <span v-else />
-        <Button :label="isEdit ? t('habits.editdialog.save') : t('habits.editdialog.create')" :disabled="!canSave"
-          :loading="isSaveLoading" icon="pi pi-check" @click="onSave" />
+        <Button
+          :label="isEdit ? t('habits.editdialog.save') : t('habits.editdialog.create')"
+          :disabled="!canSave || isArchiveLoading"
+          :loading="isSaveLoading"
+          icon="pi pi-check"
+          @click="onSave"
+        />
       </div>
     </template>
   </BaseDrawer>
@@ -328,6 +397,7 @@ async function onDelete() {
 .habit-wd-btn {
   flex: 1;
   padding: 0.5rem 0;
+  min-height: 2.75rem;
   font-size: 0.8125rem;
   font-weight: 500;
   text-align: center;
@@ -336,7 +406,9 @@ async function onDelete() {
   background: var(--p-content-background);
   color: var(--p-text-color);
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .habit-wd-btn:last-child {
@@ -379,5 +451,4 @@ async function onDelete() {
   width: 2.5rem;
   padding: 0.4rem 0;
 }
-
 </style>

@@ -4,6 +4,39 @@
  */
 
 export interface paths {
+    "/api/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/addictions": {
         parameters: {
             query?: never;
@@ -1176,6 +1209,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/goals/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDTO"];
+                        "application/json": components["schemas"]["GoalDTO"];
+                        "text/json": components["schemas"]["GoalDTO"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/habits": {
         parameters: {
             query?: never;
@@ -1187,6 +1270,7 @@ export interface paths {
             parameters: {
                 query?: {
                     days?: number | string;
+                    today?: string;
                 };
                 header?: never;
                 path?: never;
@@ -1205,12 +1289,25 @@ export interface paths {
                         "text/json": components["schemas"]["HabitWithHistoryDTO"][];
                     };
                 };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    today?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1253,6 +1350,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/habits/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    before?: string;
+                    days?: number | string;
+                    today?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["HabitHistoryDTO"];
+                        "application/json": components["schemas"]["HabitHistoryDTO"];
+                        "text/json": components["schemas"]["HabitHistoryDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/habits/{id}": {
         parameters: {
             query?: never;
@@ -1262,7 +1424,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    today?: string;
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -1282,6 +1446,17 @@ export interface paths {
                         "text/json": components["schemas"]["HabitDTO"];
                     };
                 };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
                 /** @description Not Found */
                 404: {
                     headers: {
@@ -1297,7 +1472,9 @@ export interface paths {
         };
         put: {
             parameters: {
-                query?: never;
+                query?: {
+                    today?: string;
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -1384,6 +1561,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/habits/{id}/state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: {
+                    today?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetHabitStateRequest"];
+                    "text/json": components["schemas"]["SetHabitStateRequest"];
+                    "application/*+json": components["schemas"]["SetHabitStateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["HabitStateUpdateDTO"];
+                        "application/json": components["schemas"]["HabitStateUpdateDTO"];
+                        "text/json": components["schemas"]["HabitStateUpdateDTO"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/habits/{id}/days/{date}": {
         parameters: {
             query?: never;
@@ -1394,7 +1640,9 @@ export interface paths {
         get?: never;
         put: {
             parameters: {
-                query?: never;
+                query?: {
+                    today?: string;
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -1416,9 +1664,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["HabitDayDTO"];
-                        "application/json": components["schemas"]["HabitDayDTO"];
-                        "text/json": components["schemas"]["HabitDayDTO"];
+                        "text/plain": components["schemas"]["HabitDayUpdateDTO"];
+                        "application/json": components["schemas"]["HabitDayUpdateDTO"];
+                        "text/json": components["schemas"]["HabitDayUpdateDTO"];
                     };
                 };
                 /** @description Bad Request */
@@ -1918,6 +2166,7 @@ export interface paths {
                 query?: {
                     limit?: number | string;
                     offset?: number | string;
+                    dueDate?: string;
                 };
                 header?: never;
                 path?: never;
@@ -2202,6 +2451,13 @@ export interface components {
             date: string;
             status: string;
         };
+        HabitDayUpdateDTO: {
+            /** Format: date */
+            date: string;
+            status: string;
+            /** Format: int32 */
+            currentStreak: number | string;
+        };
         HabitDTO: {
             /** Format: uuid */
             id: string;
@@ -2214,6 +2470,37 @@ export interface components {
             goalId: null | string;
             /** Format: uuid */
             lifeAreaId: null | string;
+            /** Format: date */
+            startDate: string;
+            state: string;
+            schedules: components["schemas"]["HabitScheduleDTO"][];
+            inactivePeriods: components["schemas"]["HabitInactivePeriodDTO"][];
+        };
+        HabitHistoryDTO: {
+            items: components["schemas"]["HabitDayDTO"][];
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            hasEarlier: boolean;
+        };
+        HabitInactivePeriodDTO: {
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate: null | string;
+        };
+        HabitScheduleDTO: {
+            /** Format: date */
+            effectiveFrom: string;
+            recurrenceRule: string;
+            /** Format: int32 */
+            timesPerWeekGoal: null | number | string;
+        };
+        HabitStateUpdateDTO: {
+            habit: components["schemas"]["HabitDTO"];
+            /** Format: int32 */
+            currentStreak: number | string;
         };
         HabitUpsertRequest: {
             title: string;
@@ -2304,6 +2591,9 @@ export interface components {
         };
         SetDayStatusRequest: {
             status: string;
+        };
+        SetHabitStateRequest: {
+            state: string;
         };
         SetResetRequest: {
             note: null | string;

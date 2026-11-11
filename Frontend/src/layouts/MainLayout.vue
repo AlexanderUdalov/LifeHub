@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from 'vue'
-import Tabs from 'primevue/tabs'
-import Tab from 'primevue/tab'
-import TabList from 'primevue/tablist'
 import Button from 'primevue/button'
 
 import TaskEditDialog from '@/components/TaskEditDialog.vue'
@@ -87,7 +84,6 @@ const leftTabs = computed(() => [
     { label: t('habits.habits'), icon: 'pi pi-calendar', route: '/habits' },
     { label: t('goals.title'), icon: 'pi pi-bullseye', route: '/goals' },
 ])
-const centerTab = computed(() => ({ label: t('lifeareas.title'), icon: 'pi pi-compass', route: '/lifeareas' }))
 const rightTabs = computed(() => [
     { label: t('journal.title'), icon: 'pi pi-book', route: '/journal' },
     { label: t('addictions.addictions'), icon: 'pi pi-ban', route: '/addictions' },
@@ -96,7 +92,6 @@ const rightTabs = computed(() => [
 
 const desktopTabs = computed(() => [
     ...leftTabs.value,
-    centerTab.value,
     ...rightTabs.value
 ])
 
@@ -127,12 +122,12 @@ onBeforeUnmount(() => {
     desktopMedia?.removeEventListener('change', syncDesktopState)
 })
 
-const hideFab = computed(() =>
+const creationLimitReached = computed(() =>
     route.path.startsWith('/lifeareas') && lifeAreasStore.isLimitReached
 )
 
 const canCreatePrimary = computed(() =>
-    !hideFab.value &&
+    !creationLimitReached.value &&
     (
         route.path.startsWith('/journal') ||
         route.path.startsWith('/habits') ||
@@ -143,7 +138,20 @@ const canCreatePrimary = computed(() =>
     )
 )
 
+const primaryActionLabel = computed(() => {
+    if (route.path.startsWith('/habits')) return t('habits.editdialog.newHabit')
+    if (route.path.startsWith('/goals')) return t('goals.newGoal')
+    if (route.path.startsWith('/journal')) return t('journal.newNote')
+    if (route.path.startsWith('/addictions')) return t('addictions.editdialog.newAddiction')
+    if (route.path.startsWith('/lifeareas')) return t('lifeareas.editdialog.newLifeArea')
+    return t('tasks.editdialog.newTask')
+})
+
+const isTabActive = (path: string) => route.path === path ||
+    (path === '/profile' && route.path.startsWith('/lifeareas'))
+
 const createPrimary = () => {
+    if (!canCreatePrimary.value) return
     if (route.path.startsWith('/journal')) {
         editContext.value = { type: 'journal', item: null }
         return
@@ -181,7 +189,7 @@ const createPrimary = () => {
                 <img src="/favicon.svg" class="desktop-sidebar__logo" :alt="t('lifeareas.title')" />
                 <span class="desktop-sidebar__title">LifeHub</span>
             </div>
-            <nav class="desktop-sidebar__nav" aria-label="Main navigation">
+            <nav class="desktop-sidebar__nav" :aria-label="t('navigation.main')">
                 <Button
                     v-for="tab in desktopTabs"
                     :key="tab.route"
@@ -189,14 +197,14 @@ const createPrimary = () => {
                     :icon="tab.icon"
                     text
                     class="desktop-nav-item"
-                    :class="{ 'desktop-nav-item--active': route.path === tab.route }"
+                    :class="{ 'desktop-nav-item--active': isTabActive(tab.route) }"
                     @click="router.push(tab.route)"
                 />
             </nav>
         </aside>
         <aside v-if="isDesktop" class="desktop-balance-rail" aria-hidden="true" />
 
-        <main ref="contentRef" class="content" :class="{ 'content--desktop': isDesktop }" @scroll="onContentScroll">
+        <main ref="contentRef" data-scroll-container class="content" :class="{ 'content--desktop': isDesktop }" @scroll="onContentScroll">
             <div class="content-frame">
                 <RouterView v-slot="{ Component }">
                     <KeepAlive :include="tabViewNames">
@@ -214,8 +222,6 @@ const createPrimary = () => {
             </div>
         </main>
 
-        <Button v-if="!isDesktop && canCreatePrimary" class="fab" icon="pi pi-plus" size="large" rounded @click="createPrimary" />
-
         <TaskEditDialog v-if="editContext && editContext.type === 'task'" :task="editContext.item"
             @close="editContext = null" />
         <HabitEditDialog v-if="editContext && editContext.type === 'habit'" :habit="editContext.item"
@@ -229,25 +235,25 @@ const createPrimary = () => {
         <JournalEntryEditDialog v-if="editContext && editContext.type === 'journal'" :entry="editContext.item"
             @close="editContext = null" />
 
-        <Tabs v-if="!isDesktop" class="mobile-tabs" :value="route.path" @update:value="(v) => router.push(v as string)">
-            <TabList class="tab-list">
-                <div class="tab-group tab-group-left">
-                    <Tab v-for="tab in leftTabs" :key="tab.route" :value="tab.route" class="tab">
-                        <i :class="tab.icon" />
-                        <span class="tab-label">{{ tab.label }}</span>
-                    </Tab>
-                </div>
-                <Tab :value="centerTab.route" class="tab tab-center">
-                    <img src="/favicon.svg" class="tab-logo" :alt="t('lifeareas.title')" />
-                </Tab>
-                <div class="tab-group tab-group-right">
-                    <Tab v-for="tab in rightTabs" :key="tab.route" :value="tab.route" class="tab">
-                        <i :class="tab.icon" />
-                        <span class="tab-label">{{ tab.label }}</span>
-                    </Tab>
-                </div>
-            </TabList>
-        </Tabs>
+        <nav v-if="!isDesktop" class="mobile-tabs" :aria-label="t('navigation.main')">
+            <RouterLink v-for="tab in leftTabs" :key="tab.route" :to="tab.route" class="tab"
+                :class="{ 'tab--active': isTabActive(tab.route) }" :aria-label="tab.label">
+                <i :class="tab.icon" aria-hidden="true" />
+                <span class="tab-label">{{ tab.label }}</span>
+            </RouterLink>
+            <div class="tab-create-slot">
+                <Button class="tab-create" icon="pi pi-plus" :disabled="!canCreatePrimary"
+                    :aria-label="canCreatePrimary ? primaryActionLabel : t('navigation.createUnavailable')"
+                    :title="canCreatePrimary ? primaryActionLabel : t('navigation.createUnavailable')"
+                    @click="createPrimary" />
+            </div>
+            <RouterLink v-for="tab in rightTabs" :key="tab.route" :to="tab.route" class="tab"
+                :class="{ 'tab--active': isTabActive(tab.route) }" :aria-label="tab.label"
+                :aria-current="isTabActive(tab.route) ? 'page' : undefined">
+                <i :class="tab.icon" aria-hidden="true" />
+                <span class="tab-label">{{ tab.label }}</span>
+            </RouterLink>
+        </nav>
     </div>
 </template>
 
@@ -330,46 +336,51 @@ const createPrimary = () => {
 }
 
 .mobile-tabs {
-    display: block;
-}
-
-.tab-list {
-    display: flex;
-    width: 100%;
-    overflow: hidden;
-    align-items: stretch;
-}
-
-.tab-group {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    overflow: hidden;
-}
-
-.tab-group-left {
-    justify-content: flex-end;
-}
-
-.tab-group-right {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    align-items: center;
+    flex-shrink: 0;
+    min-height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding: 0 0 env(safe-area-inset-bottom, 0px);
+    background: var(--p-content-background);
+    border-top: 1px solid var(--p-content-border-color);
 }
 
 .tab {
-    flex: 1;
     min-width: 0;
-    min-height: 4px;
+    min-height: 64px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
-    overflow: hidden;
+    color: var(--p-text-muted-color);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
 }
 
-.tab-center {
-    flex: 0 0 auto;
-    width: 3.5rem;
+.tab i {
+    font-size: 1.25rem;
+}
+
+.tab--active {
+    color: var(--p-primary-color);
+    border-bottom-color: var(--p-primary-color);
+}
+
+.tab-create-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-create.p-button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    flex: 0 0 44px;
+    padding: 0;
+    border-radius: 50%;
 }
 
 .tab-label {
@@ -380,61 +391,46 @@ const createPrimary = () => {
     font-size: 0.7rem;
 }
 
-.tab-logo {
-    width: 1.8rem;
-    height: 1.8rem;
-    display: block;
-}
-
-:deep(.p-tabs) {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    overflow: hidden;
-    border-top: 1px;
-    border-top-style: solid;
-    border-color: var(--p-content-border-color);
-}
-
-:deep(.p-tablist) {
-    overflow: hidden;
-    height: 80px;
-}
-
 @media (max-width: 420px) {
     .tab-label {
         display: none;
     }
 }
 
-.fab {
-    position: fixed;
-    right: 1rem;
-    bottom: 7rem;
-    width: 3.5rem;
-    height: 3.5rem;
-    font-size: 1.25rem;
-}
-
 @media (max-width: 899px) {
     .main-layout {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        overflow: hidden;
         padding-top: env(safe-area-inset-top, 0px);
+        box-sizing: border-box;
+        background: var(--p-content-background);
     }
 
+    /* Opaque top-edge surface for iOS standalone scroll-edge rendering.
+       Keep it nonzero even when WebKit reports no safe-area inset. */
     .main-layout::before {
         content: '';
         position: fixed;
-        inset: 0 0 auto;
-        height: env(safe-area-inset-top, 0px);
+        top: 0;
+        left: 0;
+        right: 0;
+        height: max(8px, env(safe-area-inset-top, 0px));
         background: var(--p-content-background);
         pointer-events: none;
         z-index: 11;
     }
 
     .content {
-        max-height: calc(100dvh - 80px - env(safe-area-inset-top, 0px));
+        min-height: 0;
+        max-height: none;
+        overscroll-behavior-y: contain;
+        background: var(--p-content-background);
+    }
+
+    .content-frame {
+        padding-top: 8px;
     }
 }
 
@@ -550,13 +546,6 @@ const createPrimary = () => {
         display: none !important;
     }
 
-    .fab {
-        right: 2rem;
-        bottom: 2rem;
-        width: 3.25rem;
-        height: 3.25rem;
-        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.18);
-    }
 }
 
 @media (min-width: 1200px) {

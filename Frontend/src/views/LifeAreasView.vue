@@ -9,12 +9,14 @@ import type { LifeAreaDTO } from '@/api/LifeAreasAPI'
 import { useLifeAreasStore } from '@/stores/lifeAreas'
 import { useI18n } from 'vue-i18n'
 import { getLogoColorIndex } from '@/constants/logoColors'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits<{
   (e: 'edit-lifearea', area: LifeAreaDTO | null): void
 }>()
 
 const { t } = useI18n()
+const router = useRouter()
 const lifeAreasStore = useLifeAreasStore()
 
 onMounted(async () => {
@@ -72,6 +74,8 @@ function onEditArea(area: LifeAreaDTO) {
 
 <template>
   <div class="lifeareas-view">
+    <Button :label="t('profile-view.profile')" icon="pi pi-arrow-left" text
+      class="profile-back" @click="router.push('/profile')" />
     <header class="lifeareas-view__header">
       <h1 class="ds-page-header">{{ $t('lifeareas.title') }}</h1>
       <Button v-if="!lifeAreasStore.isLimitReached" :label="$t('lifeareas.add')" icon="pi pi-plus"
@@ -113,6 +117,10 @@ function onEditArea(area: LifeAreaDTO) {
 </template>
 
 <style scoped>
+.profile-back {
+  align-self: flex-start;
+}
+
 .lifeareas-view {
   display: flex;
   flex-direction: column;

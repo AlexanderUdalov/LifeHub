@@ -73,8 +73,9 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
-  /** Load more completed tasks for the range [first, last] (inclusive). Called by VirtualScroller lazy-load. */
+  /** Load the next completed page for the range [first, last] (inclusive). */
   async function fetchMoreCompletedTasks(first: number, last: number) {
+    if (isLoading.value || isLoadingMoreCompleted.value) return
     const count = last - first + 1
     if (count <= 0) return
     const current = completedTasks.value
@@ -83,10 +84,16 @@ export const useTasksStore = defineStore('tasks', () => {
     isLoadingMoreCompleted.value = true
     try {
       const page = await getCompletedTasks(count, first)
-      const next: (TaskDTO | undefined)[] = [...current]
+      // A completion, deletion or refresh may have shifted offsets during this request.
+      if (completedTasks.value !== current) return
+      if (page.items.length === 0 && first < page.total) {
+        throw new Error('Completed page made no progress')
+      }
+      const next: (TaskDTO | undefined)[] = Array.from({ length: page.total }, (_, i) => current[i])
       for (let i = 0; i < page.items.length; i++) {
         next[first + i] = page.items[i]
       }
+      completedTotal.value = page.total
       completedTasks.value = next
     } finally {
       isLoadingMoreCompleted.value = false

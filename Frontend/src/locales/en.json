@@ -1,4 +1,5 @@
 {
+  "navigation": {"main": "Main navigation", "createUnavailable": "Creation is unavailable in this section"},
   "dayFeedback": {
     "title": "How was your day?",
     "subtitle": "How satisfied are you with today?",
@@ -33,6 +34,8 @@
     "serverError": "Server error"
   },
   "tasks": {
+    "completedLoadError": "Could not load completed tasks.",
+    "retry": "Retry",
     "dates": {
       "today": "Today",
       "tomorrow": "Tomorrow",
@@ -108,6 +111,71 @@
     "emptySubtitle": "Create a task to start planning your day"
   },
   "habits": {
+    "tracker": {
+      "weekGoalMet": "Weekly goal reached · {count}/{goal}",
+      "today": "Today",
+      "week": "Week",
+      "all": "All",
+      "manage": "All habits and archive",
+      "view": "Habit view",
+      "retry": "Retry",
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week",
+      "backToday": "Back to today",
+      "dailyPlan": "Today’s plan",
+      "planOn": "Plan for {date}",
+      "planProgress": "{done} of {total}",
+      "skippedCount": "Skipped: {count}",
+      "flexible": "At your own pace",
+      "weeklyPlan": "Weekly goal",
+      "weekProgress": "{count} of {goal} this week",
+      "weekGoal": "{goal} times a week",
+      "fixedSchedule": "Scheduled days",
+      "ready": "Ready to check off",
+      "noPlan": "No habits planned for this day",
+      "loadingHistory": "Loading history…",
+      "weekLegend": "✓ done · − intentional skip. Future days are unavailable.",
+      "stateFilter": "Habit status",
+      "states": {
+        "active": "Active",
+        "paused": "Paused",
+        "archived": "Archived"
+      },
+      "emptyState": {
+        "active": "No active habits. Add one or resume a paused habit.",
+        "paused": "No paused habits.",
+        "archived": "The archive is empty. Archived habits keep their history here."
+      },
+      "status": {
+        "full": "Done",
+        "skip": "Intentional skip",
+        "none": "Not marked"
+      },
+      "completeHabit": "Complete: {title}",
+      "undoHabit": "Clear: {title}",
+      "skip": "Skip",
+      "clear": "Clear",
+      "history": "History",
+      "streak": "Current streak",
+      "monthPlan": "Past scheduled days this month",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "historyLegend": "Select a day to edit its status. ✓ done · − skipped.",
+      "notScheduled": "This day is off schedule or falls within a pause.",
+      "configure": "Configure",
+      "pause": "Pause",
+      "archive": "Archive",
+      "restore": "Restore",
+      "resume": "Resume",
+      "stateSaved": "Status saved. History is preserved.",
+      "historyPreserved": "History is preserved.",
+      "pendingSchedule": "The new schedule takes effect on {date}.",
+      "scheduleHint": "Weekdays change tomorrow. Weekly goals change next Monday. Past marks are preserved.",
+      "atLeastOneDay": "Select at least one day.",
+      "nameLabel": "Habit name",
+      "editTitle": "Configure habit",
+      "archiveHint": "This habit will leave your plan. Its history stays in the archive."
+    },
     "habits": "Habits",
     "empty": "No habits yet",
     "emptySubtitle": "Add a habit to track your daily progress",

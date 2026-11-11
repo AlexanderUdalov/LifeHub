@@ -207,6 +207,8 @@ onMounted(async () => {
 <template>
     <div class="profile-view-root">
         <h1 class="ds-page-header">{{ $t('profile-view.profile') }}</h1>
+        <Button :label="t('lifeareas.title')" icon="pi pi-compass" severity="secondary"
+            class="profile-lifeareas-link" @click="router.push('/lifeareas')" />
         <Card>
             <template #content>
                 <IftaLabel>
@@ -311,6 +313,10 @@ onMounted(async () => {
 <style scoped>
 .profile-view-root {
     width: 100%;
+}
+
+.profile-lifeareas-link {
+    margin: 0 12px 1rem;
 }
 
 :deep(.p-iftalabel) {

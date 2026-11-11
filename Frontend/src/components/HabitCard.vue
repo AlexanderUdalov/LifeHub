@@ -1,147 +1,88 @@
 <script setup lang="ts">
-import HabitDayRow from './HabitDayRow.vue'
-import HabitWeeklyRow from './HabitWeeklyRow.vue'
-import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
-import { getCurrentDayBasedStreakFallback, getCurrentWeeksStreak } from '@/utils/habitStreak'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useLifeAreasStore } from '@/stores/lifeAreas'
-import { useGoalsStore } from '@/stores/goals'
-import BaseCard from '@/components/base/BaseCard.vue'
+import type { HabitDTO, HabitWithHistoryDTO } from '@/api/HabitsAPI'
+import { useHabitsStore } from '@/stores/habits'
+import { useApiError } from '@/composables/useApiError'
+import { getWeekDays, toDateOnlyString } from '@/utils/dateOnly'
+import { isHabitScheduled, statusOn } from '@/utils/habitTracking'
+import HabitTodayCard from './HabitTodayCard.vue'
+import HabitDetailsDrawer from './HabitDetailsDrawer.vue'
+import Message from 'primevue/message'
+import '@/styles/habits.css'
 
-const props = withDefaults(
-  defineProps<{ habit: HabitWithHistoryDTO; noBorder?: boolean }>(),
-  { noBorder: false }
+const props = defineProps<{ habit: HabitWithHistoryDTO; noBorder?: boolean }>()
+const emit = defineEmits<{ edit: [habit: HabitDTO] }>()
+const store = useHabitsStore()
+const { t } = useI18n()
+const apiError = useApiError()
+const open = ref(false)
+const error = ref('')
+const today = computed(() => toDateOnlyString(new Date()))
+const item = computed(
+  () => store.habits.find((h) => h.habit.id === props.habit.habit.id) ?? props.habit,
 )
-const lifeAreasStore = useLifeAreasStore()
-const goalsStore = useGoalsStore()
-const { t, locale } = useI18n()
-const areaColor = computed(() => lifeAreasStore.getAreaColorById(props.habit.habit.lifeAreaId))
-const goalTitle = computed(() => goalsStore.getGoalById(props.habit.habit.goalId)?.title ?? null)
-const isWeeklyMode = computed(() => {
-  const g = props.habit.habit.timesPerWeekGoal
-  const n = typeof g === 'number' ? g : Number(g)
-  return Number.isFinite(n) && n >= 1 && n <= 7
-})
-
-const goalNum = computed(() => {
-  const g = props.habit.habit.timesPerWeekGoal
-  const n = typeof g === 'number' ? g : Number(g)
-  return Number.isFinite(n) && n >= 1 && n <= 7 ? n : 0
-})
-
-type StreakUnit = 'day' | 'week'
-
-interface StreakInfo {
-  value: number
-  unit: StreakUnit
+function editHabit(habit: HabitDTO) {
+  open.value = false
+  emit('edit', habit)
 }
-
-/** For weekly habits: streak in weeks with fallback to previous week when current one is in progress. */
-const streakInfo = computed<StreakInfo | null>(() => {
-  if (isWeeklyMode.value && goalNum.value > 0) {
-    const weeks = getCurrentWeeksStreak(props.habit.history, goalNum.value)
-    return weeks > 0 ? { value: weeks, unit: 'week' } : null
+async function toggle(day: Date) {
+  error.value = ''
+  try {
+    await store.setDayStatus(
+      item.value.habit.id,
+      day,
+      statusOn(item.value, toDateOnlyString(day)) === 'full' ? 'none' : 'full',
+    )
+  } catch (e) {
+    error.value = apiError.resolveMessage(e)
   }
-  const raw = props.habit.currentStreak
-  const n = typeof raw === 'number' ? raw : Number(raw ?? 0)
-  if (Number.isFinite(n) && n > 0) return { value: n, unit: 'day' }
-
-  const fallback = getCurrentDayBasedStreakFallback(props.habit.history)
-  return fallback > 0 ? { value: fallback, unit: 'day' } : null
-})
-
-function getStreakUnitLabel(unit: StreakUnit, count: number): string {
-  const pluralCategory = new Intl.PluralRules(locale.value).select(count)
-  const key = `habits.streakUnits.${unit}.${pluralCategory}`
-  const translated = t(key)
-  if (translated !== key) return translated
-
-  const fallbackKey = `habits.streakUnits.${unit}.other`
-  const fallback = t(fallbackKey)
-  if (fallback !== fallbackKey) return fallback
-
-  return unit === 'week' ? 'weeks' : 'days'
 }
-
-const streakLabel = computed(() => {
-  const info = streakInfo.value
-  if (!info) return null
-  const unit = getStreakUnitLabel(info.unit, info.value)
-  return t('habits.currentStreakLabel', { count: info.value, unit })
-})
-
-const emit = defineEmits<{
-  (e: 'edit', habit: HabitDTO): void
-}>()
 </script>
 
 <template>
-    <BaseCard class="habit-card" :borderless="noBorder" :accent-color="areaColor">
-        <template #title>
-            <div class="habit-title-block">
-                <div class="habit-title" @click="emit('edit', habit.habit)">
-                    {{ habit.habit.title }}
-                </div>
-            </div>
-        </template>
-
-        <template #content>
-            <div v-if="goalTitle || (streakInfo && streakLabel)" class="goal-streak-row">
-                <div v-if="goalTitle" class="goal-text">
-                    {{ goalTitle }}
-                </div>
-                <span v-if="streakInfo && streakLabel" class="habit-streak-chip">
-                    {{ streakLabel }}
-                </span>
-            </div>
-            <HabitWeeklyRow v-if="isWeeklyMode" :habit="habit" />
-            <HabitDayRow v-else :habit="habit" />
-        </template>
-    </BaseCard>
+  <div class="habit-goal-card" :class="{ 'habit-goal-card--borderless': noBorder }">
+    <Message v-if="error" severity="error" role="alert">{{ error }}</Message>
+    <HabitTodayCard
+      v-if="item.habit.state === 'active' && isHabitScheduled(item.habit, today)"
+      :item="item"
+      :date="today"
+      :today="today"
+      :days="getWeekDays(new Date())"
+      :busy="store.isBusy(item.habit.id)"
+      @open="open = true"
+      @toggle="toggle"
+    />
+    <button
+      v-else
+      type="button"
+      class="habit-name-button habit-name-button--full"
+      @click="open = true"
+    >
+      <span
+        ><strong>{{ item.habit.title }}</strong
+        ><small>{{
+          item.habit.state === 'active'
+            ? t('habits.tracker.notScheduled')
+            : t('habits.tracker.states.' + item.habit.state)
+        }}</small></span
+      >
+      <i class="pi pi-chevron-right" aria-hidden="true" />
+    </button>
+    <HabitDetailsDrawer
+      v-if="open"
+      :habit-id="item.habit.id"
+      :initial-date="today"
+      :today="today"
+      @close="open = false"
+      @edit="editHabit"
+    />
+  </div>
 </template>
-
 <style scoped>
-.habit-card {
-  border-radius: var(--ds-radius-lg);
-}
-
-.habit-title-block {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.habit-title {
-  cursor: pointer;
-  user-select: none;
-}
-
-.goal-streak-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.habit-streak-chip {
-  margin-left: auto;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background-color: var(--p-primary-100);
-  color: var(--p-primary-700);
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.goal-text {
-  color: var(--p-text-muted-color);
-  font-size: 0.875rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1 1 auto;
-  min-width: 0;
+.habit-goal-card--borderless :deep(.habit-entry) {
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
 }
 </style>

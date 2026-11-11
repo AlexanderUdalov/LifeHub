@@ -11,6 +11,8 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     public DbSet<LifeFocus> LifeFocuses => Set<LifeFocus>();
     public DbSet<Habit> Habits => Set<Habit>();
     public DbSet<HabitDay> HabitDays => Set<HabitDay>();
+    public DbSet<HabitSchedule> HabitSchedules => Set<HabitSchedule>();
+    public DbSet<HabitInactivePeriod> HabitInactivePeriods => Set<HabitInactivePeriod>();
     public DbSet<Addiction> Addictions => Set<Addiction>();
     public DbSet<AddictionReset> AddictionResets => Set<AddictionReset>();
     public DbSet<AddictionTriggerEvent> AddictionTriggerEvents => Set<AddictionTriggerEvent>();
@@ -22,6 +24,19 @@ public class ApplicationContext(DbContextOptions<ApplicationContext> options) : 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<HabitSchedule>()
+            .HasOne(x => x.Habit).WithMany(x => x.Schedules)
+            .HasForeignKey(x => x.HabitId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<HabitSchedule>()
+            .HasIndex(x => new { x.HabitId, x.EffectiveFrom }).IsUnique();
+        modelBuilder.Entity<HabitInactivePeriod>()
+            .HasOne(x => x.Habit).WithMany(x => x.InactivePeriods)
+            .HasForeignKey(x => x.HabitId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<HabitInactivePeriod>()
+            .HasIndex(x => new { x.HabitId, x.StartDate });
+        modelBuilder.Entity<HabitInactivePeriod>()
+            .HasIndex(x => x.HabitId).IsUnique().HasFilter("\"EndDate\" IS NULL");
 
         modelBuilder.Entity<DayFeedback>()
             .HasOne<User>()
